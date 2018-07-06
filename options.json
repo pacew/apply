@@ -1,3 +1,4 @@
 {
-  "site_type": "php"
+  "site_type": "php",
+  "db": "postgres"
 }

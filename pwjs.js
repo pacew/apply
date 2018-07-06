@@ -8,7 +8,7 @@ const child_process = require ('child_process');
 
 /* extra packages we'll have available below */
 const pkgs = [ "sprintf-js", "express", "https", "he", "express-session", 
-	       "connect-pg-simple", "ws" ];
+	       "connect-pg-simple", "ws", "knex" ];
 
 
 if (! fs.existsSync ("package.json")) {
@@ -140,6 +140,7 @@ async function setup_apache (cfg) {
 
   conf += sprintf ("  php_flag display_errors on\n");
   conf += sprintf ("  DocumentRoot %s\n", www_dir);
+  conf += sprintf ("  SetEnv APP_ROOT %s\n", cfg.srcdir);
   conf += sprintf ("  <Directory %s>\n", www_dir);
   conf += sprintf ("    RewriteEngine on\n");
   conf += sprintf ("    RewriteCond %%{REQUEST_FILENAME} !-d\n");
@@ -268,7 +269,7 @@ async function install_site () {
     }
   }
   
-  if (cfg.options.use_postgres) {
+  if (cfg.options.db == "postgres") {
     await setup_postgres (cfg);
   }    
 
