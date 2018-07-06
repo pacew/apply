@@ -9,7 +9,7 @@ $cfg = json_decode (file_get_contents ($app_root . "/cfg.json"), TRUE);
 $options = json_decode (file_get_contents ($app_root . "/options.json"), TRUE);
 
 function make_db_connection ($db, $dbparams, $create) {
-	global $default_dbparams, $options, $options;
+	global $default_dbparams, $cfg, $options;
 
     if (@$options['db'] == "")
         fatal ("no db configured");
@@ -28,7 +28,17 @@ function make_db_connection ($db, $dbparams, $create) {
 		
 	try {
         if (@$options['db'] == "postgres") {
-            $dsn = sprintf ("pgsql:user=www-data;dbname=%s", $db->dbname);
+            if ($cfg['conf_key'] == "aws") {
+                $lsconf = json_decode (file_get_contents ("/etc/lsconf-dbinfo"), 
+                                       TRUE);
+                $dsn = sprintf ("pgsql:host=%s;user=%s;password=%s;dbname=%s",
+                                $lsconf['host'],
+                                $lsconf['user'],
+                                $lsconf['password'],
+                                $db->dbname);
+            } else {
+                $dsn = sprintf ("pgsql:user=www-data;dbname=%s", $db->dbname);
+            }
             $db->pdo = new PDO ($dsn);
         } else if (@$options['db'] == "mysql") {
             $dsn = sprintf ("mysql:host=%s;charset:utf8",
