@@ -1,0 +1,5 @@
+TMP.*
+?
+*~
+node_modules/
+cfg.json
