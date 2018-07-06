@@ -424,7 +424,8 @@ async function setup_postgres (cfg) {
 			      +" where datname = $1",
 			      [cfg.siteid]);
   if (res.rows.length == 0) {
-    printf ("createdb %s\n", cfg.siteid);
+    printf ("creating database %s\n", cfg.siteid);
+    await pool.query (sprintf ("create database \"%s\"", cfg.siteid));
   }
 
   pool.end();
