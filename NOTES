@@ -1,3 +1,6 @@
+psql --host main.czuqd0u2qqew.us-east-1.rds.amazonaws.com --user=master --dbname=template1
+
+
 knex migrate:make NAME
 knex migrate:latest
 knex migrate:rollback
