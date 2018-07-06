@@ -135,11 +135,11 @@ async function setup_apache (cfg) {
   const www_dir = sprintf ("/var/www/%s", cfg.siteid);
 
   if (! fs.existsSync (www_dir)) {
-    printf ("sudo ln -s %s %s\n", cfg.document_root, www_dir);
+    printf ("sudo ln -s %s/public %s\n", cfg.srcdir, www_dir);
   }
 
   conf += sprintf ("  php_flag display_errors on\n");
-  conf += sprintf ("  DocumentRoot %s/public\n", www_dir);
+  conf += sprintf ("  DocumentRoot %s\n", www_dir);
   conf += sprintf ("  SetEnv APP_ROOT %s\n", cfg.srcdir);
   conf += sprintf ("  <Directory %s>\n", www_dir);
   conf += sprintf ("    RewriteEngine on\n");
@@ -237,8 +237,6 @@ async function install_site () {
     cfg.ssl_url = sprintf ("https://%s:%d/", cfg.external_name, cfg.ssl_port);
   }
 
-  cfg.document_root = cfg.srcdir + "/public";
-  
   const cert_dir = "/etc/apache2";
 
   let cert_base = cfg.external_name;
