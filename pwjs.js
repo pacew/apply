@@ -212,7 +212,7 @@ async function install_site () {
       process.exit (1);
     }
     cfg.external_name = cfg.options.aws_hostname;
-    cfg.ssl_port = 4433;
+    cfg.ssl_port = 8000;
 
   } else {
     if (! cfg.ssl_port) {
