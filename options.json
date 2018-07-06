@@ -1,4 +1,5 @@
 {
   "site_type": "php",
-  "db": "postgres"
+  "db": "postgres",
+  "aws_hostname": "apply.pacew.org"
 }

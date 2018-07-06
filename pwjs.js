@@ -206,22 +206,36 @@ async function install_site () {
     cfg.conf_key = path.basename (os.homedir ());
   }    
 
-  if (! cfg.ssl_port) {
-    cfg.ssl_port = get_free_port (port_base);
-  }
+  if (cfg.conf_key == "aws") {
+    if (! cfg.options.aws_hostname) {
+      printf ("options.aws_hostname missing\n");
+      process.exit (1);
+    }
+    cfg.external_name = cfg.options.aws_hostname;
+    cfg.ssl_port = 443;
 
-  cfg.external_name = external_name;
+  } else {
+    if (! cfg.ssl_port) {
+      cfg.ssl_port = get_free_port (port_base);
+    }
 
-  if (cfg.external_name.match (new RegExp ("[.].*[.]"))) {
-    /* two dots in name */
-    const local_name = cfg.external_name.replace (new RegExp ("^[^.]*"), 
-						  "local");
-    cfg.local_url = sprintf ("https://%s:%d/", local_name, cfg.ssl_port);
+    cfg.external_name = external_name;
+
+    if (cfg.external_name.match (new RegExp ("[.].*[.]"))) {
+      /* two dots in name */
+      const local_name = cfg.external_name.replace (new RegExp ("^[^.]*"), 
+						    "local");
+      cfg.local_url = sprintf ("https://%s:%d/", local_name, cfg.ssl_port);
+    }
   }
 
   cfg.srcdir = process.cwd ();
   cfg.siteid = sprintf ("%s-%s", cfg.site_name, cfg.conf_key);
-  cfg.ssl_url = sprintf ("https://%s:%d/", cfg.external_name, cfg.ssl_port);
+  if (cfg.ssl_port == 443) {
+    cfg.ssl_url = sprintf ("https://%s/", cfg.external_name);
+  } else {
+    cfg.ssl_url = sprintf ("https://%s:%d/", cfg.external_name, cfg.ssl_port);
+  }
 
   cfg.document_root = cfg.srcdir + "/public";
   
