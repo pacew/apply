@@ -405,7 +405,7 @@ async function setup_postgres (cfg) {
   let txt;
   if (conf.password) {
     txt = sprintf ("#! /bin/sh\n" +
-		   "exec PGPASSWORD='%s' psql" +
+		   "PGPASSWORD='%s' exec psql" +
 		   "  --host='%s' --user='%s' --dbname='%s' \"\$@\"\n",
 		   conf.password, conf.host, conf.user, cfg.siteid);
   } else {
