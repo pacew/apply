@@ -198,7 +198,11 @@ async function install_site () {
     cfg.site_name = path.basename (cfg.srcdir);
   }
 
-  if (! cfg.conf_key) {
+  let matches = (/^(.*)-([^-]*)$/).exec (cfg.site_name);
+  if (matches) {
+    cfg.site_name = matches[1];
+    cfg.conf_key = matches[2];
+  } else if (! cfg.conf_key) {
     cfg.conf_key = path.basename (os.homedir ());
   }    
 
@@ -285,7 +289,9 @@ async function install_site () {
   }
 
   const tmpname = "TMP.cfg";
-  fs.writeFileSync (tmpname, JSON.stringify (cfg , null, "\t") + "\n");
+  let cfg1 = Object.assign ({}, cfg);
+  delete cfg1.options;
+  fs.writeFileSync (tmpname, JSON.stringify (cfg1 , null, "\t") + "\n");
   fs.renameSync (tmpname, "cfg.json");
 
   await postgres_finish ();
@@ -378,12 +384,26 @@ async function do_rollback () {
   }
 }  
 
-async function setup_postgres (cfg) {
-  let pool = new Pool ({
-    host: '/var/run/postgresql',
-    database: 'template1'
-  });
+function get_pg_conf (cfg) {
+  let conf = {};
+  
+  if (cfg.conf_key == "aws") {
+    let lsconf = JSON.parse (slurp_file ("/etc/lsconf-dbinfo"));
+    conf.host = lsconf.host;
+    conf.user = lsconf.user;
+    conf.password = lsconf.password;
+  } else {
+    conf.host = '/var/run/postgresql';
+  }
+  return (conf);
+}
 
+
+async function setup_postgres (cfg) {
+  let conf = get_pg_conf (cfg);
+  conf.database = "template1";
+  let pool = new Pool (conf);
+  
   let res = await pool.query ("select 0"
 			      +" from pg_database"
 			      +" where datname = $1",
@@ -398,19 +418,16 @@ async function setup_postgres (cfg) {
 }
 
 function knex_setup_postgres (cfg) {
-  if (! fs.existsSync ("knexfile.js")) {
-    var opts = {};
-    opts.client ="pg";
-    opts.connection = {
-      "host": "/var/run/postgresql",
-      "database": cfg.siteid
-    };
+  let conf = get_pg_conf (cfg);
+  let opts = {};
+  opts.client ="pg";
+  opts.connection = Object.assign ({}, conf);
+  opts.connection.database = cfg.siteid;
     
-    fs.writeFileSync ("knexfile.js",
-		      "module.exports = " +
-		      JSON.stringify (opts , null, "\t") +
-		      "\n");
-  }
+  fs.writeFileSync ("knexfile.js",
+		    "module.exports = " +
+		    JSON.stringify (opts , null, "\t") +
+		    "\n");
    
   if (! fs.existsSync ("migrations")) {
     printf ("knex migrate:make start\n");
