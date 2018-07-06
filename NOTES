@@ -1,0 +1,3 @@
+knex migrate:make NAME
+knex migrate:latest
+knex migrate:rollback

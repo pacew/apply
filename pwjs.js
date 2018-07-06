@@ -139,7 +139,7 @@ async function setup_apache (cfg) {
   }
 
   conf += sprintf ("  php_flag display_errors on\n");
-  conf += sprintf ("  DocumentRoot %s\n", www_dir);
+  conf += sprintf ("  DocumentRoot %s/public\n", www_dir);
   conf += sprintf ("  SetEnv APP_ROOT %s\n", cfg.srcdir);
   conf += sprintf ("  <Directory %s>\n", www_dir);
   conf += sprintf ("    RewriteEngine on\n");
@@ -219,11 +219,7 @@ async function install_site () {
   cfg.siteid = sprintf ("%s-%s", cfg.site_name, cfg.conf_key);
   cfg.ssl_url = sprintf ("https://%s:%d/", cfg.external_name, cfg.ssl_port);
 
-  if (cfg.options.site_type == "php") {
-    cfg.document_root = cfg.srcdir;
-  } else if (cfg.options.site_type == "node") {
-    cfg.document_root = cfg.srcdir + "/public";
-  }
+  cfg.document_root = cfg.srcdir + "/public";
   
   const cert_dir = "/etc/apache2";
 
