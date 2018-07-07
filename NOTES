@@ -1,3 +1,15 @@
+2018 responses
+
+https://docs.google.com/spreadsheets/d/1sEbWHpuOmmfC6s2HLv7hXah1EYZWqarXWyVwXeoc3ZI/edit#gid=2056043933
+
+2018 application
+https://docs.google.com/forms/d/1fLld9JnoZoaiQHlFnfDVIbyn9Uw_-BRyRmxSusCy58M/edit?usp=sharing_eil&ts=5b33f705
+
+
+mysqldump --host=neffaprog.neffa.dreamhosters.com --user=pace_willisson --compatible=postgresql -p neffa_pdb
+
+
+
 psql --host main.czuqd0u2qqew.us-east-1.rds.amazonaws.com --user=master --dbname=template1
 
 

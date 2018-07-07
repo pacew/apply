@@ -16,37 +16,54 @@ function make_db_connection ($db, $dbparams, $create) {
 
 	if ($dbparams == NULL) {
 		if (! isset ($default_dbparams)) {
+            $default_dbparams = array ();
+
             $pw = posix_getpwuid (posix_geteuid ());
-            /* use auth_socket access to localhost */
-            $default_dbparams = array (
-                'host' => '',
-                'user' => $pw['name'],
-                'passwd' => '');
+            if ($options['db'] == "postgres") {
+                $default_dbparams['dbtype'] = "pgsql";
+                if ($cfg['conf_key'] == "aws") {
+                    $lsconf=json_decode(file_get_contents("/etc/lsconf-dbinfo"), 
+                                        TRUE);
+                    $default_dbparams['host'] = $lsconf['host'];
+                    $default_dbparams['user'] = $lsconf['user'];
+                    $default_dbparams['password'] = $lsconf['password'];
+                } else {
+                    $default_dbparams['host'] = '';
+                    $default_dbparams['user'] = $pw['name'];
+                    $default_dbparams['password'] = '';
+                }
+            } else if ($options['db'] == "mysql") {
+                $default_dbparams['dbtype'] = "mysql";
+                $default_dbparams['host'] = '';
+                $default_dbparams['user'] = $pw['name'];
+                $default_dbparams['password'] = '';
+            }
 		}
 		$dbparams = $default_dbparams;
 	}
 		
 	try {
-        if (@$options['db'] == "postgres") {
-            if ($cfg['conf_key'] == "aws") {
-                $lsconf = json_decode (file_get_contents ("/etc/lsconf-dbinfo"), 
-                                       TRUE);
-                $dsn = sprintf ("pgsql:host=%s;user=%s;password=%s;dbname=%s",
-                                $lsconf['host'],
-                                $lsconf['user'],
-                                $lsconf['password'],
-                                $db->dbname);
-            } else {
-                $dsn = sprintf ("pgsql:user=www-data;dbname=%s", $db->dbname);
-            }
+        if ($dbparams['dbtype'] == "pgsql") {
+            $attrs = array ();
+            $attrs[] = sprintf ("dbname=%s", $db->dbname);
+            $attrs[] = sprintf ("user=%s", $dbparams['user']);
+
+            if ($dbparams['host'])
+                $attrs[] = sprintf ("host=%s", $dbparams['host']);
+            
+            if ($dbparams['password'])
+                $attrs[] = sprintf ("password=%s", $dbparams['host']);
+
+            $dsn = sprintf ("pgsql:%s", implode (";", $attrs));
+
             $db->pdo = new PDO ($dsn);
-        } else if (@$options['db'] == "mysql") {
+        } else if ($dbparams['dbtype'] == "mysql") {
             $dsn = sprintf ("mysql:host=%s;charset:utf8",
                             $dbparams['host']);
             $db->pdo = new PDO ($dsn,
-                                $dbparams['user'], $dbparams['passwd'],
+                                $dbparams['user'], $dbparams['password'],
                                 array (PDO::MYSQL_ATTR_INIT_COMMAND
-                                   => "set names 'utf8'"));
+                                       => "set names 'utf8'"));
             $db->pdo->exec ("set character set utf8");
             $db->pdo->exec ("set session time_zone = '+00:00'");
             $db->pdo->exec (sprintf ("use `%s`", $db->dbname));
@@ -471,6 +488,9 @@ function make_confirm ($question, $button, $args) {
 }
 
 function mktable ($hdr, $rows) {
+    if (count ($rows) == 0)
+        return ("");
+        
 	$ncols = count ($hdr);
 	foreach ($rows as $row) {
 		$c = count ($row);
