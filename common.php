@@ -322,13 +322,14 @@ function get_seq ($db = NULL) {
 	return ($newval);
 }
 
+$title_html = "";
+
 function pstart () {
-    global $body, $title_html;
+    global $body;
 
     ini_set ("display_errors", "1");
     dblib_session ();
 
-    $title_html = "";
     $body = "";
 }
 

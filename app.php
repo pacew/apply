@@ -1,5 +1,11 @@
 <?php
 
+require_once ($_SERVER['APP_ROOT'] . "/common.php");
+
+$title_html = "NEFFA Performer Application 2019";
+
+
+
 function get_neffa_index () {
     global $index;
     $filename = sprintf ("%s/neffa_idx.json", $_SERVER['APP_ROOT']);
@@ -50,7 +56,7 @@ function performer_lookup ($str) {
 
     $ret = array ();
     $n = count ($poss);
-    $limit = 100;
+    $limit = 25;
     if ($n > $limit)
         $n = $limit;
     for ($i = 0; $i < $n; $i++) {
@@ -62,6 +68,24 @@ function performer_lookup ($str) {
         
         $ret[] = $r;
     }
+
+    return ($ret);
+}
+
+function make_lookup_form ($name = "") {
+    $ret = "";
+    
+    $ret .= "<div>\n";
+    $ret .= "<form action='lookup.php'>\n";
+    
+    $ret .= "Name of group of individual performer: ";
+    $ret .= sprintf ("<input type='text' size='50' name='name' value='%s' />\n",
+                     h($name));
+    
+    $ret .= "<input type='submit' value='Submit' />\n";
+    
+    $ret .= "</form>\n";
+    $ret .= "</div>\n";
 
     return ($ret);
 }
