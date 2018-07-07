@@ -52,7 +52,7 @@ function make_db_connection ($db, $dbparams, $create) {
                 $attrs[] = sprintf ("host=%s", $dbparams['host']);
             
             if ($dbparams['password'])
-                $attrs[] = sprintf ("password=%s", $dbparams['host']);
+                $attrs[] = sprintf ("password=%s", $dbparams['password']);
 
             $dsn = sprintf ("pgsql:%s", implode (";", $attrs));
 
