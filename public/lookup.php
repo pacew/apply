@@ -19,7 +19,7 @@ $body .= make_lookup_form ($arg_name);
 
 $body .= "<div>\n";
 $body .= "<form action='apply.php'>\n";
-$body .= "<input type='hidden' name='create_new' value='1' />\n";
+$body .= "<input type='hidden' name='perf_id' value='0' />\n";
 $body .= "<input type='submit' value='Create new' />\n";
 $body .= "</form>\n";
 $body .= "</div>\n";

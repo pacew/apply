@@ -1,9 +1,11 @@
 
 exports.up = function(knex, Promise) {
   return knex.schema
-    .createTable('apps', function (t) {
+    .createTable('applications', function (t) {
       t.integer('app_id');
-      t.string('name');
+      t.integer('perf_id');
+      t.string('perf_name');
+      t.string('email');
     })
   
 };
@@ -11,4 +13,5 @@ exports.up = function(knex, Promise) {
 exports.down = function(knex, Promise) {
   return knex.schema
     .dropTableIfExists ("apps")
+    .dropTableIfExists ("applications")
 };

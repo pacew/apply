@@ -4,12 +4,21 @@ require_once ($_SERVER['APP_ROOT'] . "/common.php");
 
 $title_html = "NEFFA Performer Application 2019";
 
+$index = NULL;
 
 
 function get_neffa_index () {
     global $index;
-    $filename = sprintf ("%s/neffa_idx.json", $_SERVER['APP_ROOT']);
-    $index = json_decode (file_get_contents ($filename), TRUE);
+    if ($index == NULL) {
+        $filename = sprintf ("%s/neffa_idx.json", $_SERVER['APP_ROOT']);
+        $index = json_decode (file_get_contents ($filename), TRUE);
+    }
+}
+
+function get_perf_name ($perf_id) {
+    global $index;
+    get_neffa_index ();
+    return (@$index['data'][$perf_id]);
 }
 
 function records_cmp ($a, $b) {
@@ -22,8 +31,8 @@ function records_cmp ($a, $b) {
     
 function performer_lookup ($str) {
     global $index;
-    if (! isset ($index))
-        get_neffa_index ();
+    
+    get_neffa_index ();
 
     $words = preg_split ('/[\s,]/', strtolower ($str));
     $poss = array ();
