@@ -34,6 +34,10 @@ if ($arg_download_csv) {
 
 $body .= "<h2>Admin page</h2>\n";
 
+$body .= "<div>";
+$body .= mklink ("home", "/");
+$body .= "</div>\n";
+
 $body .= "<form action='admin.php'>\n";
 $body .= "<input type='hidden' name='download_csv' value='1' />\n";
 $body .= "<input type='submit' value='Download csv' />\n";
