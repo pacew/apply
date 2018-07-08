@@ -279,7 +279,7 @@ function dblib_session () {
 
 function getsess ($name) {
     global $cfg;
-	$key = sprintf ("svar%d_%s", $cfg['site_port'], $name);
+	$key = sprintf ("svar%d_%s", $cfg['ssl_port'], $name);
 	if (isset ($_SESSION[$key]))
 		return ($_SESSION[$key]);
 	return (NULL);
@@ -287,13 +287,13 @@ function getsess ($name) {
 
 function putsess ($name, $val) {
     global $cfg;
-	$key = sprintf ("svar%d_%s", $cfg['site_port'], $name);
+	$key = sprintf ("svar%d_%s", $cfg['ssl_port'], $name);
 	$_SESSION[$key] = $val;
 }
 
 function clrsess () {
     global $cfg;
-	$prefix = sprintf ("svar%d_", $cfg['site_port']);
+	$prefix = sprintf ("svar%d_", $cfg['ssl_port']);
 	$prefix_len = strlen ($prefix);
 	$del_keys = array ();
 	foreach ($_SESSION as $key => $val) {
@@ -325,12 +325,16 @@ function get_seq ($db = NULL) {
 $title_html = "";
 
 function pstart () {
-    global $body;
+    global $body, $anon_ok;
 
     ini_set ("display_errors", "1");
     dblib_session ();
 
     $body = "";
+
+    if (! @$anon_ok && getsess ("username") == "") {
+        redirect ("login.php");
+    }
 }
 
 function pfinish () {

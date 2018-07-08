@@ -6,7 +6,6 @@ $title_html = "NEFFA Performer Application 2019";
 
 $index = NULL;
 
-
 function get_neffa_index () {
     global $index;
     if ($index == NULL) {
