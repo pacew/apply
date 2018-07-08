@@ -1,0 +1,64 @@
+.xdebug-var-dump .xdebug-error {
+    background: #efa30b;
+    border: .2em solid #775002;
+    margin: 1em;
+    padding: 1em;
+}
+
+
+.boxed {
+    margin: .25em;
+    border:2px solid #ddd;
+}
+
+.boxed th {
+    text-align: left;
+    background-color:#6599FF;
+    background-color: hsl(220, 100%, 70%);
+    color: white;
+    white-space: nowrap;
+}
+
+.boxed tr.even {
+  background-color: hsl(220, 100%, 92%);
+}
+
+.boxed th, .boxed td {
+    padding:4px 10px;
+    border:2px solid #fff;
+    border-width:0 2px 2px 0;
+}
+
+.boxed tr:hover {
+  background-color: hsl(220, 100%, 80%) !important;
+
+}
+
+
+.twocol {
+    border: 1px solid gray;
+    margin: .25em;
+    padding: .25em;
+}
+
+.twocol th {
+    text-align: left;
+    padding: 0 .5em 0 0;
+    vertical-align: top;
+}
+
+form .twocol {
+    border-collapse:separate;
+    border-spacing: 0 10px;
+}
+
+h1 {
+    font-weight: bold;
+    font-size: 1.5em;
+}
+
+h2 {
+    margin-top: 1em;
+    font-weight: bold;
+    font-size: 1.2em;
+}
