@@ -1,0 +1,188 @@
+[
+  { "id": "email",
+    "q": "Email address", 
+    "type": "email" },
+
+  { "id": "name",
+    "q": "What is your name?" },
+
+  { "id": "phone",
+    "q": "What is the best phone number at which to reach you?" },
+
+  { "id": "individual_or_group",
+    "q": "Are you an INDIVIDUAL (solo) performer, or are you a member of/contact for a GROUP?",
+    "choices": [ 
+      { "val": "Individual" },
+      { "val": "Group" }
+    ]
+  },
+
+  { "id": "group_name",
+    "q": "What is the name of the group you represent?",
+    "desc": "Make sure this name exactly matches the name of your group. Avoid abbreviations.",
+    "type": "performer_name",
+    "show_if": [ "individual_or_group", "Group" ]
+  },
+
+  { "id": "event_title",
+    "q": "What is your EVENT'S TITLE? (30 characters at most)",
+    "desc": "Please be careful about avoiding spelling errors, and do not use all capital letters. This title will appear on the web Festival Schedule, the Paper Grid, and in the Program Book. When crafting an event title, please try to be descriptive, although cleverness is also welcome. The event title should be different from the group name (for example, don't use  \"[your name] in Concert\") and should provide audience members with an idea of the theme.  The Program Committee may change the title because of printing constraints or clarity issues. ATTENTION DANCE BANDS: If you are applying to provide the music for participatory dancing which requires a caller/teacher (contra, squares, ECD, couple dancing,etc), the title will be determined by the caller/teacher. Simply tell us \"play for a dance\"."
+  },
+
+  { "id": "event_desc",
+    "q": "Please describe your EVENT (NOT your group!)",
+    "desc": "This is a description of this specific, proposed PERFORMANCE. This text will be read by Festival-goers. Please avoid spelling errors, and do not use all capital letters. Try to limit this description to no more than 30 words (fewer is better!). This description gives the Program Committee and Festival participants a more precise idea of what to expect from your event. This description should give additional information, and not be a repeat of the Event Title. ATTENTION DANCE BANDS: The description for a participatory dancing event will be determined by the caller/teacher. Simply type \"play for a dance\" in this section." },
+
+  { "id": "caller_band_other",
+    "q": "For THIS application, how would you best describe yourself (or your group)?",
+    "desc": "The answer to this question may be different on other applications; please choose the option that best fits with this application only.",
+    "choices": [
+      { "val": "caller", "desc": "I'm a caller/dance leader" },
+      { "val": "band", "desc": "For THIS application, we are a dance band" },
+      { "val": "other", "desc": "Folk Music group, performance band, singer, solo instrumentalist, group instrumentalists, storyteller, historian" }
+    ]
+  },
+
+  { "id": "band_type",
+    "show_if": [ "caller_band_other", "band" ],
+    "q": "What type of dancing are you applying for?",
+    "desc": "Bands may wish to play for more than one type of dance event, but for this application, you have to choose JUST one.  If you would like to be considered for more than one type of dancing, PLEASE fill out another application!",
+    "choices": [
+      { "val": "Contra/Square" },
+      { "val": "English Country Dance" },
+      { "val": "Waltz" },
+      { "val": "Scandinavian" },
+      { "val": "International Line Dancing" },
+      { "val": "Other" }
+    ]
+  },
+
+  { "id": "need_caller",
+    "show_if": [ "caller_band_other", "band" ],
+    "q": "Do you need a caller or dance leader for this event?",
+    "desc": "Please note that dance bands must submit their own applications and callers/dance leaders must submit separate applications. If a caller/teacher is a member of your dance band, this teacher/caller still is required to submit a separate application as an individual.",
+    "choices": [
+      { "val": "Yes" },
+      { "val": "No" }
+    ]
+  },
+
+  { "id": "preferred_caller",
+    "show_if": [ "need_caller", "Yes" ],
+    "optional": 1,
+    "q": "Preferred caller/dance leader",
+    "desc": "There are no guarantees about pairings of bands/musicians and callers/dance leaders, but if you have a preference, please indicate it. "
+  },
+
+  { "id": "music_pref",
+    "show_if": [ "caller_band_other", "caller" ],
+    "q": "Music preference",
+    "desc": "NEFFA prefers to use live music whenever possible.  Please note that callers/dance teachers must submit their own applications and dance bands must submit separate applications.",
+    "choices": [
+      { "val": "band", "desc": "This event needs a band" },
+      { "val": "either", "desc": "This event could use a band but I can provide recorded music if live music is not available" },
+      { "val": "recorded", "desc": "I prefer to use recorded music, which I will provide" }
+    ]
+  },
+
+  { "id": "perferred_band",
+    "show_if": [ "music_pref", "band", "either" ],
+    "q": "Preferred band",
+    "optional": 1,
+    "desc": "There are no guarantees about pairings of bands/musicians and callers/dance leaders, but if you want a band and have a preference, please indicate it." },
+
+  { "id": "recorded_type",
+    "show_if": [ "music_pref", "either", "recorded" ],
+    "q": "What kind of media would you use for your recorded music?",
+    "choices": [
+      { "val": "MP3, iPod or computer (headphone jack output)" },
+      { "val": "CDs" },
+      { "val": "Other" }
+    ]
+  },
+
+  { "id": "device_required",
+    "show_if": [ "music_pref", "either", "recorded" ],
+    "q": "Do you need NEFFA to supply a playback device?",
+    "optional": 1,
+    "desc": "(For MP3's etc., you must provide your own device.)",
+    "choices": [
+      { "val": "Yes", "desc": "Yes, I need NEFFA to supply a playback device." },
+      { "val": "No" }
+    ]
+  },
+
+  { "id": "sound",
+    "q": "Do you require a sound system?",
+    "desc": "We have a very limited number of rooms that have sound equipment. These include the large dance hall spaces, and a small number of the concert rooms. We have a larger number of concert rooms which do not have sound. This event has a greater chance of being scheduled if you do not need sound equipment. ",
+    "choices": [
+      { "val": "full", "desc": "Yes, we need a full sound set-up" },
+      { "val": "ifpossible", "desc": "I/We would prefer sound, but would be happy to perform this event without sound." },
+      { "val": "mic", "desc": "A self-serve vocal mic for one person is all I need." },
+      { "val": "no", "desc": "No, we do not require a sound system." }
+    ]
+  },
+
+  { "id": "piano",
+    "q": "Do you require a piano?",
+    "optional": 1,
+    "choices": [
+      { "val": "Yes" },
+      { "val": "No" }
+    ]
+  },
+
+  { "id": "shared",
+    "q": "Are you willing to work with others on a shared event?",
+    "optional": 1,
+    "desc": "(NEFFA often gets applications for similar events.)",
+    "choices": [
+      { "val": "Yes" },
+      { "val": "No" }
+    ]
+  },
+
+  { "id": "preference",
+    "q": "Preference",
+    "optional": 1,
+    "desc": "Every year we have more and more applicants/applications. Please rate this application. These rankings are a general guide only. We assume that performers will be happy with ANY choice the committee makes.",
+    "choices": [
+      { "val": "1", "desc": "Very excited to have this event scheduled." },
+      { "val": "2", "desc": "Moderately excited to have this event scheduled." },
+      { "val": "3", "desc": "An interesting idea, but I would prefer that this not be my only event." }
+    ]
+  },
+
+  { "id": "event_type",
+    "q": "Event Type",
+    "choices": [
+      { "val": "E", "desc": "ENTERTAINMENT -- Events that people watch or listen to (concerts, performance, etc.)." },
+      { "val": "C", "desc": "CHAT -- The audience joins the presenter in discussing a topic of mutual interest." },
+      { "val": "P", "desc": "PRESENTATION -- Events which demonstrate a skill or present material, as in a lecture." },
+      { "val": "G", "desc": "GROUP PARTICIPATION -- Audience participation is the primary focus, as in group singing, jams, etc." },
+      { "val": "T", "desc": "TEACHING FEATURED -- Participatory events that focus on teaching a particular skill." },
+      { "val": "D", "desc": "PARTICIPATORY DANCING  -- A leader provides walk-thrus and prompting." },
+      { "val": "N", "desc": "NO INSTRUCTION -- Dances featuring no instruction or walk-thrus." }
+    ]
+  },
+
+  { "id": "level",
+    "q": "Level Code",
+    "desc": "These level codes indicate the intended level of experience or ability, especially for dance and teaching events.",
+    "choices": [
+      { "val": "F", "desc": "FAMILY-ORIENTED -- Participatory events geared to families and others who enjoy being with children" },
+      { "val": "B", "desc": "BEGINNER-FRIENDLY -- No experience assumed" },
+      { "val": "S", "desc": "SOME EXPERIENCE HELPFUL -- Basic knowledge assumed" },
+      { "val": "X", "desc": "EXPERIENCED -- Much experience assumed" },
+      { "val": "NA", "desc": "Not applicable" }
+    ]
+  },
+
+  { "id": "url",
+    "q": "Video URL",
+    "desc": "If you would like to share a video of you/your group performing, please give us the url here." },
+
+  { "id": "notes",
+    "q": "Any additional questions, comments?" }
+  
+]

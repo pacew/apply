@@ -366,8 +366,10 @@ function pfinish () {
     $pg .= $body;
 
     $pg .= "<script src='https://ajax.googleapis.com"
-        ."/ajax/libs/jquery/2.1.4/jquery.min.js'></script>\n"
-        ."<script src='scripts.js'></script>\n";
+        ."/ajax/libs/jquery/2.1.4/jquery.min.js'></script>\n";
+
+    $pg .= sprintf ("<script src='scripts.js?c=%s.js'></script>\n",
+                    get_cache_defeater ());
 
     $pg .= "</body>\n";
     echo ($pg);

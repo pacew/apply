@@ -62,3 +62,13 @@ h2 {
     font-weight: bold;
     font-size: 1.2em;
 }
+
+.question {
+    background: #eee;
+    padding: 1em;
+    margin: 1em;
+}
+
+.question h3 {
+    font-weight: bold;
+}
