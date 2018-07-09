@@ -31,6 +31,7 @@
 
   { "id": "event_desc",
     "q": "Please describe your EVENT (NOT your group!)",
+    "textarea": 1,
     "desc": "This is a description of this specific, proposed PERFORMANCE. This text will be read by Festival-goers. Please avoid spelling errors, and do not use all capital letters. Try to limit this description to no more than 30 words (fewer is better!). This description gives the Program Committee and Festival participants a more precise idea of what to expect from your event. This description should give additional information, and not be a repeat of the Event Title. ATTENTION DANCE BANDS: The description for a participatory dancing event will be determined by the caller/teacher. Simply type \"play for a dance\" in this section." },
 
   { "id": "caller_band_other",
@@ -183,6 +184,7 @@
     "desc": "If you would like to share a video of you/your group performing, please give us the url here." },
 
   { "id": "notes",
+    "textarea": 1,
     "q": "Any additional questions, comments?" }
   
 ]

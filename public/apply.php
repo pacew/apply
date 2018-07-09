@@ -63,6 +63,10 @@ foreach ($questions as $question) {
             }
             $body .= "</div>\n";
         }
+    } else if (@$question['textarea']) {
+        $body .= sprintf ("<textarea cols='70' rows='5' id='%s' name='%s'>\n"
+                          ."</textarea>\n",
+                          $input_id, $input_id);
     } else {
         $body .= sprintf ("<input type='text' id='%s' name='%s' size='40' />\n",
                           $input_id, $input_id);
