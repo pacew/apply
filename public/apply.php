@@ -29,6 +29,82 @@ if (0 && $arg_perf_id == 0) {
           ."</td></tr>\n";
 }
 
+function h24_to_12 ($hour) {
+    if ($hour < 12) {
+        return (sprintf ("%dam", $hour));
+    } else if ($hour == 12) {
+        return ("noon");
+    } else if ($hour < 24) {
+        return (sprintf ("%dpm", $hour - 12));
+    } else {
+        return ("11:30pm");
+    }
+}
+
+function make_schedule () {
+    $ret = "<div class='question'>\n";
+
+    $ret .= "<h2>Availability</h2>\n";
+    
+    $ret .= "<p>These hours refer to the times that you are available"
+         ." to perform, and NOT your preferred times. Please note that"
+         ." the greater your availability, the greater the likelihood"
+         ." that you will be scheduled. </p>\n";
+
+    $ret .= "<p style='color:red'>"
+         ." [DEVELOPMENT NOTE: this isn't animated yet.  if we go with"
+         ." this concept, clicking an aggregate box will automatically"
+         ." set all the boxes in the appropriate group.</p>\n";
+    
+    $ret .= "<input type='checkbox'> Any time during the festival\n";
+
+    $rows = array ();
+
+    $cols = array ();
+    for ($day = 0; $day < 3; $day++) {
+        $days = array ("Friday", "Saturday", "Sunday");
+        $cols[] = sprintf ("<input type='checkbox'> Any time %s",
+                           $days[$day]);
+    }
+    $rows[] = $cols;
+
+    for ($hour = 10; $hour <= 23; $hour++) {
+        $from = h24_to_12 ($hour);
+        $to = h24_to_12 ($hour + 1);
+
+        $cols = array ();
+        for ($day = 0; $day < 3; $day++) {
+            $text = sprintf ("%s to %s", $from, $to);
+
+            if ($day == 0 && $hour < 19)
+                $text = "";
+            
+            if ($day == 2) {
+                if ($hour == 16) {
+                    $text = "4pm to 5:30pm";
+                } else if ($hour > 16) {
+                    $text = "";
+                }
+            }
+
+            $html = "";
+            if ($text) {
+                $html = sprintf ("<input type='checkbox' /> %s\n", $text);
+            }
+
+            $cols[] = $html;
+        }
+        $rows[] = $cols;
+    }
+
+    $ret .= mktable (array ("Friday", "Saturday", "Sunday"), $rows);
+
+    $ret .= "</div>\n";
+    
+    return ($ret);
+}
+
+
 $body .= "<form action='save.php' method='post'>\n";
 
 /* prevent ENTER in text field from submitting the form ... users
@@ -72,8 +148,11 @@ foreach ($questions as $question) {
                           $input_id, $input_id);
     }
     $body .= "</div>\n"; /* question */
-}
 
+    
+    if ($question['id'] == "event_desc")
+        $body .= make_schedule ();
+}
 
 $body .= "<input type='submit' value='Submit' />\n";
 
