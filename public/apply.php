@@ -30,6 +30,12 @@ if (0 && $arg_perf_id == 0) {
 }
 
 $body .= "<form action='save.php' method='post'>\n";
+
+/* prevent ENTER in text field from submitting the form ... users
+   have to use the real submit button */
+$body .= "<button type='submit' onclick='return false' style='display:none'>"
+      ."</button>\n";
+
 $body .= sprintf ("<input type='hidden' name='perf_id' value='%d' />\n",
                   $arg_perf_id);
 
@@ -64,6 +70,8 @@ foreach ($questions as $question) {
     $body .= "</div>\n"; /* question */
 }
 
+
+$body .= "<input type='submit' value='Submit' />\n";
 
 $body .= "</form>\n";
 
