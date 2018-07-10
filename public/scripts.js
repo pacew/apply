@@ -17,7 +17,7 @@ function update_hides () {
   }
 }
 
-const all_optional = cfg.conf_key == "pace" ? "true" : "false";
+const all_optional = cfg.conf_key == "pace" ? 1 : 0;
 
 function is_required_question_empty (q) {
   if (all_optional)
