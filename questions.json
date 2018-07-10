@@ -181,10 +181,12 @@
 
   { "id": "url",
     "q": "Video URL",
+    "optional": 1,
     "desc": "If you would like to share a video of you/your group performing, please give us the url here." },
 
   { "id": "notes",
     "textarea": 1,
+    "optional": 1,
     "q": "Any additional questions, comments?" }
   
 ]
