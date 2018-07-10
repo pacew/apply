@@ -9,5 +9,8 @@ $title_html = "Thanks";
 $body .= "<p>thanks</p>";
 
 $body .= mklink ("home", "/");
+$body .= " | ";
+$body .= mklink ("[admin]", "admin.php");
+
 pfinish ();
 

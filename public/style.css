@@ -5,6 +5,14 @@
     padding: 1em;
 }
 
+a {
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
 
 .boxed {
     margin: .25em;
@@ -71,4 +79,19 @@ h2 {
 
 .question h3 {
     font-weight: bold;
+}
+
+.required_marker, .required_text {
+    color: red;
+}
+
+.orig_answer {
+    border: 1px solid #eaa;
+    margin: .5em;
+    padding: .5em;
+    background: #fee;
+}
+
+.admin {
+    color: red;
 }

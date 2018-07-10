@@ -357,6 +357,12 @@ function pfinish () {
                     get_cache_defeater ());
     $pg .= "</head>\n";
     
+    global $cfg;
+    $pg .= "<script type='text/javascript'>\n";
+    $pg .= sprintf ("var cfg = %s;\n", json_encode ($cfg));
+    $pg .= "</script>\n";
+                    
+
     $pg .= "<body>\n";
 
     echo ($pg);

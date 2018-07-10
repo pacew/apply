@@ -86,7 +86,7 @@
     ]
   },
 
-  { "id": "perferred_band",
+  { "id": "preferred_band",
     "show_if": [ "music_pref", "band", "either" ],
     "q": "Preferred band",
     "optional": 1,

@@ -12,6 +12,7 @@ $arg_password = trim (@$_REQUEST['password']);
 if ($arg_username) {
     if ($arg_password == "preview") {
         putsess ("username", $arg_username);
+        putsess ("admin", 1);
         redirect ("/");
     }
     $body .= "<p>invalid login</p>";

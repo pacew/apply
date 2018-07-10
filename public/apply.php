@@ -2,32 +2,56 @@
 
 require_once ($_SERVER['APP_ROOT'] . "/app.php");
 
+$arg_app_id = intval (@$_REQUEST['app_id']);
 $arg_perf_id = intval (@$_REQUEST['perf_id']);
 
 pstart ();
 
-if ($arg_perf_id) {
-    $perf_name = get_perf_name ($arg_perf_id);
+$app_id = 0;
 
+$perf_id = 0;
+$perf_name = "";
+
+$questions = get_questions ();
+
+$application = NULL;
+
+if ($arg_app_id) {
+    if (! getsess ("admin")) {
+        $body .= "invalid request";
+        pfinish ();
+    }
+
+    $app_id = $arg_app_id;
+
+    if (($application = get_application ($app_id)) == NULL) {
+        $body .= "not found";
+        pfinish ();
+    }
+
+    $perf_id = $application->cur_vals['perf_id'];
+    $perf_name = $application->cur_vals['perf_name'];
+} else if ($arg_perf_id) {
+    $perf_id = $arg_perf_id;
+    $perf_name = get_perf_name ($perf_id);
+}
+
+if ($perf_name) {
     $body .= sprintf ("<h1>Application for %s</h1>\n", h($perf_name));
 }
 
-$filename = sprintf ("%s/questions.json", $_SERVER['APP_ROOT']);
-$questions = json_decode (file_get_contents ($filename), TRUE);
-if (json_last_error ()) {
-    $msg = json_last_error_msg ();
-    fatal ("syntax error in questions.json - try jq: " . $msg);
+if ($app_id) {
+    $body .= "<div class='admin'>"
+          ."[ADMIN MODE: you may override the original answers;"
+          ." you can cancel your override by pasting in the original answer"
+          ."]"
+          ."</div>\n";
+    $body .= mklink ("home", "/");
 }
 
 $body .= sprintf ("<script type='text/javascript'>\n");
 $body .= sprintf ("var questions = %s;\n", json_encode ($questions));
 $body .= "</script>\n";
-
-if (0 && $arg_perf_id == 0) {
-    $body .= "<tr><th>Performer name</th><td>"
-          ."<input type='text' size='40' name='perf_name' />"
-          ."</td></tr>\n";
-}
 
 function h24_to_12 ($hour) {
     if ($hour < 12) {
@@ -105,23 +129,37 @@ function make_schedule () {
 }
 
 
-$body .= "<form action='save.php' method='post'>\n";
+$body .= "<form id='apply_form' action='save.php' method='post'>\n";
 
 /* prevent ENTER in text field from submitting the form ... users
    have to use the real submit button */
 $body .= "<button type='submit' onclick='return false' style='display:none'>"
       ."</button>\n";
 
+if ($cfg['conf_key'] == "pace") 
+    $body .= "<input type='submit' value='Submit' />\n";
+
+
 $body .= sprintf ("<input type='hidden' name='perf_id' value='%d' />\n",
-                  $arg_perf_id);
+                  $perf_id);
+
+$body .= sprintf ("<input type='hidden' name='app_id' value='%d' />\n",
+                  $app_id);
 
 foreach ($questions as $question) {
-    $section_id = sprintf ("s_%s", $question['id']);
-    $input_id = sprintf ("i_%s", $question['id']);
+    $question_id = $question['id'];
+    $section_id = sprintf ("s_%s", $question_id);
+    $input_id = sprintf ("i_%s", $question_id);
     
     $body .= sprintf ("<div class='question', id='%s'>\n", $section_id);
 
-    $body .= sprintf ("<h3>%s</h3>\n", h($question['q']));
+    $body .= "<h3>";
+    $body .= h($question['q']);
+    if (! @$question['optional']) {
+        $body .= sprintf (" <span class='required_marker'>*</span>");
+        $body .= " <span class='required_text'></span>";
+    }
+    $body .= "</h3>\n";
 
     if (@$question['desc']) {
         $body .= sprintf ("<div>%s</div>\n", h($question['desc']));
@@ -129,9 +167,13 @@ foreach ($questions as $question) {
     if (@$question['choices']) {
         foreach ($question['choices'] as $choice) {
             $body .= "<div>\n";
-            $body .= sprintf ("<input type='radio' name='%s' value='%s' />\n",
+            $c = "";
+            if ($choice['val'] == @$application->cur_vals[$question_id])
+                $c = "checked='checked'";
+            $body .= sprintf ("<input type='radio' name='%s' value='%s' %s />\n",
                               $input_id,
-                              h($choice['val']));
+                              h($choice['val']),
+                              $c);
             if (@$choice['desc']) {
                 $body .= h($choice['desc']);
             } else {
@@ -139,14 +181,40 @@ foreach ($questions as $question) {
             }
             $body .= "</div>\n";
         }
+
     } else if (@$question['textarea']) {
-        $body .= sprintf ("<textarea cols='70' rows='5' id='%s' name='%s'>\n"
-                          ."</textarea>\n",
+        $body .= sprintf ("<textarea cols='70' rows='5' id='%s' name='%s'>",
                           $input_id, $input_id);
+        $body .= h(@$application->cur_vals[$question_id]);
+        $body .= "</textarea>\n";
+
     } else {
-        $body .= sprintf ("<input type='text' id='%s' name='%s' size='40' />\n",
-                          $input_id, $input_id);
+        $body .= sprintf ("<input type='text' id='%s' name='%s'"
+                          ." size='40' value='%s'/>\n",
+                          $input_id, $input_id,
+                          h(@$application->cur_vals[$question_id]));
+    
+
     }
+
+    if (@$application->override_vals[$question_id]) {
+        $body .= "<div class='orig_answer'>\n";
+        $body .= "<h3>Original answer:</h3>\n";
+        $orig = trim ($application->orig_vals[$question_id]);
+        if ($orig == "")
+            $orig = "(blank)";
+        if (@$question['textarea']) {
+            $body .= "<textarea cols='60' rows='5' readonly='readonly'>\n";
+            $body .= h($orig);
+            $body .= "</textarea>\n";
+        } else {
+            $body .= sprintf ("<input type='text' readonly='readonly' size='40'"
+                              ." value='%s' />\n", 
+                              h($orig));
+        }
+        $body .= "</div>\n";
+    }
+
     $body .= "</div>\n"; /* question */
 
     
