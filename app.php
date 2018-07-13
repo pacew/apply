@@ -12,12 +12,13 @@ function get_neffa_index () {
         $filename = "/tmp/neffa_idx.json";
         $index = json_decode (file_get_contents ($filename), TRUE);
     }
+    return ($index);
 }
 
 function get_perf_name ($perf_id) {
     global $index;
     get_neffa_index ();
-    return (@$index['data'][$perf_id]);
+    return (@$index['perfs'][$perf_id]['name']);
 }
 
 function cmp_pct ($a, $b) {
@@ -34,6 +35,9 @@ function performer_lookup ($str) {
     get_neffa_index ();
 
     $words = preg_split ('/[\s,]+/', strtolower ($str));
+    sort ($words);
+    $my_normalized_str = implode (" ", $words);
+
     $poss = array ();
     foreach ($words as $word) {
         $s = soundex ($word);
@@ -48,30 +52,28 @@ function performer_lookup ($str) {
         }
     }
 
-    sort ($words);
-    $my_normalized_str = implode (" ", $words);
-
     foreach ($poss as $p) {
+        $norm = $index['perfs'][$p->perf_id]['norm'];
         $pct = 0;
-        $p->score = similar_text ($index['normalized_strs'][$p->perf_id],
-                                  $my_normalized_str, $pct);
+        $p->score = similar_text ($norm, $my_normalized_str, $pct);
         $p->pct = $pct;
     }
 
     usort ($poss, 'cmp_pct');
 
     $ret = array ();
-    $n = count ($poss);
-    $limit = 25;
-    if ($n > $limit)
-        $n = $limit;
+    $limit = 10;
+    $count = 0;
     foreach ($poss as $p) {
+        $count++;
+        if ($count >= $limit)
+            break;
         if ($p->pct < 50)
             break;
         $r = (object)NULL;
         $r->perf_id = $p->perf_id;
         $r->score = $p->score;
-        $r->name = $index['data'][$p->perf_id];
+        $r->name = $index['perfs'][$p->perf_id]['name'];
         $r->pct = $p->pct;
         
         $ret[] = $r;

@@ -192,7 +192,7 @@ foreach ($questions as $question) {
         $c = "";
         if (@$question['lookup'])
             $c = "class='lookup_box'";
-        $body .= sprintf ("<input autocomplete='off' type='text' id='x%s' name='x%s' %s"
+        $body .= sprintf ("<input autocomplete='off' type='text' id='%s' name='%s' %s"
                           ." size='40' value='%s'/>\n",
                           $input_id, $input_id, $c,
                           h(@$application->cur_vals[$question_id]));

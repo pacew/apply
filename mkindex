@@ -13,46 +13,37 @@ function make_index ($db) {
 
     $index = (object)NULL;
 
-    $data = array ();
+    $perfs = array ();
     $by_soundex = array ();
-    $normalized_strs = array ();
 
     $q = query_db ($db,
-                   "select p.number, p.performerName"
+                   "select p.number, p.performerName, p.isGroup"
                    ." from performers p"
                    ." order by p.number");
     while (($r = fetch ($q)) != NULL) {
-        $perf_id = intval ($r->number);
-        $name = $r->performerName;
+        $p = (object)NULL;
+        $p->id = intval ($r->number);
+        $perfs[$p->id] = $p;
 
-        $data[$perf_id] = $name;
+        $p->name = $r->performerName;
+        if ($r->isGroup == "Y")
+            $p->group = 1;
 
-        $words = preg_split ('/[\s,]+/', strtolower ($name));
+        $words = preg_split ('/[\s,]+/', strtolower ($p->name));
+        sort ($words);
+        $p->norm = implode (" ", $words);
 
         foreach ($words as $word) {
             $s = soundex ($word);
             if (! isset ($by_soundex[$s]))
                 $by_soundex[$s] = array ();
-            $by_soundex[$s][] = $perf_id;
+            $by_soundex[$s][] = $p->id;
         }
-
-        sort ($words);
-        $normalized_strs[$perf_id] = implode (" ", $words);
-    }
-
-    $maxlen = 0;
-    foreach ($by_soundex as $s => $perfs) {
-        sort ($by_soundex[$s], SORT_NUMERIC);
-
-        $n = count ($by_soundex[$s]);
-        if ($n > $maxlen)
-            $maxlen = $n;
     }
 
     $index = (object)NULL;
-    $index->data = $data;
+    $index->perfs = $perfs;
     $index->by_soundex = $by_soundex;
-    $index->normalized_strs = $normalized_strs;
 }
 
 $db = get_db ("neffa_pdb", $dbparams);
