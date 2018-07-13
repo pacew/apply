@@ -5,7 +5,7 @@
 
   { "id": "name",
     "lookup": 1,
-    "q": "Your first and last name" },
+    "q": "Name" },
 
   { "id": "phone",
     "q": "What is the best phone number at which to reach you?" },

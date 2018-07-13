@@ -117,7 +117,7 @@ $q = query ("select app_id, perf_id, perf_name"
 
 $rows = array ();
 while (($r = fetch ($q)) != NULL) {
-    $target = sprintf ("apply.php?app_id=%d", $r->app_id);
+    $target = sprintf ("index.php?app_id=%d", $r->app_id);
 
 
     $cols = array ();

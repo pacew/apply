@@ -82,25 +82,6 @@ function performer_lookup ($str) {
     return ($ret);
 }
 
-function make_lookup_form ($name = "") {
-    $ret = "";
-    
-    $ret .= "<div>\n";
-    $ret .= "<form action='lookup.php'>\n";
-    
-    $ret .= "Name of group of individual performer: ";
-    $ret .= sprintf ("<input type='text' size='50' name='name' value='%s' />\n",
-                     h($name));
-    
-    $ret .= "<input type='submit' value='Submit' />\n";
-    
-    $ret .= "</form>\n";
-    $ret .= "</div>\n";
-
-    return ($ret);
-}
-
-
 $questions = NULL;
 
 function get_questions () {

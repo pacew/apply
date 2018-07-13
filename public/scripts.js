@@ -1,4 +1,5 @@
-var foo;
+var all_optional = cfg.conf_key == "pace" ? 1 : 0;
+all_optional = 0;
 
 function update_hides () {
   for (var idx in questions) {
@@ -17,7 +18,6 @@ function update_hides () {
   }
 }
 
-const all_optional = cfg.conf_key == "pace" ? 1 : 0;
 
 function is_required_question_empty (q) {
   if (all_optional)
@@ -73,6 +73,7 @@ $(function () {
   if (window.questions)
     update_hides ();
 
-  $( ".lookup_box" ).autocomplete({ source: "name_lookup.php" });
+  $(".lookup_box").autocomplete({ source: "name_lookup.php" });
+  $(".lookup_box").attr("autocomplete","correspondent-name");
 
 });
