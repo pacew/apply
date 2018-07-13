@@ -1,6 +1,7 @@
 TMP.*
 ?
 *~
+.*
 node_modules/
 cfg.json
 knexfile.js

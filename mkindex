@@ -1,0 +1,67 @@
+#! /usr/bin/php
+<?php
+
+require_once ("cli.php");
+
+$dbparams['dbtype'] = "mysql";
+$dbparams['host'] = 'neffaprog.neffa.dreamhosters.com';
+$dbparams['user'] = 'pace_willisson';
+$dbparams['password'] = trim (file_get_contents (".neffadb_passwd"));
+
+function make_index ($db) {
+    global $index;
+
+    $index = (object)NULL;
+
+    $data = array ();
+    $by_soundex = array ();
+    $normalized_strs = array ();
+
+    $q = query_db ($db,
+                   "select p.number, p.performerName"
+                   ." from performers p"
+                   ." order by p.number");
+    while (($r = fetch ($q)) != NULL) {
+        $perf_id = intval ($r->number);
+        $name = $r->performerName;
+
+        $data[$perf_id] = $name;
+
+        $words = preg_split ('/[\s,]+/', strtolower ($name));
+
+        foreach ($words as $word) {
+            $s = soundex ($word);
+            if (! isset ($by_soundex[$s]))
+                $by_soundex[$s] = array ();
+            $by_soundex[$s][] = $perf_id;
+        }
+
+        sort ($words);
+        $normalized_strs[$perf_id] = implode (" ", $words);
+    }
+
+    $maxlen = 0;
+    foreach ($by_soundex as $s => $perfs) {
+        sort ($by_soundex[$s], SORT_NUMERIC);
+
+        $n = count ($by_soundex[$s]);
+        if ($n > $maxlen)
+            $maxlen = $n;
+    }
+
+    $index = (object)NULL;
+    $index->data = $data;
+    $index->by_soundex = $by_soundex;
+    $index->normalized_strs = $normalized_strs;
+}
+
+$db = get_db ("neffa_pdb", $dbparams);
+make_index ($db);
+
+$output = "/tmp/neffa_idx.json";
+file_put_contents ($output, json_encode ($index, JSON_PRETTY_PRINT));
+
+printf ("output in %s\n", $output);
+
+
+

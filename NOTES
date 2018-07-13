@@ -12,6 +12,10 @@ https://docs.google.com/forms/d/1fLld9JnoZoaiQHlFnfDVIbyn9Uw_-BRyRmxSusCy58M/edi
 mysqldump --host=neffaprog.neffa.dreamhosters.com --user=pace_willisson --compatible=postgresql -p neffa_pdb
 
 
+mysql_config_editor set --login-path=neffa --host=neffaprog.neffa.dreamhosters.com --user=pace_willisson --password
+then use
+mysql --login-path=neffa
+
 
 psql --host main.czuqd0u2qqew.us-east-1.rds.amazonaws.com --user=master --dbname=template1
 
@@ -19,3 +23,7 @@ psql --host main.czuqd0u2qqew.us-east-1.rds.amazonaws.com --user=master --dbname
 knex migrate:make NAME
 knex migrate:latest
 knex migrate:rollback
+
+
+search for possible bad encodings - back to back \uXXXX such as
+        "9300": "Christiansen,S\u00c3\u00a1mal",

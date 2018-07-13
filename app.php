@@ -9,7 +9,7 @@ $index = NULL;
 function get_neffa_index () {
     global $index;
     if ($index == NULL) {
-        $filename = sprintf ("%s/neffa_idx.json", $_SERVER['APP_ROOT']);
+        $filename = "/tmp/neffa_idx.json";
         $index = json_decode (file_get_contents ($filename), TRUE);
     }
 }
@@ -20,59 +20,59 @@ function get_perf_name ($perf_id) {
     return (@$index['data'][$perf_id]);
 }
 
-function records_cmp ($a, $b) {
-    if ($a->score < $b->score)
+function cmp_pct ($a, $b) {
+    if ($a->pct < $b->pct)
         return (1);
-    else if ($a->score > $b->score)
+    else if ($a->pct > $b->pct)
         return (-1);
     return (0);
 }
-    
+
 function performer_lookup ($str) {
     global $index;
     
     get_neffa_index ();
 
-    $words = preg_split ('/[\s,]/', strtolower ($str));
+    $words = preg_split ('/[\s,]+/', strtolower ($str));
     $poss = array ();
     foreach ($words as $word) {
         $s = soundex ($word);
         if (($perf_ids = @$index['by_soundex'][$s]) == NULL)
             continue;
-        $rare = $index['rareness'][$s];
         foreach ($perf_ids as $perf_id) {
-            if (($p = @$poss[$perf_id]) == NULL) {
+            if (! isset ($poss[$perf_id])) {
                 $p = (object)NULL;
                 $p->perf_id = $perf_id;
-                $p->score = 0;
                 $poss[$perf_id] = $p;
             }
-            $orig_words = $index['lcwords'][$perf_id];
-            $best = 1000000;
-            foreach ($orig_words as $orig_word) {
-                $val = levenshtein ($orig_word, $word);
-                if ($val < $best)
-                    $best = $val;
-            }
-            $best++;
-            
-            $p->score += 10 + $rare * (1 / $best);
         }
     }
 
-    usort ($poss, 'records_cmp');
+    sort ($words);
+    $my_normalized_str = implode (" ", $words);
+
+    foreach ($poss as $p) {
+        $pct = 0;
+        $p->score = similar_text ($index['normalized_strs'][$p->perf_id],
+                                  $my_normalized_str, $pct);
+        $p->pct = $pct;
+    }
+
+    usort ($poss, 'cmp_pct');
 
     $ret = array ();
     $n = count ($poss);
     $limit = 25;
     if ($n > $limit)
         $n = $limit;
-    for ($i = 0; $i < $n; $i++) {
-        $p = $poss[$i];
+    foreach ($poss as $p) {
+        if ($p->pct < 50)
+            break;
         $r = (object)NULL;
         $r->perf_id = $p->perf_id;
         $r->score = $p->score;
         $r->name = $index['data'][$p->perf_id];
+        $r->pct = $p->pct;
         
         $ret[] = $r;
     }

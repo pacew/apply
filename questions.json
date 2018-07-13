@@ -4,7 +4,8 @@
     "type": "email" },
 
   { "id": "name",
-    "q": "What is your name?" },
+    "lookup": 1,
+    "q": "Your first and last name" },
 
   { "id": "phone",
     "q": "What is the best phone number at which to reach you?" },

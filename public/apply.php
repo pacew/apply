@@ -189,9 +189,12 @@ foreach ($questions as $question) {
         $body .= "</textarea>\n";
 
     } else {
-        $body .= sprintf ("<input type='text' id='%s' name='%s'"
+        $c = "";
+        if (@$question['lookup'])
+            $c = "class='lookup_box'";
+        $body .= sprintf ("<input autocomplete='off' type='text' id='x%s' name='x%s' %s"
                           ." size='40' value='%s'/>\n",
-                          $input_id, $input_id,
+                          $input_id, $input_id, $c,
                           h(@$application->cur_vals[$question_id]));
     
 

@@ -2,7 +2,6 @@
 
 ob_start ();
 
-
 $app_root = @$_SERVER['APP_ROOT'];
 
 $cfg = json_decode (file_get_contents ($app_root . "/cfg.json"), TRUE);
@@ -355,12 +354,22 @@ function pfinish () {
                     get_cache_defeater ());
     $pg .= sprintf ("<link rel='stylesheet' href='style.css?c=%s' />\n",
                     get_cache_defeater ());
-    $pg .= "</head>\n";
+
+    $pg .= "<script src='https://ajax.googleapis.com"
+        ."/ajax/libs/jquery/2.1.4/jquery.min.js'></script>\n";
+
+    $pg .= "<link rel='stylesheet'"
+        ." href='https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css'>\n";
+    $pg .= "<script src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js'></script>\n";
     
     global $cfg;
     $pg .= "<script type='text/javascript'>\n";
     $pg .= sprintf ("var cfg = %s;\n", json_encode ($cfg));
     $pg .= "</script>\n";
+
+
+    $pg .= "</head>\n";
+    
                     
 
     $pg .= "<body>\n";
@@ -370,9 +379,6 @@ function pfinish () {
 
     global $body;
     $pg .= $body;
-
-    $pg .= "<script src='https://ajax.googleapis.com"
-        ."/ajax/libs/jquery/2.1.4/jquery.min.js'></script>\n";
 
     $pg .= sprintf ("<script src='scripts.js?c=%s.js'></script>\n",
                     get_cache_defeater ());

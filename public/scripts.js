@@ -60,11 +60,19 @@ function apply_submit () {
   return (true); /* ok for submit to go through */
 }
 
+function do_lookup_box_change (ev) {
+  console.log (ev);
+  return (true);
+}
+
 $(function () {
   $("input[type='radio']").change (update_hides);
   $("#apply_form").submit (apply_submit);
-
+  $(".lookup_box").change (do_lookup_box_change);
+  
   if (window.questions)
     update_hides ();
+
+  $( ".lookup_box" ).autocomplete({ source: "name_lookup.php" });
 
 });
