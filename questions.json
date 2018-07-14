@@ -45,6 +45,12 @@
     "show_if": [ "app_category", "Individual", "Group", "Caller" ]
   },
 
+  { "id": "joined_by",
+    "show_if": [ "app_category", "Individual" ],
+    "q": "Joined by:",
+    "optional": 1,
+    "desc": "If you will be joined on stage by a friend and want both names listed in the program, enter their name here.  If not, leave blank." },
+
   { "id": "band_type",
     "show_if": [ "app_category", "BandNeedCaller", "BandNoCaller" ],
     "q": "What type of dancing are you applying for?",
@@ -110,6 +116,12 @@
       { "val": "No" }
     ]
   },
+
+  { "id": "busy_people",
+    "optional": 1,
+    "lookup": "individual",
+    "q": "Other people supporting this event",
+    "desc": "<p>You can list here other people who will be busy giving this event.  They might be unbilled accompanists, sound assistants, roadies, etc. If this event is scheduled, the people listed here will not be simultaneously scheduled for other events in the same timeslot.</p><p>If this event is for a group, don't list group members here - potential conflicts for them are handled separately.</p>" },
 
   { "id": "sound",
     "q": "Do you require a sound system?",

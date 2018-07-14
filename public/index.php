@@ -174,6 +174,8 @@ foreach ($questions as $question) {
     }
     $body .= "</h3>\n";
 
+    $body .= "<div class='input_wrapper'>\n";
+    
     if (@$question['choices']) {
         foreach ($question['choices'] as $choice) {
             $body .= "<div>\n";
@@ -215,6 +217,14 @@ foreach ($questions as $question) {
                           h(@$application->cur_vals[$question_id]));
     
 
+    }
+
+    $body .= "</div>\n"; /* input_wrapper */
+    
+    if ($question_id == "busy_people") {
+        $body .= "<div>\n";
+        $body .= "<button type='button' id='add_another'>Add another</button>\n";
+        $body .= "</div>\n";
     }
 
     if (($desc = @$question['desc']) != "") {
