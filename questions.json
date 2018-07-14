@@ -17,10 +17,11 @@
     "choices": [ 
       { "val": "Individual", "desc": "Individual performer (possibly joined by friends)" },
       { "val": "Group", "desc": "Group with a title, other than a dance band" },
-      { "val": "Caller", "desc": "Individual caller or dance leader" },
-      { "val": "Band", "desc": "Dance band" }
+      { "val": "Caller", "desc": "Caller or dance leader" },
+      { "val": "BandNeedCaller", "desc": "Band for Contra, ECD, etc (event needs caller)" },
+      { "val": "BandNoCaller", "desc": "Other dance band (non-caller dance)" }
     ],
-    "desc": "The answer to this question may be different on other applications; please choose the option that best fits with this application only." 
+    "desc": "The answer to this question may be different on other applications; please choose the option that best fits with this application only.  Please note that dance bands must submit their own applications and callers/dance leaders must submit separate applications. If a caller/teacher is a member of your dance band, this teacher/caller still is required to submit a separate application as an individual."
   },
 
 
@@ -28,21 +29,24 @@
     "lookup": "group",
     "q": "Name of group or band?",
     "desc": "<p>Make sure this name exactly matches the name of your group. Avoid abbreviations, but put \"The\" at the end after a comma, if applicable.</p><p>As you type, the system will try to find a match in the NEFFA database and show it to you in a popup box.  Please select the name from there, if possible, to avoid creating duplicate entries.  If the name is changing this year, select the old name and give the new name in the COMMENTS box at the end of this application.</p>",
-    "show_if": [ "app_category", "Group", "Band" ]
+    "show_if": [ "app_category", "Group", "BandNeedCaller", "BandNoCaller" ]
   },
 
   { "id": "event_title",
     "q": "What is your EVENT'S TITLE? (30 characters at most)",
-    "desc": "Please be careful about avoiding spelling errors, and do not use all capital letters. This title will appear on the web Festival Schedule, the Paper Grid, and in the Program Book. When crafting an event title, please try to be descriptive, although cleverness is also welcome. The event title should be different from the group name (for example, don't use  \"[your name] in Concert\") and should provide audience members with an idea of the theme.  The Program Committee may change the title because of printing constraints or clarity issues. ATTENTION DANCE BANDS: If you are applying to provide the music for participatory dancing which requires a caller/teacher (contra, squares, ECD, couple dancing,etc), the title will be determined by the caller/teacher. Simply tell us \"play for a dance\"."
+    "desc": "Please be careful about avoiding spelling errors, and do not use all capital letters. This title will appear on the web Festival Schedule, the Paper Grid, and in the Program Book. When crafting an event title, please try to be descriptive, although cleverness is also welcome. The event title should be different from the group name (for example, don't use  \"[your name] in Concert\") and should provide audience members with an idea of the theme.  The Program Committee may change the title because of printing constraints or clarity issues.",
+    "show_if": [ "app_category", "Individual", "Group", "Caller" ]
   },
 
   { "id": "event_desc",
     "q": "Please describe your EVENT (NOT your group!)",
     "textarea": 1,
-    "desc": "This is a description of this specific, proposed PERFORMANCE. This text will be read by Festival-goers. Please avoid spelling errors, and do not use all capital letters. Try to limit this description to no more than 30 words (fewer is better!). This description gives the Program Committee and Festival participants a more precise idea of what to expect from your event. This description should give additional information, and not be a repeat of the Event Title. ATTENTION DANCE BANDS: The description for a participatory dancing event will be determined by the caller/teacher. Simply type \"play for a dance\" in this section." },
+    "desc": "This is a description of this specific, proposed PERFORMANCE. This text will be read by Festival-goers. Please avoid spelling errors, and do not use all capital letters. Try to limit this description to no more than 30 words (fewer is better!). This description gives the Program Committee and Festival participants a more precise idea of what to expect from your event. This description should give additional information, and not be a repeat of the Event Title.",
+    "show_if": [ "app_category", "Individual", "Group", "Caller" ]
+  },
 
   { "id": "band_type",
-    "show_if": [ "app_category", "Band" ],
+    "show_if": [ "app_category", "BandNeedCaller", "BandNoCaller" ],
     "q": "What type of dancing are you applying for?",
     "desc": "Bands may wish to play for more than one type of dance event, but for this application, you have to choose JUST one.  If you would like to be considered for more than one type of dancing, PLEASE fill out another application!",
     "choices": [
@@ -55,18 +59,14 @@
     ]
   },
 
-  { "id": "need_caller",
-    "show_if": [ "app_category", "Band" ],
-    "q": "Do you need a caller or dance leader for this event?",
-    "desc": "Please note that dance bands must submit their own applications and callers/dance leaders must submit separate applications. If a caller/teacher is a member of your dance band, this teacher/caller still is required to submit a separate application as an individual.",
-    "choices": [
-      { "val": "Yes" },
-      { "val": "No" }
-    ]
+  { "id": "band_type_other",
+    "show_if": [ "band_type", "Other" ],
+    "q": "Specify type of dancing (if not in list above):"
   },
 
   { "id": "preferred_caller",
-    "show_if": [ "need_caller", "Yes" ],
+    "lookup": "individual",
+    "show_if": [ "app_category", "BandNeedCaller" ],
     "optional": 1,
     "q": "Preferred caller/dance leader",
     "desc": "There are no guarantees about pairings of bands/musicians and callers/dance leaders, but if you have a preference, please indicate it. "
@@ -84,6 +84,7 @@
   },
 
   { "id": "preferred_band",
+    "lookup": "group",
     "show_if": [ "music_pref", "band", "either" ],
     "q": "Preferred band",
     "optional": 1,

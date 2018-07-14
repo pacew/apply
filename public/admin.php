@@ -111,6 +111,10 @@ $body .= "<input type='submit' value='Download csv' />\n";
 $body .= "</form>\n";
 
 
+$body .= mklink ("debug questions", "index.php?show_all=1");
+
+
+
 $q = query ("select app_id, perf_id, perf_name"
             ." from applications"
             ." order by app_id");
@@ -130,14 +134,6 @@ while (($r = fetch ($q)) != NULL) {
 $body .= mktable (array ("app_id", "perf_id", "perf_name"),
                   $rows);
 
-
-$body .= "<div>"
-      .mklink ("lookup test", "lookup_individual.php?term=willisson")
-      ."</div>\n";
-
-$body .= "<div>"
-      .mklink ("lookup test", "lookup_individual.php?term=west+gallery")
-      ."</div>\n";
 
 pfinish ();
 

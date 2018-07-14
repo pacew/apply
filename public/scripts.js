@@ -1,19 +1,33 @@
+var params = (new URL(location)).searchParams;
+var show_all = parseInt (params.get ("show_all"));
+if (isNaN (show_all))
+  show_all = 0;
+
 var all_optional = cfg.conf_key == "pace" ? 1 : 0;
 all_optional = 0;
 
 function update_hides () {
   for (var idx in questions) {
     var q = questions[idx];
+    var want_field;
     if (q.show_if) {
-      var section_id = "s_" + q.id;
+      want_field = false;
       var target_id = "i_" + q.show_if[0];
       var val = $("input[name='"+target_id+"']:checked").val();
-      var match = false;
       if (q.show_if.includes (val)) {
-	$("#"+section_id).show();
-      } else {
-	$("#"+section_id).hide();
+	want_field = true;
       }
+    } else {
+      want_field = true;
+    }
+    if (show_all)
+      want_field = true;
+    
+    var section_id = "s_" + q.id;
+    if (want_field) {
+      $("#"+section_id).show();
+    } else {
+      $("#"+section_id).hide();
     }
   }
 }
@@ -79,4 +93,6 @@ $(function () {
   $(".lookup_group").autocomplete({ source: "lookup_group.php" });
   $(".lookup_group").attr("autocomplete","correspondent-name");
 
+  if (show_all)
+    $(".condition").show();
 });

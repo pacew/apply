@@ -4,8 +4,11 @@ require_once ($_SERVER['APP_ROOT'] . "/app.php");
 
 $arg_app_id = intval (@$_REQUEST['app_id']);
 $arg_perf_id = intval (@$_REQUEST['perf_id']);
+$arg_show_all = intval (@$_REQUEST['show_all']);
 
 pstart ();
+
+$body .= mklink ("home", "/");
 
 $app_id = 0;
 
@@ -76,8 +79,8 @@ function make_schedule () {
          ." that you will be scheduled. </p>\n";
 
     $ret .= "<p style='color:red'>"
-         ." [DEVELOPMENT NOTE: this isn't animated yet.  if we go with"
-         ." this concept, clicking an aggregate box will automatically"
+         ." [DEVELOPMENT NOTE: this isn't animated yet."
+         ." soon, clicking an aggregate box will automatically"
          ." set all the boxes in the appropriate group.</p>\n";
     
     $ret .= "<input type='checkbox'> Any time during the festival\n";
@@ -153,6 +156,15 @@ foreach ($questions as $question) {
     $input_id = sprintf ("i_%s", $question_id);
     
     $body .= sprintf ("<div class='question', id='%s'>\n", $section_id);
+
+    $body .= "<div class='condition'>\n";
+    $body .= sprintf ("id: %s", h($question_id));
+    if (@$question['show_if']) {
+        $body .= sprintf (" &nbsp;|&nbsp; show_if: %s\n", 
+                          h(json_encode ($question['show_if'])));
+    }
+    $body .= "</div>\n";
+              
 
     $body .= "<h3>";
     $body .= h($question['q']);
