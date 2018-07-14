@@ -8,7 +8,7 @@ if (($str = @$argv[1]) == "") {
     exit (1);
 }
 
-$arr = performer_lookup ($str);
+$arr = lookup_individual ($str);
 foreach ($arr as $p) {
     printf ("%-6d %8.3f %8.3f %s\n", $p->perf_id, $p->score, $p->pct, $p->name);
 }

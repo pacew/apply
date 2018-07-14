@@ -29,7 +29,16 @@ function cmp_pct ($a, $b) {
     return (0);
 }
 
-function performer_lookup ($str) {
+function lookup_individual ($str) {
+    return (do_lookup ($str, 0));
+}
+
+function lookup_group ($str) {
+    return (do_lookup ($str, 1));
+}
+
+
+function do_lookup ($str, $group_flag) {
     global $index;
     
     get_neffa_index ();
@@ -45,6 +54,15 @@ function performer_lookup ($str) {
             continue;
         foreach ($perf_ids as $perf_id) {
             if (! isset ($poss[$perf_id])) {
+                $entry = $index['perfs'][$perf_id];
+                if ($group_flag == 0) {
+                    if (@$entry['group'])
+                        continue;
+                } else {
+                    if (! @$entry['group'])
+                        continue;
+                }
+
                 $p = (object)NULL;
                 $p->perf_id = $perf_id;
                 $poss[$perf_id] = $p;

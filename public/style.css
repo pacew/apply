@@ -95,3 +95,7 @@ h2 {
 .admin {
     color: red;
 }
+
+p {
+    margin: 1em 0;
+}

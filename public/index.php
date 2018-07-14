@@ -162,9 +162,6 @@ foreach ($questions as $question) {
     }
     $body .= "</h3>\n";
 
-    if (@$question['desc']) {
-        $body .= sprintf ("<div>%s</div>\n", h($question['desc']));
-    }
     if (@$question['choices']) {
         foreach ($question['choices'] as $choice) {
             $body .= "<div>\n";
@@ -191,8 +188,14 @@ foreach ($questions as $question) {
 
     } else {
         $c = "";
-        if (@$question['lookup'])
-            $c = "class='lookup_box'";
+        switch (@$question['lookup']) {
+        case "individual":
+            $c = "class='lookup_individual'";
+            break;
+        case "group":
+            $c = "class='lookup_group'";
+            break;
+        }
         $body .= sprintf ("<input "
                           ." type='text' id='%s' name='%s' %s"
                           ." size='40' value='%s'/>\n",
@@ -200,6 +203,13 @@ foreach ($questions as $question) {
                           h(@$application->cur_vals[$question_id]));
     
 
+    }
+
+    if (($desc = @$question['desc']) != "") {
+        if (strncmp ($desc, "<", 1) == 0)
+            $body .= $desc;
+        else
+            $body .= sprintf ("<div>%s</div>\n", h($question['desc']));
     }
 
     if (@$application->override_vals[$question_id]) {

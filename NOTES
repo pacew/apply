@@ -27,3 +27,57 @@ knex migrate:rollback
 
 search for possible bad encodings - back to back \uXXXX such as
         "9300": "Christiansen,S\u00c3\u00a1mal",
+
+
+================================================================
+
+Select an application type:
+
+Dance band,
+Caller/dance leader,
+Folk music/song/etc.,
+Morris/wrapper/etc. dance performance, or
+Other dance performance.
+
+Event Description should go after application type so that dance bands don’t have to write one.
+
+For dance bands and callers: Are you primarily
+app number start letter
+L “American (contra/square)”,
+D “English,”
+D “Other couples dancing,” or
+M “International, line, or circle dancing.”
+G Morris/wrapper/etc dance performance
+D "other dance performance"
+
+
+
+Enter an event title and description (unless they are a dance band)
+Select up to one named group that is performing, and see group members in selected group
+If a group is selected, their name will be listed as the event performer. If not, applicant name will be listed.
+Create a new group if none exists in database.
+LOWER PRIORITY: propose to add or remove members from their new or old group.
+Note that they will get the chance to do this again later!
+Choose any number of individuals that are also performing
+These performers will not be listed unless mentioned in event description
+CONCERN: Group membership will be listed in the database and can be changed by performers. Extra individuals, however, will be listed only on the application and therefore cannot be added or removed by performers — they will have to contact us to remove an individual from their performance or add an accompanist
+POSSIBLE RESOLUTION: Application data is treated like database data — it can be updated by performers and re-downloaded by program committee.
+POSSIBILITY NEEDING FURTHER DISCUSSION: If no group is listed but individuals are added, applicant can choose whether to be billed under individual name, duo names, or individual name “and friends.” All of these options, and names of individuals applying to perform solo, are recorded as “group name” on application. All additional individuals are recorded on application.
+
+
+NOTES:  
+Additional equipment comments (no guarantees)
+Performers should let us know if there are duplicate entries!
+
+
+  { "id": "app_type",
+    "q": "Select the type for this application.",
+    "choices": [
+      { "val": "I", "desc": "Individual, possibly joined by friends (other than caller/dance leader)" },
+      { "val": "C", "desc": "Caller/dance leader" },
+      { "val": "B", "desc": "Dance band" },
+      { "val": "G", "desc": "A group presenting folk music/song/etc" },
+      { "val": "M", "desc": "Morris/wrapper/etc dance performance" },
+      { "val": "O", "desc": "Other dance performance" }
+    ]
+  },

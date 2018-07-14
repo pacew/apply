@@ -73,7 +73,10 @@ $(function () {
   if (window.questions)
     update_hides ();
 
-  $(".lookup_box").autocomplete({ source: "name_lookup.php" });
-  $(".lookup_box").attr("autocomplete","correspondent-name");
+  $(".lookup_individual").autocomplete({ source: "lookup_individual.php" });
+  $(".lookup_individual").attr("autocomplete","correspondent-name");
+
+  $(".lookup_group").autocomplete({ source: "lookup_group.php" });
+  $(".lookup_group").attr("autocomplete","correspondent-name");
 
 });

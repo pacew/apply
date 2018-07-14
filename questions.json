@@ -1,28 +1,34 @@
 [
-  { "id": "email",
-    "q": "Email address", 
-    "type": "email" },
-
   { "id": "name",
-    "lookup": 1,
-    "q": "Name" },
+    "lookup": "individual",
+    "q": "Your name",
+    "desc": "<p>This should be the name of the person filling out this application, so we can get back to you with questions.  Normally it should be the performer for solo events, or the person officially listed in the NEFFA database as the contact for a group.  If that doesn't work for you for some reason, please explain in the COMMENTS box at the end of this application, but it may delay consideration of your application.</p><p>As you type your name, the system will try to find a match in the NEFFA database and show it to you in a popup box.  Please select your name from there, if possible, to avoid creating duplicate entries.</p>" },
+
+  { "id": "email",
+    "q": "Your email address", 
+    "type": "email",
+    "desc": "Ok if this doesn't match what we have on file.  We'll contact you to confirm if we notice a change." },
 
   { "id": "phone",
     "q": "What is the best phone number at which to reach you?" },
 
-  { "id": "individual_or_group",
-    "q": "Are you an INDIVIDUAL (solo) performer, or are you a member of/contact for a GROUP?",
+  { "id": "app_category",
+    "q": "What category best describes this particular application?",
     "choices": [ 
-      { "val": "Individual" },
-      { "val": "Group" }
-    ]
+      { "val": "Individual", "desc": "Individual performer (possibly joined by friends)" },
+      { "val": "Group", "desc": "Group with a title, other than a dance band" },
+      { "val": "Caller", "desc": "Individual caller or dance leader" },
+      { "val": "Band", "desc": "Dance band" }
+    ],
+    "desc": "The answer to this question may be different on other applications; please choose the option that best fits with this application only." 
   },
 
+
   { "id": "group_name",
-    "q": "What is the name of the group you represent?",
-    "desc": "Make sure this name exactly matches the name of your group. Avoid abbreviations.",
-    "type": "performer_name",
-    "show_if": [ "individual_or_group", "Group" ]
+    "lookup": "group",
+    "q": "Name of group or band?",
+    "desc": "<p>Make sure this name exactly matches the name of your group. Avoid abbreviations, but put \"The\" at the end after a comma, if applicable.</p><p>As you type, the system will try to find a match in the NEFFA database and show it to you in a popup box.  Please select the name from there, if possible, to avoid creating duplicate entries.  If the name is changing this year, select the old name and give the new name in the COMMENTS box at the end of this application.</p>",
+    "show_if": [ "app_category", "Group", "Band" ]
   },
 
   { "id": "event_title",
@@ -35,18 +41,8 @@
     "textarea": 1,
     "desc": "This is a description of this specific, proposed PERFORMANCE. This text will be read by Festival-goers. Please avoid spelling errors, and do not use all capital letters. Try to limit this description to no more than 30 words (fewer is better!). This description gives the Program Committee and Festival participants a more precise idea of what to expect from your event. This description should give additional information, and not be a repeat of the Event Title. ATTENTION DANCE BANDS: The description for a participatory dancing event will be determined by the caller/teacher. Simply type \"play for a dance\" in this section." },
 
-  { "id": "caller_band_other",
-    "q": "For THIS application, how would you best describe yourself (or your group)?",
-    "desc": "The answer to this question may be different on other applications; please choose the option that best fits with this application only.",
-    "choices": [
-      { "val": "caller", "desc": "I'm a caller/dance leader" },
-      { "val": "band", "desc": "For THIS application, we are a dance band" },
-      { "val": "other", "desc": "Folk Music group, performance band, singer, solo instrumentalist, group instrumentalists, storyteller, historian" }
-    ]
-  },
-
   { "id": "band_type",
-    "show_if": [ "caller_band_other", "band" ],
+    "show_if": [ "app_category", "Band" ],
     "q": "What type of dancing are you applying for?",
     "desc": "Bands may wish to play for more than one type of dance event, but for this application, you have to choose JUST one.  If you would like to be considered for more than one type of dancing, PLEASE fill out another application!",
     "choices": [
@@ -60,7 +56,7 @@
   },
 
   { "id": "need_caller",
-    "show_if": [ "caller_band_other", "band" ],
+    "show_if": [ "app_category", "Band" ],
     "q": "Do you need a caller or dance leader for this event?",
     "desc": "Please note that dance bands must submit their own applications and callers/dance leaders must submit separate applications. If a caller/teacher is a member of your dance band, this teacher/caller still is required to submit a separate application as an individual.",
     "choices": [
@@ -77,7 +73,7 @@
   },
 
   { "id": "music_pref",
-    "show_if": [ "caller_band_other", "caller" ],
+    "show_if": [ "app_category", "Caller" ],
     "q": "Music preference",
     "desc": "NEFFA prefers to use live music whenever possible.  Please note that callers/dance teachers must submit their own applications and dance bands must submit separate applications.",
     "choices": [

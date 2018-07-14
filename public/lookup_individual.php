@@ -4,7 +4,7 @@ require_once ($_SERVER['APP_ROOT'] . "/app.php");
 
 pstart ();
 
-$poss = performer_lookup (@$_REQUEST['term']);
+$poss = lookup_individual (@$_REQUEST['term']);
 
 $ret = array ();
 foreach ($poss as $p) {

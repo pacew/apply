@@ -130,5 +130,14 @@ while (($r = fetch ($q)) != NULL) {
 $body .= mktable (array ("app_id", "perf_id", "perf_name"),
                   $rows);
 
+
+$body .= "<div>"
+      .mklink ("lookup test", "lookup_individual.php?term=willisson")
+      ."</div>\n";
+
+$body .= "<div>"
+      .mklink ("lookup test", "lookup_individual.php?term=west+gallery")
+      ."</div>\n";
+
 pfinish ();
 
