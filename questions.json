@@ -48,8 +48,9 @@
   { "id": "joined_by",
     "show_if": [ "app_category", "Individual" ],
     "q": "Joined by:",
+    "lookup": "individual",
     "optional": 1,
-    "desc": "If you will be joined on stage by a friend and want both names listed in the program, enter their name here.  If not, leave blank." },
+    "desc": "If you will be joined on stage by a friend and want both names listed in the program, enter their name here.  There's not enough room to list more than two people." },
 
   { "id": "band_type",
     "show_if": [ "app_category", "BandNeedCaller", "BandNoCaller" ],

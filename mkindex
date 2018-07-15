@@ -15,6 +15,7 @@ function make_index ($db) {
 
     $perfs = array ();
     $by_soundex = array ();
+    $groups = array ();
 
     $q = query_db ($db,
                    "select p.number, p.performerName, p.isGroup"
@@ -41,9 +42,27 @@ function make_index ($db) {
         }
     }
 
+    $q = query_db ($db,
+                   "select groupNumber, memberNumber, type"
+                   ." from members");
+    while (($r = fetch ($q)) != NULL) {
+        $group_number = intval ($r->groupNumber);
+        $member_number = intval ($r->memberNumber);
+        $contact_flag = $r->type;
+
+        if ($contact_flag == "C")
+            $member_number = - $member_number;
+
+        if (! isset ($groups[$group_number])) {
+            $groups[$group_number] = array ();
+        }
+        $groups[$group_number][] = $member_number;
+    }
+
     $index = (object)NULL;
     $index->perfs = $perfs;
     $index->by_soundex = $by_soundex;
+    $index->groups = $groups;
 }
 
 $db = get_db ("neffa_pdb", $dbparams);

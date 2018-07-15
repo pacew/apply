@@ -15,12 +15,6 @@ function get_neffa_index () {
     return ($index);
 }
 
-function get_perf_name ($perf_id) {
-    global $index;
-    get_neffa_index ();
-    return (@$index['perfs'][$perf_id]['name']);
-}
-
 function cmp_pct ($a, $b) {
     if ($a->pct < $b->pct)
         return (1);

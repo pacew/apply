@@ -210,13 +210,13 @@ foreach ($questions as $question) {
             $c = "class='lookup_group'";
             break;
         }
+        $body .= "<span>\n";
         $body .= sprintf ("<input "
                           ." type='text' id='%s' name='%s' %s"
                           ." size='40' value='%s'/>\n",
                           $input_id, $input_id, $c,
                           h(@$application->cur_vals[$question_id]));
-    
-
+        $body .= "</span>\n";
     }
 
     $body .= "</div>\n"; /* input_wrapper */

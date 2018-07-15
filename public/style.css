@@ -111,3 +111,13 @@ p {
 .lookup_individual {
     margin-bottom: .5em;
 }
+
+.lookup_fail_msg {
+    color: #ea590b;
+    font-weight: bold;
+}
+
+.lookup_success_msg {
+    color: #22cc08;
+    font-weight: bold;
+}

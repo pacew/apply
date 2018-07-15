@@ -73,36 +73,108 @@ function apply_submit () {
   }
   return (true); /* ok for submit to go through */
 }
+/*
 
-function do_lookup_box_change (ev) {
-  console.log (ev);
+  $(elt).find(".current_members").remove();
+  let txt = "<div class='current_members'>\n";
+  txt += "Current members: ";
+  txt += "</div>\n";
+  $(elt).append (txt);
+*/
+
+function do_lookup_change (ev) {
+  let input_elt = $(ev.target);
+  let val = $(input_elt).val().trim();
+
+  let input_wrapper = $(input_elt).parents(".input_wrapper");
+  let span = $(input_elt).parents("span");
+
+  $(span).find("button").show(); /* for removing extra busy_people */
+
+  if (val == "") {
+    $(input_wrapper).find(".group_members").remove();
+    $(span).find(".lookup_success_msg").remove();
+    $(span).find(".lookup_fail_msg").remove();
+  } else {
+    $.getJSON ("lookup_check.php",
+	       { name: val },
+	       (ret) => {
+		 console.log (ret);
+		 $(input_wrapper).find(".group_members").remove();
+		 $(span).find(".lookup_success_msg").remove();
+		 $(span).find(".lookup_fail_msg").remove();
+		 
+		 if (typeof (ret) != "object")
+		   ret = {};
+		 let txt = "";
+		 if (ret.id) {
+		   txt += "<span class='lookup_success_msg'>";
+		   txt += "Good match in master database!";
+		   txt += "</span>";
+		 } else {
+		   txt += "<span class='lookup_fail_msg'>";
+		   txt += "New name to create in master database.";
+		   txt += "</span>";
+		 }
+		 $(span).append (txt);
+		 
+		 if (ret.group && ret.members) {
+		   $(input_wrapper).remove (".group_members");
+		   var div = document.createElement("div");
+		   $(div).attr ("class", "group_members");
+		   div.textContent = "Current members: "
+		     + ret.members.join ("; ");
+		   $(input_wrapper)[0].appendChild (div);
+		 }
+	       });
+  }
   return (true);
 }
 
 function do_add_another (ev) {
   let elt = $(ev.target).parents(".question").find(".input_wrapper");
-  $(elt).append("<div><input type='text' name='extra_people[]'"+
-		" class='lookup_individual'"+
-		" size='40' /></div>");
+  $(elt).append("<div>\n"
+		+"<span>\n"
+		+"<input type='text' name='extra_people[]'"
+		+"   class='lookup_individual'"
+		+"   size='40' />\n"
+		+"<button type='button' style='display:none' class='del_button'>"
+		+"delete</button>\n"
+		+"</span>\n"
+		+"</div>");
+
+  setup_lookups ();
+}
+
+function do_del_button_click (ev) {
+  let elt = $(ev.target);
+  $(elt).parents("span").remove();
+}
+
+function setup_lookups () {
   $(".lookup_individual").autocomplete({ source: "lookup_individual.php" });
   $(".lookup_individual").attr("autocomplete","correspondent-name");
+  $(".lookup_individual").off ("change.neffa");
+  $(".lookup_individual").on ("change.neffa", do_lookup_change);
 
+  $(".lookup_group").autocomplete({ source: "lookup_group.php" });
+  $(".lookup_group").attr("autocomplete","correspondent-name");
+  $(".lookup_group").off ("change.neffa");
+  $(".lookup_group").on ("change.neffa", do_lookup_change);
+
+  $(".del_button").off ("click.neffa");
+  $(".del_button").on ("click.neffa", do_del_button_click);
 }
 
 $(function () {
   $("input[type='radio']").change (update_hides);
   $("#apply_form").submit (apply_submit);
-  $(".lookup_box").change (do_lookup_box_change);
-  
+
   if (window.questions)
     update_hides ();
 
-  $(".lookup_individual").autocomplete({ source: "lookup_individual.php" });
-  $(".lookup_individual").attr("autocomplete","correspondent-name");
-
-  $(".lookup_group").autocomplete({ source: "lookup_group.php" });
-  $(".lookup_group").attr("autocomplete","correspondent-name");
-
+  setup_lookups ();
+  
   $("#add_another").click(do_add_another);
 
   if (show_all)
