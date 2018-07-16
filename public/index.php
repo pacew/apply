@@ -2,54 +2,30 @@
 
 require_once ($_SERVER['APP_ROOT'] . "/app.php");
 
-$arg_app_id = intval (@$_REQUEST['app_id']);
-$arg_perf_id = intval (@$_REQUEST['perf_id']);
+$arg_app_id = trim (@$_REQUEST['app_id']);
 $arg_show_all = intval (@$_REQUEST['show_all']);
 
 pstart ();
 
 $body .= mklink ("home", "/");
 
-$app_id = 0;
-
-$perf_id = 0;
-$perf_name = "";
-
 $questions = get_questions ();
 
 $application = NULL;
 
 if ($arg_app_id) {
-    if (! getsess ("admin")) {
-        $body .= "invalid request";
-        pfinish ();
-    }
-
-    $app_id = $arg_app_id;
-
-    if (($application = get_application ($app_id)) == NULL) {
-        $body .= "not found";
-        pfinish ();
-    }
-
-    $perf_id = $application->cur_vals['perf_id'];
-    $perf_name = $application->cur_vals['perf_name'];
-} else if ($arg_perf_id) {
-    $perf_id = $arg_perf_id;
-    $perf_name = get_perf_name ($perf_id);
-}
-
-if ($perf_name) {
-    $body .= sprintf ("<h1>Application for %s</h1>\n", h($perf_name));
-}
-
-if ($app_id) {
     $body .= "<div class='admin'>"
           ."[ADMIN MODE: you may override the original answers;"
           ." you can cancel your override by pasting in the original answer"
           ."]"
           ."</div>\n";
-    $body .= mklink ("home", "/");
+    $application = get_application ($arg_app_id);
+}
+
+if ($username) {
+    $t = sprintf ("index.php?app_id=%s&show_all=1", rawurlencode ($arg_app_id));
+    $body .= sprintf ("<div class='debug_box'>%s</div>\n", 
+                      mklink ("show all questions", $t));
 }
 
 $body .= sprintf ("<script type='text/javascript'>\n");
@@ -166,11 +142,8 @@ if ($cfg['conf_key'] == "pace")
 
 $body .= mklink ("[admin]", "admin.php");
 
-$body .= sprintf ("<input type='hidden' name='perf_id' value='%d' />\n",
-                  $perf_id);
-
-$body .= sprintf ("<input type='hidden' name='app_id' value='%d' />\n",
-                  $app_id);
+$body .= sprintf ("<input type='hidden' name='app_id' value='%s' />\n",
+                  h($arg_app_id));
 
 foreach ($questions as $question) {
     $question_id = $question['id'];
@@ -179,7 +152,7 @@ foreach ($questions as $question) {
     
     $body .= sprintf ("<div class='question', id='%s'>\n", $section_id);
 
-    $body .= "<div class='debug condition'>\n";
+    $body .= "<div class='debug debug_box'>\n";
     $body .= sprintf ("id: %s", h($question_id));
     if (@$question['show_if']) {
         $body .= sprintf (" &nbsp;|&nbsp; show_if: %s\n", 
@@ -214,7 +187,7 @@ foreach ($questions as $question) {
         foreach ($question['choices'] as $choice) {
             $body .= "<div>\n";
             $c = "";
-            if ($choice['val'] == @$application->cur_vals[$question_id])
+            if ($choice['val'] == @$application->curvals[$question_id])
                 $c = "checked='checked'";
             $body .= sprintf ("<input type='radio' name='%s' value='%s' %s />\n",
                               $input_id,
@@ -234,25 +207,58 @@ foreach ($questions as $question) {
     } else if (@$question['textarea']) {
         $body .= sprintf ("<textarea cols='70' rows='5' id='%s' name='%s'>",
                           $input_id, $input_id);
-        $body .= h(@$application->cur_vals[$question_id]);
+        $body .= h(@$application->curvals[$question_id]);
         $body .= "</textarea>\n";
 
+    } else if (@$question['array_val']) {
+        $c = "";
+        if (@$question['class'])
+            $c = sprintf ("class=%s", $question['class']);
+        
+        $cur = @$application->curvals[$question_id];
+        if (is_string ($cur)) {
+            $cur = array ($cur);
+        } else if (! is_array ($cur)) {
+            $cur = array ();
+        }
+        if (count ($cur) == 0)
+            $cur = array ("");
+
+        $need_delete = 0;
+        if (@$cur[0])
+            $need_delete = 1;
+
+        foreach ($cur as $str) {
+            $body .= "<div>\n";
+            $body .= "<span>\n";
+            $cur = @$application->curvals[$question_id];
+            $body .= sprintf ("<input "
+                              ." type='text' id='%s' name='%s%s' %s"
+                              ." size='40' value='%s'/>\n",
+                              $input_id, 
+                              $input_id, @$question['array_val'] ? "[]" : "",
+                              $c,
+                              h($str));
+    
+            $s = "style='display:none'";
+            if ($need_delete)
+                $s = "";
+            
+            $body .= "<button type='button' $s class='del_button'>"
+                  ."delete</button>\n";
+            $body .= "</span>\n";
+            $body .= "</div>\n";
+        }
     } else {
         $c = "";
-        switch (@$question['lookup']) {
-        case "individual":
-            $c = "class='lookup_individual'";
-            break;
-        case "group":
-            $c = "class='lookup_group'";
-            break;
-        }
+        if (@$question['class'])
+            $c = sprintf ("class=%s", $question['class']);
         $body .= "<span>\n";
+        $cur = @$application->curvals[$question_id];
         $body .= sprintf ("<input "
                           ." type='text' id='%s' name='%s' %s"
                           ." size='40' value='%s'/>\n",
-                          $input_id, $input_id, $c,
-                          h(@$application->cur_vals[$question_id]));
+                          $input_id, $input_id, $c, h($cur));
         $body .= "</span>\n";
     }
 
@@ -271,21 +277,25 @@ foreach ($questions as $question) {
             $body .= sprintf ("<div>%s</div>\n", h($desc));
     }
 
-    if (@$application->override_vals[$question_id]) {
+    $patches = @$application->patches[$question_id];
+    if ($patches) {
         $body .= "<div class='orig_answer'>\n";
-        $body .= "<h3>Original answer:</h3>\n";
-        $orig = trim ($application->orig_vals[$question_id]);
-        if ($orig == "")
-            $orig = "(blank)";
-        if (@$question['textarea']) {
-            $body .= "<textarea cols='60' rows='5' readonly='readonly'>\n";
-            $body .= h($orig);
-            $body .= "</textarea>\n";
-        } else {
-            $body .= sprintf ("<input type='text' readonly='readonly' size='40'"
-                              ." value='%s' />\n", 
-                              h($orig));
+        $body .= "<h3>Changes made by admins</h3>\n";
+        $rows = array ();
+        foreach ($patches as $patch) {
+            $cols = array ();
+            $cols[] = h($patch->ts);
+            $cols[] = h($patch->username);
+            $txt = '';
+            if (is_array ($patch->oldval)) {
+                $txt = implode (";", $patch->oldval);
+            } else {
+                $txt = $patch->oldval;
+            }
+            $cols[] = h($txt);
+            $rows[] = $cols;
         }
+        $body .= mktable (array ("timestamp", "user", "from val"), $rows);
         $body .= "</div>\n";
     }
 

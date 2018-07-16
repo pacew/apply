@@ -323,6 +323,8 @@ function get_seq ($db = NULL) {
 
 $title_html = "";
 
+$username = "";
+
 function pstart () {
     global $body, $anon_ok;
 
@@ -331,7 +333,9 @@ function pstart () {
 
     $body = "";
 
-    if (! @$anon_ok && getsess ("username2") == "") {
+    global $username;
+    $username = getsess ("username2");
+    if (! @$anon_ok && $username == "") {
         redirect ("login.php");
     }
 }

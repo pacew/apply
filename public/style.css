@@ -107,8 +107,7 @@ p {
     padding: 0 .2em;
 }
 
-.condition {
-    color: black;
+.debug_box {
     background: #fee;
     border: 1px solid #eaa;
     margin: .2em;

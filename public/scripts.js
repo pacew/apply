@@ -89,7 +89,8 @@ function do_lookup_change (ev) {
   let input_wrapper = $(input_elt).parents(".input_wrapper");
   let span = $(input_elt).parents("span");
 
-  $(span).find("button").show(); /* for removing extra busy_people */
+  /* for removing extra busy_people */
+  $(input_wrapper).find(".del_button").show();
 
   if (val == "") {
     $(input_wrapper).find(".group_members").remove();
@@ -135,7 +136,7 @@ function do_add_another (ev) {
   let elt = $(ev.target).parents(".question").find(".input_wrapper");
   $(elt).append("<div>\n"
 		+"<span>\n"
-		+"<input type='text' name='extra_people[]'"
+		+"<input type='text' name='i_busy_people[]'"
 		+"   class='lookup_individual'"
 		+"   size='40' />\n"
 		+"<button type='button' style='display:none' class='del_button'>"

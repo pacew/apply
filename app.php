@@ -1,6 +1,7 @@
 <?php
 
 require_once ($_SERVER['APP_ROOT'] . "/common.php");
+require_once ($_SERVER['APP_ROOT'] . "/JsonPatch.php");
 
 $title_html = "NEFFA Performer Application 2019";
 
@@ -110,69 +111,46 @@ function get_questions () {
 }
 
 function get_application ($app_id) {
-    $questions = get_questions ();
+    $q = query ("select ts, username, val"
+                ." from json"
+                ." where app_id = ?"
+                ." order by ts",
+                $app_id);
     
-    $orig_vals = array ();
-    $override_vals = NULL;
-    $cur_vals = array ();
+    $curvals = array ();
+    $patches = array ();
+    while (($r = fetch ($q)) != NULL) {
+        if (strncmp ($r->val, "{", 1) == 0) {
+            $curvals = json_decode ($r->val, TRUE);
+        } else {
+            $p_arr = json_decode ($r->val, TRUE);
+            $before_vals = array ();
+            foreach ($p_arr as $patch) {
+                $path = $patch['path'];
+                if (! preg_match ('|/?([^/]*)|', $patch['path'], $matches))
+                    continue;
+                $question_id = $matches[1];
+                if (!isset ($before_vals[$question_id]))
+                    $before_vals[$question_id] = @$curvals[$question_id];
+            }
+            
+            foreach ($before_vals as $question_id => $oldval) {
+                $patch = (object)NULL;
+                $patch->ts = $r->ts;
+                $patch->username = $r->username;
+                $patch->oldval = $oldval;
+                if (! isset ($patches[$question_id]))
+                    $patches[$question_id] = array ();
+                $patches[$question_id][] = $patch;
+            }
 
-    $colnames = array ();
-    
-    foreach ($questions as $question) {
-        $id = $question['id'];
-        $colnames[] = $id;
-    }
-
-    $stmt = sprintf ("select perf_id, perf_name, %s"
-                     ." from applications"
-                     ." where app_id = ?",
-                     implode (',', $colnames));
-    $q = query ($stmt, $app_id);
-
-    if (($r = fetch ($q)) == NULL)
-        return (NULL);
-
-    $orig_vals['perf_id'] = trim ($r->perf_id);
-    $orig_vals['perf_name'] = trim ($r->perf_name);
-
-    foreach ($questions as $question) {
-        $id = $question['id'];
-        $orig_vals[$id] = trim ($r->$id);
-    }
-
-    $stmt = sprintf ("select perf_id, perf_name, %s"
-                     ." from overrides"
-                     ." where app_id = ?",
-                     implode (',', $colnames));
-    $q = query ($stmt, $app_id);
-
-    if (($r = fetch ($q)) != NULL) {
-        $override_vals = array ();
-        $override_vals['perf_id'] = trim ($r->perf_id);
-        $override_vals['perf_name'] = trim ($r->perf_name);
-
-        foreach ($questions as $question) {
-            $id = $question['id'];
-            $override_vals[$id] = trim ($r->$id);
+            $curvals = mikemccabe\JsonPatch\JsonPatch::patch($curvals, $p_arr);
         }
     }
-    
-    if (($cur_vals['perf_id'] = @$override_vals['perf_id']) == "")
-        $cur_vals['perf_id'] = $orig_vals['perf_id'];
 
-    if (($cur_vals['perf_name'] = @$override_vals['perf_name']) == "")
-        $cur_vals['perf_name'] = $orig_vals['perf_name'];
-    
-    foreach ($questions as $question) {
-        $id = $question['id'];
-        if (($cur_vals[$id] = @$override_vals[$id]) == "")
-            $cur_vals[$id] = $orig_vals[$id];
-    }
-
-    $ret = (object)NULL;
-    $ret->orig_vals = $orig_vals;
-    $ret->override_vals = $override_vals;
-    $ret->cur_vals =$cur_vals;
-        
-    return ($ret);
+    $application = (object)NULL;
+    $application->curvals = $curvals;
+    $application->patches = $patches;
+    return ($application);
 }
+

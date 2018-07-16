@@ -22,24 +22,25 @@
   { "id": "performer1",
     "show_if": [ "main_performer", "Individual", "Duo" ],
     "q": "Performer name",
-    "lookup": "individual",
+    "class": "lookup_individual",
     "desc": "<p>As you type, the system will try to find possible matches in the NEFFA database and show them in a popup box.  Please select an entry from there, if possible, to avoid creating duplicate entries.</p>" },
 
   { "id": "performer2",
     "show_if": [ "main_performer", "Duo" ],
     "q": "Second perfomer name",
-    "lookup": "individual" },
+    "class": "lookup_individual" },
 
   { "id": "group_name",
     "show_if": [ "main_performer", "Group" ],
-    "lookup": "group",
+    "class": "lookup_group",
     "q": "Name of group?",
     "desc": "<p>Make sure this name exactly matches the name of your group. Avoid abbreviations, but put \"The\" at the end after a comma, if applicable.</p><p>As you type, the system will try to find possible matches in the NEFFA database and show them in a popup box.  Please select the name from there, if possible, to avoid creating duplicate entries.  If the name is changing this year, select the old name and give the new name in the COMMENTS box at the end of this application.</p>"
   },
 
   { "id": "busy_people",
+    "array_val": 1,
     "optional": 1,
-    "lookup": "individual",
+    "class": "lookup_individual",
     "q": "Other performers supporting this event",
     "desc": "<p>You can list other performers who will be helping during this event.  They might be unbilled accompanists, sound assistants, roadies, etc. If this event is scheduled, the people listed here will not be simultaneously scheduled for other events in the same timeslot.</p><p>If this event is for a group, don't list group members here - potential conflicts for them are handled separately.</p>" },
 
@@ -80,7 +81,7 @@
   },
 
   { "id": "preferred_band",
-    "lookup": "group",
+    "class": "lookup_group",
     "show_if": [ "music_pref", "band", "either" ],
     "q": "Preferred band",
     "optional": 1,
@@ -105,7 +106,7 @@
   },
 
   { "id": "preferred_caller",
-    "lookup": "individual",
+    "class": "lookup_individual",
     "show_if": [ "need_caller", "Yes" ],
     "optional": 1,
     "q": "Preferred caller/dance leader",
