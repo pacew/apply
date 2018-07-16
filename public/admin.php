@@ -9,7 +9,7 @@ $body .= "<h2>Admin page</h2>\n";
 $body .= "<div>";
 $body .= mklink ("home", "/");
 $body .= " | ";
-$body .= mklink ("view data", "download.php?view=1");
+$body .= mklink ("view data", "download.php?view_data=1");
 $body .= " | ";
 $body .= mklink ("view json", "download.php?view_json=1");
 $body .= " | ";
