@@ -105,44 +105,6 @@ function make_schedule ($application, $question_id) {
     return ($ret);
 }
 
-function make_room_sound () {
-    $ret = "<div class='room_sound'>\n";
-
-    $kinds = array (
-        array ("stage_with", "An auditorium stage with amplification" ),
-        array ("stage_without", "An auditorium stage with NO amplification"),
-        array ("double_with", "A double classroom with amplification" ),
-        array ("double_without", "A double classroom with NO amplification" ),
-        array ("single_mic", 
-               "A single classroom with a single performer-operated mic"),
-        array ("single_without", 
-               "A single classroom with NO sound equipment")
-    );
-
-    $rows = array ();
-    foreach ($kinds as $kind) {
-        $id = $kind[0];
-        $val = $kind[1];
-        
-        $cols = array ();
-        $cols[] = h($val);
-        $cols[] = sprintf ("<input type='radio' name='%s' value='yes' />",
-                           h($id));
-        $cols[] = sprintf ("<input type='radio' name='%s'"
-                           ." value='if_necessary' />",
-                           h($id));
-        $cols[] = sprintf ("<input type='radio' name='%s' value='no' />",
-                           h($id));
-        $rows[] = $cols;
-    }
-    $ret .= mktable (array ("Room type", "Yes", "If necessary", "No"), $rows);
-    
-    $ret .= "</div>\n";
-
-    return ($ret);
-}
-
-
 $body .= "<form id='apply_form' action='save.php' method='post'>\n";
 
 /* prevent ENTER in text field from submitting the form ... users
@@ -194,8 +156,6 @@ foreach ($questions as $question) {
     
     if ($question_id == "availability") {
         $body .= make_schedule ($application, $question_id);
-    } else if ($question_id == "room_sound") {
-        $body .= make_room_sound ();
     } else if (@$question['choices']) {
         foreach ($question['choices'] as $choice) {
             $body .= "<div>\n";
