@@ -37,6 +37,9 @@ function is_required_question_empty (q) {
   if (all_optional)
     return (false);
 
+  if ($("#allow_blanks").is(":checked"))
+    return (false);
+
   if (q.optional)
     return (false);
   

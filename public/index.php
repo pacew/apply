@@ -112,10 +112,19 @@ $body .= "<form id='apply_form' action='save.php' method='post'>\n";
 $body .= "<button type='submit' onclick='return false' style='display:none'>"
       ."</button>\n";
 
+$body .= "<div class='debug_box'>\n";
+
 if ($cfg['conf_key'] == "pace") 
     $body .= "<input type='submit' value='Submit' />\n";
 
 $body .= mklink ("[admin]", "admin.php");
+
+$body .= "<div>\n";
+$body .= "<input type='checkbox' id='allow_blanks' />"
+      ." check here to allow submissions with blank required fields";
+$body .= "</div>\n";
+
+$body .= "</div>\n";
 
 $body .= sprintf ("<input type='hidden' name='app_id' value='%d' />\n",
                   $arg_app_id);
