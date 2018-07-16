@@ -178,5 +178,5 @@ $(function () {
   $("#add_another").click(do_add_another);
 
   if (show_all)
-    $(".condition").show();
+    $(".debug").show();
 });

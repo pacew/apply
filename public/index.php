@@ -71,18 +71,6 @@ function h24_to_12 ($hour) {
 function make_schedule () {
     $ret = "<div class='question'>\n";
 
-    $ret .= "<h2>Availability</h2>\n";
-    
-    $ret .= "<p>These hours refer to the times that you are available"
-         ." to perform, and NOT your preferred times. Please note that"
-         ." the greater your availability, the greater the likelihood"
-         ." that you will be scheduled. </p>\n";
-
-    $ret .= "<p style='color:red'>"
-         ." [DEVELOPMENT NOTE: this isn't animated yet."
-         ." soon, clicking an aggregate box will automatically"
-         ." set all the boxes in the appropriate group.</p>\n";
-    
     $ret .= "<input type='checkbox'> Any time during the festival\n";
 
     $rows = array ();
@@ -157,7 +145,7 @@ foreach ($questions as $question) {
     
     $body .= sprintf ("<div class='question', id='%s'>\n", $section_id);
 
-    $body .= "<div class='condition'>\n";
+    $body .= "<div class='debug condition'>\n";
     $body .= sprintf ("id: %s", h($question_id));
     if (@$question['show_if']) {
         $body .= sprintf (" &nbsp;|&nbsp; show_if: %s\n", 
@@ -191,6 +179,9 @@ foreach ($questions as $question) {
             } else {
                 $body .= h($choice['val']);
             }
+
+            $body .= sprintf (" <span class='debug'>%s</span>\n",
+                              h($choice['val']));
             $body .= "</div>\n";
         }
 
@@ -254,9 +245,6 @@ foreach ($questions as $question) {
 
     $body .= "</div>\n"; /* question */
 
-    
-    if ($question['id'] == "event_desc")
-        $body .= make_schedule ();
 }
 
 $body .= "<input type='submit' value='Submit' />\n";

@@ -100,8 +100,15 @@ p {
     margin: 1em 0;
 }
 
-.condition {
+.debug {
     display: none;
+    border: 1px solid #eaa;
+    background: #fee;
+    padding: 0 .2em;
+}
+
+.condition {
+    color: black;
     background: #fee;
     border: 1px solid #eaa;
     margin: .2em;

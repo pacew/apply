@@ -1,82 +1,71 @@
 [
   { "id": "name",
-    "lookup": "individual",
     "q": "Your name",
-    "desc": "<p>This should be the name of the person filling out this application, so we can get back to you with questions.  Normally it should be the performer for solo events, or the person officially listed in the NEFFA database as the contact for a group.  If that doesn't work for you for some reason, please explain in the COMMENTS box at the end of this application, but it may delay consideration of your application.</p><p>As you type your name, the system will try to find a match in the NEFFA database and show it to you in a popup box.  Please select your name from there, if possible, to avoid creating duplicate entries.</p>" },
+    "desc": "<p>This should be the name of the person filling out this application, so we can get back to you with questions.  Normally it should be the performer for solo events, or the person officially listed in the NEFFA database as the contact for a group.  If that doesn't work for you for some reason, please explain in the COMMENTS box at the end of this application, but it may delay consideration of your application.</p>" },
 
   { "id": "email",
     "q": "Your email address", 
-    "type": "email",
-    "desc": "Ok if this doesn't match what we have on file.  We'll contact you to confirm if we notice a change." },
+    "type": "email" },
 
   { "id": "phone",
     "q": "What is the best phone number at which to reach you?" },
 
+  { "id": "main_performer",
+    "q": "Main performer billing goes to:",
+    "choices": [
+      { "val": "Individual", "desc": "An individual" },
+      { "val": "Duo", "desc": "A duo" },
+      { "val": "Group", "desc": "A group" }
+    ]
+  },
+
+  { "id": "performer1",
+    "show_if": [ "main_performer", "Individual", "Duo" ],
+    "q": "Performer name",
+    "lookup": "individual",
+    "desc": "<p>As you type, the system will try to find possible matches in the NEFFA database and show them in a popup box.  Please select an entry from there, if possible, to avoid creating duplicate entries.</p>" },
+
+  { "id": "performer2",
+    "show_if": [ "main_performer", "Duo" ],
+    "q": "Second perfomer name",
+    "lookup": "individual" },
+
+  { "id": "group_name",
+    "show_if": [ "main_performer", "Group" ],
+    "lookup": "group",
+    "q": "Name of group?",
+    "desc": "<p>Make sure this name exactly matches the name of your group. Avoid abbreviations, but put \"The\" at the end after a comma, if applicable.</p><p>As you type, the system will try to find possible matches in the NEFFA database and show them in a popup box.  Please select the name from there, if possible, to avoid creating duplicate entries.  If the name is changing this year, select the old name and give the new name in the COMMENTS box at the end of this application.</p>"
+  },
+
+  { "id": "busy_people",
+    "optional": 1,
+    "lookup": "individual",
+    "q": "Other performers supporting this event",
+    "desc": "<p>You can list other performers who will be helping during this event.  They might be unbilled accompanists, sound assistants, roadies, etc. If this event is scheduled, the people listed here will not be simultaneously scheduled for other events in the same timeslot.</p><p>If this event is for a group, don't list group members here - potential conflicts for them are handled separately.</p>" },
+
+
   { "id": "app_category",
     "q": "What category best describes this particular application?",
     "choices": [ 
-      { "val": "Individual", "desc": "Individual performer (possibly joined by friends)" },
-      { "val": "Group", "desc": "Group with a title, other than a dance band" },
-      { "val": "Caller", "desc": "Caller or dance leader" },
-      { "val": "BandNeedCaller", "desc": "Band for Contra, ECD, etc (event needs caller)" },
-      { "val": "BandNoCaller", "desc": "Other dance band (non-caller dance)" }
+      { "val": "Band", "desc": "Dance band" },
+      { "val": "Caller", "desc": "Dance caller/teacher" },
+      { "val": "Ritual", "desc": "Ritual dance (morris, rapper, etc)" },
+      { "val": "Performance", "desc": "Other dance performance" },
+      { "val": "Other", "desc": "Everything else" }
     ],
     "desc": "The answer to this question may be different on other applications; please choose the option that best fits with this application only.  Please note that dance bands must submit their own applications and callers/dance leaders must submit separate applications. If a caller/teacher is a member of your dance band, this teacher/caller still is required to submit a separate application as an individual."
   },
 
-
-  { "id": "group_name",
-    "lookup": "group",
-    "q": "Name of group or band?",
-    "desc": "<p>Make sure this name exactly matches the name of your group. Avoid abbreviations, but put \"The\" at the end after a comma, if applicable.</p><p>As you type, the system will try to find a match in the NEFFA database and show it to you in a popup box.  Please select the name from there, if possible, to avoid creating duplicate entries.  If the name is changing this year, select the old name and give the new name in the COMMENTS box at the end of this application.</p>",
-    "show_if": [ "app_category", "Group", "BandNeedCaller", "BandNoCaller" ]
-  },
-
-  { "id": "event_title",
-    "q": "What is your EVENT'S TITLE? (30 characters at most)",
-    "desc": "Please be careful about avoiding spelling errors, and do not use all capital letters. This title will appear on the web Festival Schedule, the Paper Grid, and in the Program Book. When crafting an event title, please try to be descriptive, although cleverness is also welcome. The event title should be different from the group name (for example, don't use  \"[your name] in Concert\") and should provide audience members with an idea of the theme.  The Program Committee may change the title because of printing constraints or clarity issues.",
-    "show_if": [ "app_category", "Individual", "Group", "Caller" ]
-  },
-
-  { "id": "event_desc",
-    "q": "Please describe your EVENT (NOT your group!)",
-    "textarea": 1,
-    "desc": "This is a description of this specific, proposed PERFORMANCE. This text will be read by Festival-goers. Please avoid spelling errors, and do not use all capital letters. Try to limit this description to no more than 30 words (fewer is better!). This description gives the Program Committee and Festival participants a more precise idea of what to expect from your event. This description should give additional information, and not be a repeat of the Event Title.",
-    "show_if": [ "app_category", "Individual", "Group", "Caller" ]
-  },
-
-  { "id": "joined_by",
-    "show_if": [ "app_category", "Individual" ],
-    "q": "Joined by:",
-    "lookup": "individual",
-    "optional": 1,
-    "desc": "If you will be joined on stage by a friend and want both names listed in the program, enter their name here.  There's not enough room to list more than two people." },
-
-  { "id": "band_type",
-    "show_if": [ "app_category", "BandNeedCaller", "BandNoCaller" ],
-    "q": "What type of dancing are you applying for?",
+  { "id": "dance_style",
+    "show_if": [ "app_category", "Band", "Caller" ],
+    "q": "What best describes the style of dance?",
     "desc": "Bands may wish to play for more than one type of dance event, but for this application, you have to choose JUST one.  If you would like to be considered for more than one type of dancing, PLEASE fill out another application!",
     "choices": [
-      { "val": "Contra/Square" },
-      { "val": "English Country Dance" },
-      { "val": "Waltz" },
-      { "val": "Scandinavian" },
-      { "val": "International Line Dancing" },
-      { "val": "Other" }
+      { "val": "American", "desc": "American (contra/square)" },
+      { "val": "English", "desc": "English" },
+      { "val": "Couples", "desc": "Couples dance" },
+      { "val": "Int_Line", "desc": "International and/or line" }
     ]
-  },
-
-  { "id": "band_type_other",
-    "show_if": [ "band_type", "Other" ],
-    "q": "Specify type of dancing (if not in list above):"
-  },
-
-  { "id": "preferred_caller",
-    "lookup": "individual",
-    "show_if": [ "app_category", "BandNeedCaller" ],
-    "optional": 1,
-    "q": "Preferred caller/dance leader",
-    "desc": "There are no guarantees about pairings of bands/musicians and callers/dance leaders, but if you have a preference, please indicate it. "
   },
 
   { "id": "music_pref",
@@ -99,73 +88,132 @@
 
   { "id": "recorded_type",
     "show_if": [ "music_pref", "either", "recorded" ],
-    "q": "What kind of media would you use for your recorded music?",
+    "q": "Do you need a CD player?",
     "choices": [
-      { "val": "MP3, iPod or computer (headphone jack output)" },
-      { "val": "CDs" },
-      { "val": "Other" }
-    ]
-  },
-
-  { "id": "device_required",
-    "show_if": [ "music_pref", "either", "recorded" ],
-    "q": "Do you need NEFFA to supply a playback device?",
-    "optional": 1,
-    "desc": "(For MP3's etc., you must provide your own device.)",
-    "choices": [
-      { "val": "Yes", "desc": "Yes, I need NEFFA to supply a playback device." },
+      { "val": "Yes" },
       { "val": "No" }
     ]
   },
 
-  { "id": "busy_people",
-    "optional": 1,
+  { "id": "need_caller",
+    "show_if": [ "app_category", "Band" ],
+    "q": "Do you need a caller?",
+    "choices": [
+      { "val": "Yes" },
+      { "val": "No" }
+    ]
+  },
+
+  { "id": "preferred_caller",
     "lookup": "individual",
-    "q": "Other people supporting this event",
-    "desc": "<p>You can list here other people who will be busy giving this event.  They might be unbilled accompanists, sound assistants, roadies, etc. If this event is scheduled, the people listed here will not be simultaneously scheduled for other events in the same timeslot.</p><p>If this event is for a group, don't list group members here - potential conflicts for them are handled separately.</p>" },
-
-  { "id": "sound",
-    "q": "Do you require a sound system?",
-    "desc": "We have a very limited number of rooms that have sound equipment. These include the large dance hall spaces, and a small number of the concert rooms. We have a larger number of concert rooms which do not have sound. This event has a greater chance of being scheduled if you do not need sound equipment. ",
-    "choices": [
-      { "val": "full", "desc": "Yes, we need a full sound set-up" },
-      { "val": "ifpossible", "desc": "I/We would prefer sound, but would be happy to perform this event without sound." },
-      { "val": "mic", "desc": "A self-serve vocal mic for one person is all I need." },
-      { "val": "no", "desc": "No, we do not require a sound system." }
-    ]
-  },
-
-  { "id": "piano",
-    "q": "Do you require a piano?",
+    "show_if": [ "need_caller", "Yes" ],
     "optional": 1,
+    "q": "Preferred caller/dance leader",
+    "desc": "There are no guarantees about pairings of bands/musicians and callers/dance leaders, but if you have a preference, please indicate it. "
+  },
+
+  { "id": "availability",
+    "show-if": [ "app_category", "Performance" ],
+    "q": "Availability",
+    "desc": "These hours refer to the times that you are available to perform, and NOT your preferred times. Please note that the greater your availability, the greater the likelihood that you will be scheduled."
+  },
+
+  { "id": "event_title",
+    "q": "What is your EVENT'S TITLE? (30 characters at most)",
+    "desc": "Please be careful about avoiding spelling errors, and do not use all capital letters. This title will appear on the web Festival Schedule, the Paper Grid, and in the Program Book. When crafting an event title, please try to be descriptive, although cleverness is also welcome. The event title should be different from the group name (for example, don't use  \"[your name] in Concert\") and should provide audience members with an idea of the theme.  The Program Committee may change the title because of printing constraints or clarity issues.",
+    "show_if": [ "app_category", "Band", "Caller", "Other" ]
+  },
+
+  { "id": "event_desc",
+    "q": "Please describe your EVENT (NOT your group!)",
+    "textarea": 1,
+    "desc": "This is a description of this specific, proposed PERFORMANCE. This text will be read by Festival-goers. Please avoid spelling errors, and do not use all capital letters. Try to limit this description to no more than 30 words (fewer is better!). This description gives the Program Committee and Festival participants a more precise idea of what to expect from your event. This description should give additional information, and not be a repeat of the Event Title.",
+    "show_if": [ "app_category", "Individual", "Group", "Caller" ]
+  },
+
+
+  { "id": "num_dancers",
+    "show_if": [ "app_category", "Performance" ],
+    "q": "How many dancers?" },
+
+  { "id": "how_long",
+    "show_if": [ "app_category", "Performance" ],
+    "q": "How long?" },
+
+  { "id": "showcased",
+    "show_if": [ "app_category", "Performance" ],
+    "q": "Country or region being showcased?" },
+
+  { "id": "music_begins",
+    "show_if": [ "app_category", "Performance" ],
+    "q": "Music begins ...",
     "choices": [
-      { "val": "Yes" },
-      { "val": "No" }
+      { "val": "before", "desc": "before dancers enter." },
+      { "val": "during", "desc": "as dancers enter." },
+      { "val": "after", "desc": "after dancers are in position." }
     ]
   },
 
-  { "id": "shared",
-    "q": "Are you willing to work with others on a shared event?",
+  { "id": "lights_on",
+    "show_if": [ "app_category", "Performance" ],
+    "q": "Lights go ...",
+    "choices": [
+      { "val": "with_music", "desc": "on with music." },
+      { "val": "with_dancers", "desc": "up as dancers enter." },
+      { "val": "before_music", "desc": "up before the music starts." },
+      { "val": "before_dancers", "desc": "on before the dancers enter." },
+      { "val": "other", "desc": "it's complicated." }
+    ]
+  },
+
+  { "id": "lights_on_other",
+    "show_if": [ "lights_on", "other" ],
+    "q": "Ok, how do the lights go on?"
+  },
+
+  { "id": "lights_off",
+    "show_if": [ "app_category", "Performance" ],
+    "q": "Lights go ...",
+    "choices": [
+      { "val": "as_exit", "desc": "down as dancers exit." },
+      { "val": "after_exit", "desc": "off after the dancers exit." },
+      { "val": "after_freeze", "desc": "off after the dancers freeze." },
+      { "val": "during_bow", "desc": "down as the dansers bow." },
+      { "val": "other", "desc": "it's complicated." }
+    ]
+  },
+
+  { "id": "lights_off_other",
+    "show_if": [ "lights_off", "other" ],
+    "q": "Ok, how do the lights go off?"
+  },
+
+  { "id": "lighting_mood",
+    "show_if": [ "app_category", "Performance" ],
+    "q": "Describe the mood of the lighting." },
+
+  { "id": "costume_colors",
+    "show_if": [ "app_category", "Performance" ],
+    "q": "Describe colors of costume." },
+
+  { "id": "props",
+    "show_if": [ "app_category", "Performance" ],
     "optional": 1,
-    "desc": "(NEFFA often gets applications for similar events.)",
+    "q": "What props, if any?" },
+
+  { "id": "enter_from",
+    "show_if": [ "app_category", "Performance" ],
+    "q": "Dancers enter from...",
     "choices": [
-      { "val": "Yes" },
-      { "val": "No" }
+      { "val": "Right" },
+      { "val": "Left" },
+      { "val": "Both" }
     ]
   },
-
-  { "id": "preference",
-    "q": "Preference",
-    "optional": 1,
-    "desc": "Every year we have more and more applicants/applications. Please rate this application. These rankings are a general guide only. We assume that performers will be happy with ANY choice the committee makes.",
-    "choices": [
-      { "val": "1", "desc": "Very excited to have this event scheduled." },
-      { "val": "2", "desc": "Moderately excited to have this event scheduled." },
-      { "val": "3", "desc": "An interesting idea, but I would prefer that this not be my only event." }
-    ]
-  },
-
+      
+  
   { "id": "event_type",
+    "show_if": [ "app_category", "Caller", "Other" ],
     "q": "Event Type",
     "choices": [
       { "val": "E", "desc": "ENTERTAINMENT -- Events that people watch or listen to (concerts, performance, etc.)." },
@@ -179,6 +227,7 @@
   },
 
   { "id": "level",
+    "show_if": [ "app_category", "Caller", "Other" ],
     "q": "Level Code",
     "desc": "These level codes indicate the intended level of experience or ability, especially for dance and teaching events.",
     "choices": [
@@ -187,6 +236,33 @@
       { "val": "S", "desc": "SOME EXPERIENCE HELPFUL -- Basic knowledge assumed" },
       { "val": "X", "desc": "EXPERIENCED -- Much experience assumed" },
       { "val": "NA", "desc": "Not applicable" }
+    ]
+  },
+
+
+  { "id": "room_sound",
+    "show_if": [ "app_category", "Other" ],
+    "q": "What room/sound combo would work?"
+  },
+
+  { "id": "piano",
+    "show_if": [ "app_category", "Band", "Other" ],
+    "q": "Do you need a piano?",
+    "optional": 1,
+    "choices": [
+      { "val": "Yes" },
+      { "val": "No" }
+    ]
+  },
+
+  { "id": "shared",
+    "show_if": [ "app_category", "Caller", "Other" ],
+    "q": "Are you willing to work with others on a shared event?",
+    "optional": 1,
+    "desc": "(NEFFA often gets applications for similar events.)",
+    "choices": [
+      { "val": "Yes" },
+      { "val": "No" }
     ]
   },
 
