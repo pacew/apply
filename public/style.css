@@ -71,6 +71,12 @@ h2 {
     font-size: 1.2em;
 }
 
+.display_data {
+    background: #eee;
+    padding: 1em;
+    margin: 1em;
+}
+
 .question {
     background: #eee;
     padding: 1em;

@@ -8,13 +8,13 @@ $body .= "<h2>Admin page</h2>\n";
 
 $body .= "<div>";
 $body .= mklink ("home", "/");
+$body .= " | ";
+$body .= mklink ("view data", "download.php?view=1");
+$body .= " | ";
+$body .= mklink ("view json", "download.php?view_json=1");
+$body .= " | ";
+$body .= mklink ("download json", "download.php?download_json=1");
 $body .= "</div>\n";
-
-$body .= "<form action='admin.php'>\n";
-$body .= "<input type='hidden' name='download_json' value='1' />\n";
-$body .= "<input type='submit' value='Download json' />\n";
-$body .= "</form>\n";
-
 
 $body .= mklink ("debug questions", "index.php?show_all=1");
 
