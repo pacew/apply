@@ -115,6 +115,7 @@
 
   { "id": "availability",
     "show_if": [ "app_category", "Performance" ],
+    "array_val": 1,
     "q": "Availability",
     "desc_pre": "These hours refer to the times that you are available to perform, and NOT your preferred times. Please note that the greater your availability, the greater the likelihood that you will be scheduled."
   },

@@ -44,18 +44,24 @@ function h24_to_12 ($hour) {
     }
 }
 
-function make_schedule () {
+function make_schedule ($application, $question_id) {
+    $curvals = @$application->curvals[$question_id];
+    $input_id = sprintf ("i_%s", $question_id);
+
     $ret = "<div class='schedule'>\n";
 
-    $ret .= "<input type='checkbox'> Any time during the festival\n";
+    $ret .= "<input id='sched_any' type='checkbox'>"
+         ." Any time during the festival\n";
 
     $rows = array ();
 
     $cols = array ();
     for ($day = 0; $day <= 1; $day++) {
         $days = array ("Saturday", "Sunday");
-        $cols[] = sprintf ("<input type='checkbox'> Any time %s",
-                           $days[$day]);
+        $cols[] = sprintf ("<input type='checkbox'"
+                           ." class='sched_all_day'"
+                           ." data-day='%d'> Any time %s",
+                           $day, $days[$day]);
     }
     $rows[] = $cols;
 
@@ -75,9 +81,16 @@ function make_schedule () {
                 }
             }
 
+            $code = ($day + 1) * 1000 + $hour;
             $html = "";
             if ($text) {
-                $html = sprintf ("<input type='checkbox' /> %s\n", $text);
+                $c = "";
+                if ($curvals && array_search ($code, $curvals) !== FALSE)
+                    $c = "checked='checked'";
+                $html = sprintf ("<input type='checkbox' class='sched_item' $c"
+                                 ." data-day='%d'"
+                                 ." name='%s[]' value='%d' /> %s\n", 
+                                 $day, $input_id, $code, $text);
             }
 
             $cols[] = $html;
@@ -180,7 +193,7 @@ foreach ($questions as $question) {
     $body .= "<div class='input_wrapper'>\n";
     
     if ($question_id == "availability") {
-        $body .= make_schedule ();
+        $body .= make_schedule ($application, $question_id);
     } else if ($question_id == "room_sound") {
         $body .= make_room_sound ();
     } else if (@$question['choices']) {
@@ -288,7 +301,7 @@ foreach ($questions as $question) {
             $cols[] = h($patch->username);
             $txt = '';
             if (is_array ($patch->oldval)) {
-                $txt = implode (";", $patch->oldval);
+                $txt = implode ("; ", $patch->oldval);
             } else {
                 $txt = $patch->oldval;
             }

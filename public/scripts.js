@@ -167,9 +167,44 @@ function setup_lookups () {
   $(".del_button").on ("click.neffa", do_del_button_click);
 }
 
+function do_sched_any (ev) {
+  var elt = ev.target;
+  checked = elt.checked;
+  $(".sched_item").prop ("checked", checked);
+  $(".sched_all_day").prop ("checked", checked);
+}
+
+function do_all_day (ev) {
+  var elt = ev.target;
+  var checked = elt.checked;
+  
+  var day = $(elt).data("day");
+
+  $(".sched_item").filter (function () { 
+    return ($(this).attr ("data-day") == day) 
+  }).prop ("checked", checked);
+
+  $("#sched_any").prop ("checked", false);
+}
+
+function do_sched_item (ev) {
+  var elt = ev.target;
+  var checked = elt.checked;
+  
+  if (! checked) {
+    $("#sched_any").prop ("checked", false);
+    $(".sched_all_day").prop ("checked", false);
+  }
+}
+
 $(function () {
   $("input[type='radio']").change (update_hides);
   $("#apply_form").submit (apply_submit);
+
+  $("#sched_any").change (do_sched_any);
+  $(".sched_all_day").change (do_all_day);
+  $(".sched_all_day").change (do_all_day);
+  $(".sched_item").change (do_sched_item);
 
   if (window.questions)
     update_hides ();
