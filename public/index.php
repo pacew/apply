@@ -69,15 +69,15 @@ function h24_to_12 ($hour) {
 }
 
 function make_schedule () {
-    $ret = "<div class='question'>\n";
+    $ret = "<div class='schedule'>\n";
 
     $ret .= "<input type='checkbox'> Any time during the festival\n";
 
     $rows = array ();
 
     $cols = array ();
-    for ($day = 0; $day < 3; $day++) {
-        $days = array ("Friday", "Saturday", "Sunday");
+    for ($day = 0; $day <= 1; $day++) {
+        $days = array ("Saturday", "Sunday");
         $cols[] = sprintf ("<input type='checkbox'> Any time %s",
                            $days[$day]);
     }
@@ -88,13 +88,10 @@ function make_schedule () {
         $to = h24_to_12 ($hour + 1);
 
         $cols = array ();
-        for ($day = 0; $day < 3; $day++) {
+        for ($day = 0; $day <= 1; $day++) {
             $text = sprintf ("%s to %s", $from, $to);
 
-            if ($day == 0 && $hour < 19)
-                $text = "";
-            
-            if ($day == 2) {
+            if ($day == 1) {
                 if ($hour == 16) {
                     $text = "4pm to 5:30pm";
                 } else if ($hour > 16) {
@@ -112,10 +109,47 @@ function make_schedule () {
         $rows[] = $cols;
     }
 
-    $ret .= mktable (array ("Friday", "Saturday", "Sunday"), $rows);
+    $ret .= mktable (array ("Saturday", "Sunday"), $rows);
 
     $ret .= "</div>\n";
     
+    return ($ret);
+}
+
+function make_room_sound () {
+    $ret = "<div class='room_sound'>\n";
+
+    $kinds = array (
+        array ("stage_with", "An auditorium stage with amplification" ),
+        array ("stage_without", "An auditorium stage with NO amplification"),
+        array ("double_with", "A double classroom with amplification" ),
+        array ("double_without", "A double classroom with NO amplification" ),
+        array ("single_mic", 
+               "A single classroom with a single performer-operated mic"),
+        array ("single_without", 
+               "A single classroom with NO sound equipment")
+    );
+
+    $rows = array ();
+    foreach ($kinds as $kind) {
+        $id = $kind[0];
+        $val = $kind[1];
+        
+        $cols = array ();
+        $cols[] = h($val);
+        $cols[] = sprintf ("<input type='radio' name='%s' value='yes' />",
+                           h($id));
+        $cols[] = sprintf ("<input type='radio' name='%s'"
+                           ." value='if_necessary' />",
+                           h($id));
+        $cols[] = sprintf ("<input type='radio' name='%s' value='no' />",
+                           h($id));
+        $rows[] = $cols;
+    }
+    $ret .= mktable (array ("Room type", "Yes", "If necessary", "No"), $rows);
+    
+    $ret .= "</div>\n";
+
     return ($ret);
 }
 
@@ -162,9 +196,21 @@ foreach ($questions as $question) {
     }
     $body .= "</h3>\n";
 
+    if (($desc = @$question['desc_pre']) != "") {
+        if (strncmp ($desc, "<", 1) == 0)
+            $body .= $desc;
+        else
+            $body .= sprintf ("<div>%s</div>\n", h($desc));
+    }
+
+
     $body .= "<div class='input_wrapper'>\n";
     
-    if (@$question['choices']) {
+    if ($question_id == "availability") {
+        $body .= make_schedule ();
+    } else if ($question_id == "room_sound") {
+        $body .= make_room_sound ();
+    } else if (@$question['choices']) {
         foreach ($question['choices'] as $choice) {
             $body .= "<div>\n";
             $c = "";
@@ -222,7 +268,7 @@ foreach ($questions as $question) {
         if (strncmp ($desc, "<", 1) == 0)
             $body .= $desc;
         else
-            $body .= sprintf ("<div>%s</div>\n", h($question['desc']));
+            $body .= sprintf ("<div>%s</div>\n", h($desc));
     }
 
     if (@$application->override_vals[$question_id]) {

@@ -113,22 +113,22 @@
   },
 
   { "id": "availability",
-    "show-if": [ "app_category", "Performance" ],
+    "show_if": [ "app_category", "Performance" ],
     "q": "Availability",
-    "desc": "These hours refer to the times that you are available to perform, and NOT your preferred times. Please note that the greater your availability, the greater the likelihood that you will be scheduled."
+    "desc_pre": "These hours refer to the times that you are available to perform, and NOT your preferred times. Please note that the greater your availability, the greater the likelihood that you will be scheduled."
   },
 
   { "id": "event_title",
+    "show_if": [ "app_category", "Band", "Caller", "Other" ],
     "q": "What is your EVENT'S TITLE? (30 characters at most)",
-    "desc": "Please be careful about avoiding spelling errors, and do not use all capital letters. This title will appear on the web Festival Schedule, the Paper Grid, and in the Program Book. When crafting an event title, please try to be descriptive, although cleverness is also welcome. The event title should be different from the group name (for example, don't use  \"[your name] in Concert\") and should provide audience members with an idea of the theme.  The Program Committee may change the title because of printing constraints or clarity issues.",
-    "show_if": [ "app_category", "Band", "Caller", "Other" ]
+    "desc": "Please be careful about avoiding spelling errors, and do not use all capital letters. This title will appear on the web Festival Schedule, the Paper Grid, and in the Program Book. When crafting an event title, please try to be descriptive, although cleverness is also welcome. The event title should be different from the group name (for example, don't use  \"[your name] in Concert\") and should provide audience members with an idea of the theme.  The Program Committee may change the title because of printing constraints or clarity issues."
   },
 
   { "id": "event_desc",
+    "show_if": [ "app_category", "Band", "Caller", "Other" ],
     "q": "Please describe your EVENT (NOT your group!)",
     "textarea": 1,
-    "desc": "This is a description of this specific, proposed PERFORMANCE. This text will be read by Festival-goers. Please avoid spelling errors, and do not use all capital letters. Try to limit this description to no more than 30 words (fewer is better!). This description gives the Program Committee and Festival participants a more precise idea of what to expect from your event. This description should give additional information, and not be a repeat of the Event Title.",
-    "show_if": [ "app_category", "Individual", "Group", "Caller" ]
+    "desc": "This is a description of this specific, proposed PERFORMANCE. This text will be read by Festival-goers. Please avoid spelling errors, and do not use all capital letters. Try to limit this description to no more than 30 words (fewer is better!). This description gives the Program Committee and Festival participants a more precise idea of what to expect from your event. This description should give additional information, and not be a repeat of the Event Title."
   },
 
 
@@ -242,7 +242,8 @@
 
   { "id": "room_sound",
     "show_if": [ "app_category", "Other" ],
-    "q": "What room/sound combo would work?"
+    "q": "What room/sound combo would work?",
+    "desc_pre": "We have a very limited number of rooms that have sound equipment. These include the large dance hall spaces, and a small number of the concert rooms. We have a larger number of concert rooms which do not have sound. This event has a greater chance of being scheduled if you do not need sound equipment. "
   },
 
   { "id": "piano",
