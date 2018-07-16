@@ -2,7 +2,7 @@
 
 require_once ($_SERVER['APP_ROOT'] . "/app.php");
 
-$arg_app_id = trim (@$_REQUEST['app_id']);
+$arg_app_id = intval (@$_REQUEST['app_id']);
 $arg_show_all = intval (@$_REQUEST['show_all']);
 
 pstart ();
@@ -23,7 +23,7 @@ if ($arg_app_id) {
 }
 
 if ($username) {
-    $t = sprintf ("index.php?app_id=%s&show_all=1", rawurlencode ($arg_app_id));
+    $t = sprintf ("index.php?app_id=%d&show_all=1", $arg_app_id);
     $body .= sprintf ("<div class='debug_box'>%s</div>\n", 
                       mklink ("show all questions", $t));
 }
@@ -117,8 +117,8 @@ if ($cfg['conf_key'] == "pace")
 
 $body .= mklink ("[admin]", "admin.php");
 
-$body .= sprintf ("<input type='hidden' name='app_id' value='%s' />\n",
-                  h($arg_app_id));
+$body .= sprintf ("<input type='hidden' name='app_id' value='%d' />\n",
+                  $arg_app_id);
 
 foreach ($questions as $question) {
     $question_id = $question['id'];

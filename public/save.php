@@ -3,13 +3,13 @@
 require_once ($_SERVER['APP_ROOT'] . "/app.php");
 require_once ($_SERVER['APP_ROOT'] . "/JsonPatch.php");
 
-$app_id = trim (@$_REQUEST['app_id']);
+$app_id = intval (@$_REQUEST['app_id']);
 
 pstart ();
 
-if ($app_id == "") {
+if ($app_id == 0) {
     $need_patch = 0;
-    $app_id = 'E' . get_seq ();
+    $app_id = get_seq ();
 } else {
     $need_patch = 1;
 }

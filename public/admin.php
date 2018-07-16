@@ -26,7 +26,7 @@ $q = query ("select app_id, ts, username, val"
 
 $rows = array ();
 while (($r = fetch ($q)) != NULL) {
-    $target = sprintf ("index.php?app_id=%s", rawurlencode ($r->app_id));
+    $target = sprintf ("index.php?app_id=%d", $r->app_id);
 
     /* ignore patches */
     if (strncmp ($r->val, "[", 1) == 0)
