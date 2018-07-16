@@ -60,9 +60,7 @@ function make_db_connection ($db, $dbparams, $create) {
             $dsn = sprintf ("mysql:host=%s;charset:utf8",
                             $dbparams['host']);
             $db->pdo = new PDO ($dsn,
-                                $dbparams['user'], $dbparams['password'],
-                                array (PDO::MYSQL_ATTR_INIT_COMMAND
-                                       => "set names 'utf8'"));
+                                $dbparams['user'], $dbparams['password']);
             $db->pdo->exec ("set character set utf8");
             $db->pdo->exec ("set session time_zone = '+00:00'");
             $db->pdo->exec (sprintf ("use `%s`", $db->dbname));
