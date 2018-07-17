@@ -154,3 +154,20 @@ function get_application ($app_id) {
     return ($application);
 }
 
+function all_digits ($val) {
+    return (preg_match ('/^[0-9][0-9]*$/', $val));
+}
+
+function associative_array ($arr) {
+    $ret = 0;
+    if (is_array ($arr)) {
+        foreach ($arr as $key => $dummy) {
+            if (! all_digits ($key)) {
+                $ret = 1;
+                break;
+            }
+        }
+    }
+    return ($ret);
+}
+

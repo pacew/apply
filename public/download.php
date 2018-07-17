@@ -104,19 +104,16 @@ foreach ($apps as $app) {
         $val = @$app[$question_id];
         $col = "";
         if (! is_array ($val)) {
-            $col = trim ($val);
+            $col = $val;
         } else {
             $elts = array ();
-            if (isset ($val[0])) {
-                foreach ($val as $elt) {
-                    $elt = preg_replace ('/\|=/', "~", $elt);
-                    $elts[] = $elt;
+            if (associative_array ($val)) {
+                foreach ($val as $key => $elt) {
+                    $elts[] = $key . "=" . preg_replace ("/[\|=]/", "~", $elt);
                 }
             } else {
-                foreach ($val as $key => $elt) {
-                    $key = preg_replace ("/\|=/", "~", $key);
-                    $elt = preg_replace ("/\|=/", "~", $elt);
-                    $elts[] = $key . "=" . $elt;
+                foreach ($val as $elt) {
+                    $elts[] = preg_replace ("/[\|]/", "~", $elt);
                 }
             }
             $col = implode ("|", $elts);

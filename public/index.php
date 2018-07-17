@@ -104,6 +104,8 @@ function make_schedule ($application, $question_id) {
 }
 
 function make_room_sound ($application, $question_id) {
+    $curval = @$application->curvals[$question_id];
+
     $input_id = sprintf ("i_%s", $question_id);
 
     $ret = "<div class='room_sound'>\n";
@@ -126,13 +128,18 @@ function make_room_sound ($application, $question_id) {
         
         $cols = array ();
         $cols[] = h($val);
-        $cols[] = sprintf ("<input type='radio' name='%s[%s]' value='yes' />",
-                           $input_id, h($id));
-        $cols[] = sprintf ("<input type='radio' name='%s[%s]'"
-                           ." value='if_necessary' />",
-                           $input_id, h($id));
-        $cols[] = sprintf ("<input type='radio' name='%s[%s]' value='no' />",
-                           $input_id, h($id));
+
+        $choices = array ("yes", "if_necessary", "no");
+        foreach ($choices as $choice) {
+            $c = "";
+            if (strcmp (@$curval[$id], $choice) == 0)
+                $c = "checked='checked'";
+            $cols[] = sprintf ("<input type='radio' $c"
+                               ." name='%s[%s]'"
+                               ." value='%s' />",
+                               $input_id, h($id),
+                               h($choice));
+        }
         $rows[] = $cols;
     }
     $ret .= mktable (array ("Room type", "Yes", "If necessary", "No"), $rows);

@@ -24,23 +24,20 @@ foreach ($questions as $question) {
     
     $raw_val = @$_REQUEST[$input_id];
     if (is_array ($raw_val)) {
-        $trimmed = array ();
-        foreach ($raw_val as $key => $val) {
-            $val = trim ($val);
-            if ($val !== "") {
-                if (preg_match ('/^[0-9][0-9]*$/', $key)) {
-                    $trimmed[] =$val;
-                } else {
-                    $trimmed[$key] = $val;
-                }
+        $clean = array ();
+        if (associative_array ($raw_val)) {
+            foreach ($raw_val as $key => $val) {
+                $clean[$key] = preg_replace ("/[\|=]/", "~", $val);
+            }
+        } else {
+            foreach ($raw_val as $val) {
+                $clean[] = preg_replace ("/[\|]/", "~", $val);
             }
         }
-        $store_val = $trimmed;
+        $newvals[$id] = $clean;
     } else {
-        $store_val = trim ($raw_val);
+        $newvals[$id] = $raw_val;
     }
-        
-    $newvals[$id] = $store_val;
 }
 
 if ($need_patch == 0) {

@@ -1,0 +1,33 @@
+Notes on the NEFFA Application CSV format
+
+The character set encoding is UTF8
+
+Standard csv quoting is done, as implemented by PHP fputcsv.
+Specfically, "simple" values are output directly.  "hard" cases,
+containing whitespace, double quotes, etc, are enclosed in double
+quotes, and double quote itself is doubled.
+
+Note that newlines are allowed in values, such as description fields.
+(they will be within double quoted strings), so a single row may
+occupy multiple lines in the file, as is standard in CSV.  Newlines
+may be represented by \n, \r\n (and maybe by just \r), depending on
+what the broswer sends.  I've observed \r\n sent by chrome on linux.
+
+To represent a list within a CSV cell, vertical bars (|) are used to
+separate elements.  User input is filtered, changing vertical bars to
+tildes (~), so downstream programs can parse by simply splitting on
+vertical bars.
+
+An associative array is used for the room_sound field and is stored
+like this: stage_with=yes|single_mic=if_necessary These values are not
+input by the user so there is not a quoting problem.  Downstream
+programs should split on vertical bars, then split on equals sign.
+
+The first column is called app_id and is always an integer and will be
+unique in the file.  The rest of the columns are in the order of the
+questions.json file, and the header gives the column names according
+to the "id" fields in questions.json. Downstream programs should be
+aware that columns may be added, removed, or reordered if the
+questions file is changed.
+
+
