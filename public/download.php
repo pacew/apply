@@ -41,12 +41,23 @@ if ($arg_view_data) {
             if (is_array ($val)) {
                 if (count ($val) > 0) {
                     $body .= sprintf ("%s=", h($key));
-                    $body .= "[";
-                    foreach ($val as $elt) {
-                        if (trim ($elt) != "")
-                            $body .= sprintf ("<strong>%s</strong>; ", h($elt));
+                    if (isset ($val[0])) {
+                        $body .= "[";
+                        foreach ($val as $elt) {
+                            if (trim ($elt) != "")
+                                $body .= sprintf ("<strong>%s</strong>; ", 
+                                                  h($elt));
+                        }
+                        $body .= "]";
+                    } else {
+                        $body .= "[";
+                        foreach ($val as $key => $elt) {
+                            if (trim ($elt) != "")
+                                $body .= sprintf ("<strong>%s=%s</strong>; ", 
+                                                  h($key), h($elt));
+                        }
+                        $body .= "]";
                     }
-                    $body .= "]";
                 }
             } else {
                 if (trim ($val) != "") {
@@ -62,7 +73,7 @@ if ($arg_view_data) {
 }
 
 if ($arg_view_json) {
-    $body .= h(json_encode ($apps));
+    $body .= h(json_encode ($apps, JSON_PRETTY_PRINT));
     pfinish ();
 }
 

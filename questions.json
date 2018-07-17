@@ -241,43 +241,9 @@
     ]
   },
 
-  { "id": "room_single",
+  { "id": "room_sound",
     "show_if": [ "app_category", "Other" ],
-    "q": "Would this event work in a single classroom?",
-    "choices": [ 
-      { "val": "Good", "desc": "Yes, it would work fine in this location" },
-      { "val": "OK", "desc": "Not ideal, but it would work" },
-      { "val": "No", "desc": "No, this would be a poor location" }
-    ]
-  },
-  { "id": "room_double",
-    "show_if": [ "app_category", "Other" ],
-    "q": "Would this event work in a double classroom?",
-    "choices": [ 
-      { "val": "Good", "desc": "Yes, it would work fine in this location" },
-      { "val": "OK", "desc": "Not ideal, but it would work" },
-      { "val": "No", "desc": "No, this would be a poor location" }
-    ]
-  },
-  { "id": "room_stage",
-    "show_if": [ "app_category", "Other" ],
-    "q": "Would this event work on an auditorium stage?",
-    "choices": [ 
-      { "val": "Good", "desc": "Yes, it would work fine in this location" },
-      { "val": "OK", "desc": "Not ideal, but it would work" },
-      { "val": "No", "desc": "No, this would be a poor location" }
-    ]
-  },
-
-  { "id": "sound",
-    "show_if": [ "app_category", "Other" ],
-    "q": "Does this event need sound equipment?",
-    "choices": [ 
-      { "val": "Yes" },
-      { "val": "No" }
-    ],
-    "desc": "The sound equipment available in single classrooms is a self-service mic.  In double classrooms and on the stages, there are full sound systems."
-  },
+    "q": "What room/sound combo would work for this event?" },
 
   { "id": "piano",
     "show_if": [ "app_category", "Band", "Other" ],

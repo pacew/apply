@@ -22,12 +22,6 @@ if ($arg_app_id) {
     $application = get_application ($arg_app_id);
 }
 
-if ($username) {
-    $t = sprintf ("index.php?app_id=%d&show_all=1", $arg_app_id);
-    $body .= sprintf ("<div class='debug_box'>%s</div>\n", 
-                      mklink ("show all questions", $t));
-}
-
 $body .= sprintf ("<script type='text/javascript'>\n");
 $body .= sprintf ("var questions = %s;\n", json_encode ($questions));
 $body .= "</script>\n";
@@ -105,6 +99,45 @@ function make_schedule ($application, $question_id) {
     return ($ret);
 }
 
+function make_room_sound ($application, $question_id) {
+    $input_id = sprintf ("i_%s", $question_id);
+
+    $ret = "<div class='room_sound'>\n";
+
+    $kinds = array (
+        array ("stage_with", "An auditorium stage with amplification" ),
+        array ("stage_without", "An auditorium stage with NO amplification"),
+        array ("double_with", "A double classroom with amplification" ),
+        array ("double_without", "A double classroom with NO amplification" ),
+        array ("single_mic", 
+               "A single classroom with a single performer-operated mic"),
+        array ("single_without", 
+               "A single classroom with NO sound equipment")
+    );
+
+    $rows = array ();
+    foreach ($kinds as $kind) {
+        $id = $kind[0];
+        $val = $kind[1];
+        
+        $cols = array ();
+        $cols[] = h($val);
+        $cols[] = sprintf ("<input type='radio' name='%s[%s]' value='yes' />",
+                           $input_id, h($id));
+        $cols[] = sprintf ("<input type='radio' name='%s[%s]'"
+                           ." value='if_necessary' />",
+                           $input_id, h($id));
+        $cols[] = sprintf ("<input type='radio' name='%s[%s]' value='no' />",
+                           $input_id, h($id));
+        $rows[] = $cols;
+    }
+    $ret .= mktable (array ("Room type", "Yes", "If necessary", "No"), $rows);
+    
+    $ret .= "</div>\n";
+
+    return ($ret);
+}
+
 $body .= "<form id='apply_form' action='save.php' method='post'>\n";
 
 /* prevent ENTER in text field from submitting the form ... users
@@ -112,19 +145,31 @@ $body .= "<form id='apply_form' action='save.php' method='post'>\n";
 $body .= "<button type='submit' onclick='return false' style='display:none'>"
       ."</button>\n";
 
-$body .= "<div class='debug_box'>\n";
+if ($username) {
+    $body .= "<div class='debug_box'>\n";
 
-if ($cfg['conf_key'] == "pace") 
     $body .= "<input type='submit' value='Submit' />\n";
 
-$body .= mklink ("[admin]", "admin.php");
+    $body .= mklink ("[admin]", "admin.php");
 
-$body .= "<div>\n";
-$body .= "<input type='checkbox' id='allow_blanks' />"
-      ." check here to allow submissions with blank required fields";
-$body .= "</div>\n";
+    $body .= "<div>testing options</div>\n";
+    $body .= "<div>\n";
+    $c = "";
+    if (getsess ("all_optional"))
+        $c = "checked='checked'";
+    $body .= "<input type='checkbox' $c id='all_optional' />"
+          ." allow submissions with missing required fields";
+    $body .= "</div>\n";
+    $body .= "<div>\n";
+    $c = "";
+    if (getsess ("show_all"))
+        $c = "checked='checked'";
+    $body .= "<input type='checkbox' $c id='show_all' />"
+          ." show all questions";
+    $body .= "</div>\n";
 
-$body .= "</div>\n";
+    $body .= "</div>\n";
+}
 
 $body .= sprintf ("<input type='hidden' name='app_id' value='%d' />\n",
                   $arg_app_id);
@@ -165,6 +210,8 @@ foreach ($questions as $question) {
     
     if ($question_id == "availability") {
         $body .= make_schedule ($application, $question_id);
+    } else if ($question_id == "room_sound") {
+        $body .= make_room_sound ($application, $question_id);
     } else if (@$question['choices']) {
         foreach ($question['choices'] as $choice) {
             $body .= "<div>\n";

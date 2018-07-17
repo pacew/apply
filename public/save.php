@@ -22,20 +22,25 @@ foreach ($questions as $question) {
     $id = $question['id'];
     $input_id = sprintf ("i_%s", $id);
     
-    $val = @$_REQUEST[$input_id];
-    if (is_array ($val)) {
+    $raw_val = @$_REQUEST[$input_id];
+    if (is_array ($raw_val)) {
         $trimmed = array ();
-        foreach ($val as $str) {
-            $str = trim ($str);
-            if ($str)
-                $trimmed[] = $str;
+        foreach ($raw_val as $key => $val) {
+            $val = trim ($val);
+            if ($val !== "") {
+                if (preg_match ('/^[0-9][0-9]*$/', $key)) {
+                    $trimmed[] =$val;
+                } else {
+                    $trimmed[$key] = $val;
+                }
+            }
         }
-        $val = $trimmed;
+        $store_val = $trimmed;
     } else {
-        $val = trim ($val);
+        $store_val = trim ($raw_val);
     }
         
-    $newvals[$id] = $val;
+    $newvals[$id] = $store_val;
 }
 
 if ($need_patch == 0) {

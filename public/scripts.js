@@ -1,12 +1,6 @@
-var params = (new URL(location)).searchParams;
-var show_all = parseInt (params.get ("show_all"));
-if (isNaN (show_all))
-  show_all = 0;
-
-var all_optional = cfg.conf_key == "pace" ? 1 : 0;
-//all_optional = 0;
-
 function update_hides () {
+  let show_all = $("#show_all").is(":checked");
+
   for (var idx in questions) {
     var q = questions[idx];
     var want_field;
@@ -30,14 +24,16 @@ function update_hides () {
       $("#"+section_id).hide();
     }
   }
+
+  if (show_all)
+    $(".debug").show();
+  else
+    $(".debug").hide();
 }
 
 
 function is_required_question_empty (q) {
-  if (all_optional)
-    return (false);
-
-  if ($("#allow_blanks").is(":checked"))
+  if ($("#all_optional").is(":checked"))
     return (false);
 
   if (q.optional)
@@ -200,6 +196,15 @@ function do_sched_item (ev) {
   }
 }
 
+function do_session_option (ev) {
+  var elt = ev.target;
+  var val = elt.checked ? 1 : 0;
+  $.get ("set_session_option.php", {
+    "var": elt.id,
+    "val": val
+  });
+}
+
 $(function () {
   $("input[type='radio']").change (update_hides);
   $("#apply_form").submit (apply_submit);
@@ -215,7 +220,8 @@ $(function () {
   setup_lookups ();
   
   $("#add_another").click(do_add_another);
+  
+  $("#show_all").change (do_session_option);
+  $("#all_optional").change (do_session_option);
 
-  if (show_all)
-    $(".debug").show();
 });

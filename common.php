@@ -393,6 +393,14 @@ function pfinish () {
     exit (0);
 }
 
+function json_finish ($val) {
+    do_commits ();
+    ob_end_clean ();
+    header ("Content-Type: application/json");
+    echo (json_encode ($val));
+    exit ();
+}
+
 $urandom_chars = "0123456789abcdefghijklmnopqrstuvwxyz";
 
 function generate_urandom_string ($len, $charset = "") {
