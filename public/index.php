@@ -47,15 +47,16 @@ function make_schedule ($application, $question_id) {
     $ret .= "<input id='sched_any' type='checkbox'>"
          ." Any time during the festival\n";
 
+    $day_names = array ("", "Friday", "Saturday", "Sunday");
+
     $rows = array ();
 
     $cols = array ();
-    for ($day = 0; $day <= 1; $day++) {
-        $days = array ("Saturday", "Sunday");
+    for ($day = 1; $day <= 3; $day++) {
         $cols[] = sprintf ("<input type='checkbox'"
                            ." class='sched_all_day'"
                            ." data-day='%d'> Any time %s",
-                           $day, $days[$day]);
+                           $day, $day_names[$day]);
     }
     $rows[] = $cols;
 
@@ -64,10 +65,13 @@ function make_schedule ($application, $question_id) {
         $to = h24_to_12 ($hour + 1);
 
         $cols = array ();
-        for ($day = 0; $day <= 1; $day++) {
+        for ($day = 1; $day <= 3; $day++) {
             $text = sprintf ("%s to %s", $from, $to);
 
             if ($day == 1) {
+                if ($hour < 19)
+                    $text = "";
+            } else if ($day == 3) {
                 if ($hour == 16) {
                     $text = "4pm to 5:30pm";
                 } else if ($hour > 16) {
@@ -75,7 +79,7 @@ function make_schedule ($application, $question_id) {
                 }
             }
 
-            $code = ($day + 1) * 1000 + $hour;
+            $code = $day * 100000 + $hour * 100;
             $html = "";
             if ($text) {
                 $c = "";
@@ -92,7 +96,7 @@ function make_schedule ($application, $question_id) {
         $rows[] = $cols;
     }
 
-    $ret .= mktable (array ("Saturday", "Sunday"), $rows);
+    $ret .= mktable (array ("Friday", "Saturday", "Sunday"), $rows);
 
     $ret .= "</div>\n";
     
