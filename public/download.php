@@ -7,6 +7,8 @@ pstart ();
 $arg_view_data = intval (@$_REQUEST['view_data']);
 $arg_view_json = intval (@$_REQUEST['view_json']);
 $arg_download_json = intval (@$_REQUEST['download_json']);
+$arg_view_csv = intval (@$_REQUEST['view_csv']);
+$arg_download_csv = intval (@$_REQUEST['download_csv']);
 
 $apps = array ();
 
@@ -84,3 +86,60 @@ if ($arg_download_json) {
     echo (json_encode ($apps));
     exit ();
 }
+
+$questions = get_questions ();
+
+$outf = tmpfile ();
+
+$colnames = array ();
+$colnames[] = "app_id";
+foreach ($questions as $question) {
+    $colnames[] = $question['id'];
+}
+fputcsv ($outf, $colnames);
+
+foreach ($apps as $app) {
+    $cols = array ();
+    foreach ($colnames as $question_id) {
+        $val = @$app[$question_id];
+        $col = "";
+        if (! is_array ($val)) {
+            $col = trim ($val);
+        } else {
+            $elts = array ();
+            if (isset ($val[0])) {
+                foreach ($val as $elt) {
+                    $elt = preg_replace ('/\|=/', "~", $elt);
+                    $elts[] = $elt;
+                }
+            } else {
+                foreach ($val as $key => $elt) {
+                    $key = preg_replace ("/\|=/", "~", $key);
+                    $elt = preg_replace ("/\|=/", "~", $elt);
+                    $elts[] = $key . "=" . $elt;
+                }
+            }
+            $col = implode ("|", $elts);
+        }
+        $cols[] = $col;
+    }
+    fputcsv ($outf, $cols);
+}
+
+rewind ($outf);
+    
+if ($arg_view_csv) {
+    $body .= "<pre>\n";
+    $body .= h(fread ($outf, 100000));
+    $body .= "</pre>\n";
+    pfinish ();
+}
+
+if ($arg_download_csv) {
+    ob_end_clean ();
+    header ("Content-Type: application/csv");
+    header ("Content-Disposition: attachment; filename=applications.csv");
+    fpassthru ($outf);
+    exit ();
+}
+

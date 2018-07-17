@@ -14,6 +14,10 @@ $body .= " | ";
 $body .= mklink ("view json", "download.php?view_json=1");
 $body .= " | ";
 $body .= mklink ("download json", "download.php?download_json=1");
+$body .= " | ";
+$body .= mklink ("view csv", "download.php?view_csv=1");
+$body .= " | ";
+$body .= mklink ("download csv", "download.php?download_csv=1");
 $body .= "</div>\n";
 
 $body .= mklink ("debug questions", "index.php?show_all=1");
