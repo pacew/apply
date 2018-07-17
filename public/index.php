@@ -52,7 +52,7 @@ function make_schedule ($application, $question_id) {
     $rows = array ();
 
     $cols = array ();
-    for ($day = 1; $day <= 3; $day++) {
+    for ($day = 2; $day <= 3; $day++) {
         $cols[] = sprintf ("<input type='checkbox'"
                            ." class='sched_all_day'"
                            ." data-day='%d'> Any time %s",
@@ -65,7 +65,7 @@ function make_schedule ($application, $question_id) {
         $to = h24_to_12 ($hour + 1);
 
         $cols = array ();
-        for ($day = 1; $day <= 3; $day++) {
+        for ($day = 2; $day <= 3; $day++) {
             $text = sprintf ("%s to %s", $from, $to);
 
             if ($day == 1) {
@@ -96,7 +96,7 @@ function make_schedule ($application, $question_id) {
         $rows[] = $cols;
     }
 
-    $ret .= mktable (array ("Friday", "Saturday", "Sunday"), $rows);
+    $ret .= mktable (array ("Saturday", "Sunday"), $rows);
 
     $ret .= "</div>\n";
     

@@ -23,6 +23,11 @@ like this: stage_with=yes|single_mic=if_necessary These values are not
 input by the user so there is not a quoting problem.  Downstream
 programs should split on vertical bars, then split on equals sign.
 
+The time availability is coded as an array of integers, separated by
+vertical bars.  Each element has the form D0HHMM where D is for day
+(1=Friday, 2=Saturday, 3=Sunday).  0 is a separator for readability,
+and HHMM is the start time in 24 hour notation.
+
 The first column is called app_id and is always an integer and will be
 unique in the file.  The rest of the columns are in the order of the
 questions.json file, and the header gives the column names according
