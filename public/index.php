@@ -149,6 +149,24 @@ function make_room_sound ($application, $question_id) {
     return ($ret);
 }
 
+$body .= "<div>\n";
+$body .= mklink ("All questions as plain text page", "plain.php");
+$body .= "</div>\n";
+
+
+$body .= "<p>\n"
+      ."Several questions ask for names of performers or groups.  It's"
+      ." important to make sure these entries match the NEFFA Performer"
+      ." Index for existing performers.  When you type a name in these"
+      ." fields, the system will pop up a box of possible matches, if"
+      ." any are found.  If you can't find someone who you think should"
+      ." be in the master database, it may help if you visit this page"
+      ." and hunt around: "
+      .mklink_nw ("NEFFA Performer Index",
+                  "https://cgi.neffa.org//public/showperf.pl?INDEX=ALL")
+      ."</p>\n"
+      ;
+
 $body .= "<form id='apply_form' action='save.php' method='post'>\n";
 
 /* prevent ENTER in text field from submitting the form ... users

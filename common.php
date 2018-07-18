@@ -500,6 +500,15 @@ function mklink ($text, $target) {
 			 fix_target ($target), h($text)));
 }
 
+function mklink_nw ($text, $target) {
+	if (trim ($text) == "")
+		return ("");
+	if (trim ($target) == "")
+		return (h($text));
+	return (sprintf ("<a target='_blank' href='%s'>%s</a>",
+			 fix_target ($target), h($text)));
+}
+
 function make_confirm ($question, $button, $args) {
 	global $request_uri;
 	$ret = "";

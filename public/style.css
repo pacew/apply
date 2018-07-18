@@ -153,3 +153,9 @@ p {
     color: #22cc08;
     font-weight: bold;
 }
+
+
+.plain_question h1 span {
+    font-weight: normal;
+    font-size: smaller;
+}
