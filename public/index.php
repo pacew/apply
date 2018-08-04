@@ -44,60 +44,61 @@ function make_schedule ($application, $question_id) {
 
     $ret = "<div class='schedule'>\n";
 
-    $ret .= "<input id='sched_any' type='checkbox'>"
-         ." Any time during the festival\n";
+    $ret = "";
+    $ret .= "<table class='boxed sched'>\n";
+    $ret .= "<thead>\n";
+    $ret .= "<tr class='boxed_header'>\n";
+    $ret .= "<th>Time</th>\n";
+    $ret .= "<th colspan='3' class='group2'>Saturday</th>\n";
+    $ret .= "<th colspan='3'>Sunday</th>\n";
+    $ret .= "</tr>\n";
+    $ret .= "<tr class='boxed_header'>\n";
+    $ret .= "<th></th>\n";
+    $ret .= "<th class='group2'>No</th>\n";
+    $ret .= "<th class='group2'>OK</th>\n";
+    $ret .= "<th class='group2'>Preferred</th>\n";
+    $ret .= "<th>No</th>\n";
+    $ret .= "<th>OK</th>\n";
+    $ret .= "<th>Preferred</th>\n";
+    $ret .= "</tr>\n";
+    $ret .= "</thead>\n";
 
-    $day_names = array ("", "Friday", "Saturday", "Sunday");
-
-    $rows = array ();
-
-    $cols = array ();
-    for ($day = 2; $day <= 3; $day++) {
-        $cols[] = sprintf ("<input type='checkbox'"
-                           ." class='sched_all_day'"
-                           ." data-day='%d'> Any time %s",
-                           $day, $day_names[$day]);
-    }
-    $rows[] = $cols;
-
-    for ($hour = 10; $hour <= 23; $hour++) {
+    $ret .= "<tbody>\n";
+    for ($hour = 10; $hour <= 17; $hour++) {
         $from = h24_to_12 ($hour);
         $to = h24_to_12 ($hour + 1);
-
-        $cols = array ();
+        
+        $ret .= "<tr>\n";
+        $ret .= sprintf ("<td>%s to %s</td>\n", $from, $to);
         for ($day = 2; $day <= 3; $day++) {
-            $text = sprintf ("%s to %s", $from, $to);
-
-            if ($day == 1) {
-                if ($hour < 19)
-                    $text = "";
-            } else if ($day == 3) {
-                if ($hour == 16) {
-                    $text = "4pm to 5:30pm";
-                } else if ($hour > 16) {
-                    $text = "";
-                }
-            }
-
+            $class = "";
+            if ($day == 2)
+                $class = "group2";
+            
             $code = $day * 100000 + $hour * 100;
-            $html = "";
-            if ($text) {
-                $c = "";
-                if ($curvals && array_search ($code, $curvals) !== FALSE)
-                    $c = "checked='checked'";
-                $html = sprintf ("<input type='checkbox' class='sched_item' $c"
-                                 ." data-day='%d'"
-                                 ." name='%s[]' value='%d' /> %s\n", 
-                                 $day, $input_id, $code, $text);
+            
+            $name = sprintf ("%s[%d]", $input_id, $code);
+            
+            for ($val = 0; $val <= 2; $val++) {
+                $checked = "";
+                if (isset ($curvals[$code]) && $curvals[$code] == $val)
+                    $checked = "checked='checked'";
+                
+                $ret .= sprintf ("<td class='%s'>", $class);
+                if ($day == 2 || ($day == 3 && $hour <= 15)) {
+                    $ret .= sprintf (
+                        "<input type='radio'"
+                        ." name='%s' value='%d' %s>",
+                        $name, $val, $checked);
+                }
+                $ret .= "</td>\n";
             }
-
-            $cols[] = $html;
         }
-        $rows[] = $cols;
+        $ret .= "</tr>\n";
     }
-
-    $ret .= mktable (array ("Saturday", "Sunday"), $rows);
-
+    $ret .= "</tbody>\n";
+    $ret .= "</table>\n";
+    
     $ret .= "</div>\n";
     
     return ($ret);

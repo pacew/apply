@@ -41,10 +41,17 @@ a:hover {
 
 .boxed th {
     text-align: left;
-    background-color:#6599FF;
     background-color: hsl(220, 100%, 70%);
     color: white;
     white-space: nowrap;
+}
+
+.boxed th.group2 {
+    background-color: hsl(220, 60%, 70%);
+}
+
+.boxed td.group2 {
+    background-color: hsl(220, 50%, 92%);
 }
 
 .boxed tr.even {
@@ -53,13 +60,16 @@ a:hover {
 
 .boxed th, .boxed td {
     padding:4px 10px;
-    border:2px solid #fff;
+    border:2px solid #ddd;
     border-width:0 2px 2px 0;
 }
 
-.boxed tr:hover {
+.boxed tr:hover, .boxed tr:hover td.group2 {
   background-color: hsl(220, 100%, 80%) !important;
+}
 
+.sched thead th {
+    text-align: center;
 }
 
 

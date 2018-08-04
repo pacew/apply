@@ -159,15 +159,8 @@ function all_digits ($val) {
 }
 
 function associative_array ($arr) {
-    $ret = 0;
-    if (is_array ($arr)) {
-        foreach ($arr as $key => $dummy) {
-            if (! all_digits ($key)) {
-                $ret = 1;
-                break;
-            }
-        }
-    }
-    return ($ret);
+    if (is_array ($arr) && count ($arr) > 0 && ! isset ($arr[0]))
+        return (1);
+    return (0);
 }
 
