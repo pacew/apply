@@ -42,6 +42,23 @@ function make_schedule ($application, $question_id) {
     $curvals = @$application->curvals[$question_id];
     $input_id = sprintf ("i_%s", $question_id);
 
+    if (@$application->curvals['app_category'] == "Performance") {
+        $from_day = 2;
+        $to_day = 3;
+        $from_hour = array (10, 10, 10, 10);
+        $to_hour = array (0, 0, 17, 15);
+    } else {
+        $from_day = 1;
+        $to_day = 3;
+        $from_hour = array (10, 16, 10, 10);
+        $to_hour = array (0, 22, 22, 16);
+    }
+
+    $table_from_hour = min ($from_hour);
+    $table_to_hour = max ($to_hour);
+
+    $day_names = array ("", "Friday", "Saturday", "Sunday");
+
     $ret = "<div class='schedule'>\n";
 
     $ret = "";
@@ -49,28 +66,35 @@ function make_schedule ($application, $question_id) {
     $ret .= "<thead>\n";
     $ret .= "<tr class='boxed_header'>\n";
     $ret .= "<th>Time</th>\n";
-    $ret .= "<th colspan='3' class='group2'>Saturday</th>\n";
-    $ret .= "<th colspan='3'>Sunday</th>\n";
+    for ($day = $from_day; $day <= $to_day; $day++) {
+        $c = "";
+        if ($day == 2)
+            $c = "class='group2'";
+        $ret .= sprintf ("<th colspan='3' $c>%s</th>\n", $day_names[$day]);
+    }
     $ret .= "</tr>\n";
     $ret .= "<tr class='boxed_header'>\n";
     $ret .= "<th></th>\n";
-    $ret .= "<th class='group2'>No</th>\n";
-    $ret .= "<th class='group2'>OK</th>\n";
-    $ret .= "<th class='group2'>Preferred</th>\n";
-    $ret .= "<th>No</th>\n";
-    $ret .= "<th>OK</th>\n";
-    $ret .= "<th>Preferred</th>\n";
+    for ($day = $from_day; $day <= $to_day; $day++) {
+        $c = "";
+        if ($day == 2)
+            $c = "class='group2'";
+
+        $ret .= "<th $c>No</th>\n";
+        $ret .= "<th $c>OK</th>\n";
+        $ret .= "<th $c>Preferred</th>\n";
+    }
     $ret .= "</tr>\n";
     $ret .= "</thead>\n";
 
     $ret .= "<tbody>\n";
-    for ($hour = 10; $hour <= 17; $hour++) {
+    for ($hour = $table_from_hour; $hour <= $table_to_hour; $hour++) {
         $from = h24_to_12 ($hour);
         $to = h24_to_12 ($hour + 1);
         
         $ret .= "<tr>\n";
         $ret .= sprintf ("<td>%s to %s</td>\n", $from, $to);
-        for ($day = 2; $day <= 3; $day++) {
+        for ($day = $from_day; $day <= $to_day; $day++) {
             $class = "";
             if ($day == 2)
                 $class = "group2";
@@ -85,7 +109,7 @@ function make_schedule ($application, $question_id) {
                     $checked = "checked='checked'";
                 
                 $ret .= sprintf ("<td class='%s'>", $class);
-                if ($day == 2 || ($day == 3 && $hour <= 15)) {
+                if ($from_hour[$day] <= $hour && $hour <= $to_hour[$day]) {
                     $ret .= sprintf (
                         "<input type='radio'"
                         ." name='%s' value='%d' %s>",
