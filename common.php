@@ -227,22 +227,27 @@ function dblib_session_read ($session_id) {
 }
 
 function dblib_session_write ($session_id, $session) {
-	$q = query ("select 0"
-		    ." from sessions"
-		    ." where session_id = ?",
-		    $session_id);
-	$ts = strftime ("%Y-%m-%d %H:%M:%S");
-	global $csrf_skip;
-	$csrf_skip = 1;
-	if (fetch ($q) == NULL) {
-		query ("insert into sessions (session_id, updated, session)"
-		       ." values (?,?,?)",
-		       array ($session_id, $ts, $session));
-	} else {
-		query ("update sessions set updated = ?, session = ?"
-		       ." where session_id = ?",
-		       array ($ts, $session, $session_id));
-	}
+    global $csrf_skip;
+    $csrf_skip = 1;
+
+    if (trim ($session) == "") {
+        query ("delete from sessions where session_id = ?", $session_id);
+    } else {
+        $q = query ("select 0"
+        ." from sessions"
+        ." where session_id = ?",
+        $session_id);
+        $ts = strftime ("%Y-%m-%d %H:%M:%S");
+        if (fetch ($q) == NULL) {
+            query ("insert into sessions (session_id, updated, session)"
+            ." values (?,?,?)",
+            array ($session_id, $ts, $session));
+        } else {
+            query ("update sessions set updated = ?, session = ?"
+            ." where session_id = ?",
+            array ($ts, $session, $session_id));
+        }
+    }
 	$csrf_skip = 0;
 	do_commits ();
     return (TRUE);
