@@ -83,6 +83,12 @@ function is_choice_complete (q) {
   return (false);
 }
 
+function is_email_valid (q) {
+  let input_id = "i_"+q.id;
+  let email = $(document.getElementById (input_id)).val();
+  return /\S+@\S+\.\S+/.test(email);
+}
+
 function valid_response (q) {
   if ($("#all_optional").is(":checked"))
     return (true);
@@ -95,6 +101,9 @@ function valid_response (q) {
 
   if (q.optional)
     return (true);
+
+  if (q.type == "email")
+    return (is_email_valid (q));
 
   if (q.type == "radio")
     return (is_radio_complete (q));
