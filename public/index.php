@@ -42,49 +42,67 @@ function make_schedule ($application, $question_id) {
     $curvals = @$application->curvals[$question_id];
     $input_id = sprintf ("i_%s", $question_id);
 
-    if (@$application->curvals['app_category'] == "Performance") {
-        $from_day = 2;
-        $to_day = 3;
-        $from_hour = array (10, 10, 10, 10);
-        $to_hour = array (0, 0, 17, 15);
-    } else {
-        $from_day = 1;
-        $to_day = 3;
-        $from_hour = array (10, 16, 10, 10);
-        $to_hour = array (0, 22, 22, 16);
-    }
+    $full_from_day = 1;
+    $full_to_day = 3;
+    $full_from_hour = array (24, 16, 10, 10);
+    $full_to_hour =   array ( 0, 22, 22, 16);
 
-    $table_from_hour = min ($from_hour);
-    $table_to_hour = max ($to_hour);
+    $core_from_day = 2;
+    $core_to_day = 3;
+    $core_from_hour = array (24, 24, 10, 10);
+    $core_to_hour =   array ( 0,  0, 17, 15);
+
+    $table_from_hour = min ($full_from_hour);
+    $table_to_hour = max ($full_to_hour);
+
+    $core_min_from_hour = min ($core_from_hour);
+    $core_max_to_hour = max ($core_to_hour);
 
     $day_names = array ("", "Friday", "Saturday", "Sunday");
 
     $ret = "<div class='schedule'>\n";
+
+    $hdr1 = "";
+    $hdr2 = "";
+    for ($day = $full_from_day; $day <= $full_to_day; $day++) {
+        $classes = array ();
+        if ($day == 2)
+            $classes[] = "group2";
+
+        if ($core_from_day <= $day && $day <= $core_to_day) {
+            $classes[] = "sched_core";
+        } else {
+            $classes[] = "sched_ext";
+        }
+        
+        $class_str = implode (' ', $classes);
+        
+        $hdr1 .= sprintf ("<th colspan='3' class='%s'>%s</th>\n",
+                          $class_str, $day_names[$day]);
+
+        $hdr2 .= sprintf ("<th class='%s'>No</th>\n"
+                          ."<th class='%s'>OK</th>\n"
+                          ."<th class='%s'>Preferred</th>\n",
+                          $class_str,
+                          $class_str,
+                          $class_str);
+                          
+    }
+
 
     $ret = "";
     $ret .= "<table class='boxed sched'>\n";
     $ret .= "<thead>\n";
     $ret .= "<tr class='boxed_header'>\n";
     $ret .= "<th>Time</th>\n";
-    for ($day = $from_day; $day <= $to_day; $day++) {
-        $c = "";
-        if ($day == 2)
-            $c = "class='group2'";
-        $ret .= sprintf ("<th colspan='3' $c>%s</th>\n", $day_names[$day]);
-    }
+    $ret .= $hdr1;
     $ret .= "</tr>\n";
+
     $ret .= "<tr class='boxed_header'>\n";
     $ret .= "<th></th>\n";
-    for ($day = $from_day; $day <= $to_day; $day++) {
-        $c = "";
-        if ($day == 2)
-            $c = "class='group2'";
-
-        $ret .= "<th $c>No</th>\n";
-        $ret .= "<th $c>OK</th>\n";
-        $ret .= "<th $c>Preferred</th>\n";
-    }
+    $ret .= $hdr2;
     $ret .= "</tr>\n";
+
     $ret .= "</thead>\n";
 
     $ret .= "<tbody>\n";
@@ -92,13 +110,28 @@ function make_schedule ($application, $question_id) {
         $from = h24_to_12 ($hour);
         $to = h24_to_12 ($hour + 1);
         
-        $ret .= "<tr>\n";
+        $class = "";
+        if ($core_min_from_hour <= $hour && $hour <= $core_max_to_hour) {
+            $class = "sched_core";
+        } else {
+            $class = "sched_ext";
+        }
+        $ret .= sprintf ("<tr class='%s'>\n", $class);
         $ret .= sprintf ("<td>%s to %s</td>\n", $from, $to);
-        for ($day = $from_day; $day <= $to_day; $day++) {
-            $class = "";
+        for ($day = $full_from_day; $day <= $full_to_day; $day++) {
+            $classes = array ();
             if ($day == 2)
-                $class = "group2";
+                $classes[] = "group2";
+
+            if ($core_from_hour[$day] <= $hour
+                && $hour <= $core_to_hour[$day]) {
+                $classes[] = "sched_core";
+            } else {
+                $classes[] = "sched_ext";
+            }
             
+            $class_str = implode (' ', $classes);
+
             $code = $day * 100000 + $hour * 100;
             
             $name = sprintf ("%s[%d]", $input_id, $code);
@@ -108,13 +141,16 @@ function make_schedule ($application, $question_id) {
                 if (isset ($curvals[$code]) && $curvals[$code] == $val)
                     $checked = "checked='checked'";
                 
-                $ret .= sprintf ("<td class='%s'>", $class);
-                if ($from_hour[$day] <= $hour && $hour <= $to_hour[$day]) {
+                $ret .= sprintf ("<td class='%s'>", $class_str);
+
+                if ($full_from_hour[$day] <= $hour
+                    && $hour <= $full_to_hour[$day]) {
                     $ret .= sprintf (
                         "<input type='radio'"
                         ." name='%s' value='%d' %s>",
                         $name, $val, $checked);
                 }
+                
                 $ret .= "</td>\n";
             }
         }
