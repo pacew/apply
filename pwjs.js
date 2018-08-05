@@ -325,6 +325,7 @@ async function postgres_finish () {
     db_pool = null;
   }
 }
+exports.postgres_finish = postgres_finish;
 
 let db_pool = null;
 let db_client = null;
