@@ -1,27 +1,39 @@
+function show_if_test (condition) {
+  var target_id = "i_" + condition[0];
+  var val = $(document.getElementsByName (target_id))
+      .filter ("input:checked")
+      .val();
+  return (condition.includes (val));
+}
+
 function update_hides () {
   let show_all = $("#show_all").is(":checked");
 
   for (var idx in questions) {
     var q = questions[idx];
-    var want_field;
+    var want_field = true;
+
     if (q.show_if) {
-      want_field = false;
-      var target_id = "i_" + q.show_if[0];
-      var val = $("input[name='"+target_id+"']:checked").val();
-      if (q.show_if.includes (val)) {
-	want_field = true;
+      if (Array.isArray (q.show_if[0])) {
+	q.show_if.forEach (function (condition) {
+	  if (! show_if_test (condition))
+	    want_field = false;
+	});
+      } else {
+	if (! show_if_test (q.show_if))
+	  want_field = false;
       }
-    } else {
-      want_field = true;
     }
+
     if (show_all)
       want_field = true;
     
     var section_id = "s_" + q.id;
+    var elt = document.getElementById ("s_"+q.id);
     if (want_field) {
-      $("#"+section_id).show();
+      $(elt).show();
     } else {
-      $("#"+section_id).hide();
+      $(elt).hide();
     }
   }
 
@@ -39,19 +51,22 @@ function is_required_question_empty (q) {
   if (q.optional)
     return (false);
   
-  var input_id = "i_"+q.id;
+  let input_id = "i_"+q.id;
+  let val;
   if (q.choices) {
-    let choice = $("input[name='"+input_id+"']:checked").val();
-    if (choice != undefined && choice.trim() != "")
-      return (false);
+    val = $(document.getElementsByName (input_id))
+      .filter("input:checked")
+      .val();
   } else {
-    if ($("#"+input_id).val().trim() != "")
-      return (false);
+    val = $(document.getElementById (input_id)).val();
   }
 
+  if (val != undefined && val.trim() != "")
+    return (false);
+
   if (q.show_if) {
-    var section_id = "s_"+q.id;
-    if ($("#"+section_id).is(":hidden"))
+    var elt = document.getElementById ("s_"+q.id);
+    if ($(elt).is(":hidden"))
       return (false);
   }
 
@@ -62,9 +77,7 @@ function apply_submit () {
   for (var idx in questions) {
     var q = questions[idx];
     if (is_required_question_empty (q)) {
-      var section_id = "s_" + q.id;
-      console.log (section_id);
-      var section = $("#"+section_id);
+      var section = document.getElementById("s_"+q.id);
       $(section).find(".required_text").html("required");
       $(window).scrollTop ($(section).offset().top);
       return (false); /* kill submit */
@@ -99,7 +112,6 @@ function do_lookup_change (ev) {
     $.getJSON ("lookup_check.php",
 	       { name: val },
 	       (ret) => {
-		 console.log (ret);
 		 $(input_wrapper).find(".group_members").remove();
 		 $(span).find(".lookup_success_msg").remove();
 		 $(span).find(".lookup_fail_msg").remove();

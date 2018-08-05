@@ -114,7 +114,7 @@
   },
 
   { "id": "availability",
-    "show_if": [ "app_category", "Performance" ],
+    "optional": 1,
     "array_val": 1,
     "q": "Availability",
     "desc_pre": "These hours refer to the times that you are available to perform, and NOT your preferred times. Please note that the greater your availability, the greater the likelihood that you will be scheduled."
@@ -229,8 +229,10 @@
   },
 
   { "id": "level",
-    "show_if": [ "app_category", "Caller", "Other" ],
-    "hide_if": [ "event_type", "E", "C", "P" ],
+    "show_if": [
+      [ "app_category", "Caller", "Other" ],
+      [ "event_type", "G", "T", "D", "N" ]
+    ],
     "q": "Level Code",
     "desc": "These level codes indicate the intended level of experience or ability, especially for dance and teaching events.",
     "choices": [
@@ -243,6 +245,7 @@
   },
 
   { "id": "room_sound",
+    "optional": 1,
     "show_if": [ "app_category", "Other" ],
     "q": "What room/sound combo would work for this event?" },
 
