@@ -62,8 +62,12 @@ function make_schedule ($application, $question_id) {
 
     $ret = "<div class='schedule'>\n";
 
+    $ret .= "<div><input type='checkbox' id='sched_any'>"
+         ." Any time during the festival is OK</div>\n";
+
     $hdr1 = "";
     $hdr2 = "";
+    $hdr3 = "";
     for ($day = $full_from_day; $day <= $full_to_day; $day++) {
         $classes = array ();
         if ($day == 2)
@@ -80,7 +84,14 @@ function make_schedule ($application, $question_id) {
         $hdr1 .= sprintf ("<th colspan='3' class='%s'>%s</th>\n",
                           $class_str, $day_names[$day]);
 
-        $hdr2 .= sprintf ("<th class='%s'>No</th>\n"
+        $hdr2 .= sprintf ("<th colspan='3' class='%s'>"
+                          ."<input class='sched_all_day' type='checkbox'"
+                          ." data-day='%d' />"
+                          ." Any time today"
+                          ."</th>\n",
+                          $class_str, $day);
+
+        $hdr3 .= sprintf ("<th class='%s'>No</th>\n"
                           ."<th class='%s'>OK</th>\n"
                           ."<th class='%s'>Preferred</th>\n",
                           $class_str,
@@ -90,7 +101,6 @@ function make_schedule ($application, $question_id) {
     }
 
 
-    $ret = "";
     $ret .= "<table class='boxed sched'>\n";
     $ret .= "<thead>\n";
     $ret .= "<tr class='boxed_header'>\n";
@@ -101,6 +111,11 @@ function make_schedule ($application, $question_id) {
     $ret .= "<tr class='boxed_header'>\n";
     $ret .= "<th></th>\n";
     $ret .= $hdr2;
+    $ret .= "</tr>\n";
+
+    $ret .= "<tr class='boxed_header'>\n";
+    $ret .= "<th></th>\n";
+    $ret .= $hdr3;
     $ret .= "</tr>\n";
 
     $ret .= "</thead>\n";
@@ -146,9 +161,9 @@ function make_schedule ($application, $question_id) {
                 if ($full_from_hour[$day] <= $hour
                     && $hour <= $full_to_hour[$day]) {
                     $ret .= sprintf (
-                        "<input type='radio'"
+                        "<input class='sched_item' type='radio' data-day='%d'"
                         ." name='%s' value='%d' %s>",
-                        $name, $val, $checked);
+                        $day, $name, $val, $checked);
                 }
                 
                 $ret .= "</td>\n";

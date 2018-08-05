@@ -54,10 +54,29 @@ function update_hides () {
     $(".debug").hide();
 }
 
+function is_availability_missing () {
+  let names = {};
+  let saw_blank = false;
+  $("#s_availability input[type=radio]").each (function (idx, elt) {
+    if (! $(elt).is(":hidden")) {
+      let name = $(elt).attr("name");
+      let val = $(document.getElementsByName (name))
+	  .filter ("input:checked")
+	  .val();
+      if (val == undefined)
+	saw_blank = true;
+    }
+  });
+
+  return (saw_blank);
+}
 
 function is_required_question_empty (q) {
   if ($("#all_optional").is(":checked"))
     return (false);
+
+  if (q.id == "availability")
+    return (is_availability_missing ());
 
   if (q.optional)
     return (false);
@@ -190,33 +209,42 @@ function setup_lookups () {
 }
 
 function do_sched_any (ev) {
-  var elt = ev.target;
-  checked = elt.checked;
-  $(".sched_item").prop ("checked", checked);
-  $(".sched_all_day").prop ("checked", checked);
+  let elt = ev.target;
+  let checked = elt.checked;
+
+  if (checked) {
+    $("#s_availability input[type=radio]").each (function (idx, elt) {
+      if (! $(elt).is(":hidden")) {
+	if ($(elt).val() == 1)
+	  $(elt).prop ("checked", true);
+      }
+    });
+
+    $(".sched_all_day").prop ("checked", true);
+  }
 }
 
 function do_all_day (ev) {
   var elt = ev.target;
   var checked = elt.checked;
-  
   var day = $(elt).data("day");
 
-  $(".sched_item").filter (function () { 
-    return ($(this).attr ("data-day") == day) 
-  }).prop ("checked", checked);
+  if (checked) {
+    $("#s_availability input[type=radio]").each (function (idx, elt) {
+      if (! $(elt).is(":hidden")) {
+	if ($(elt).data("day") == day && $(elt).val() == 1) {
+	  $(elt).prop ("checked", true);
+	}
+      }
+    });
+  }
 
   $("#sched_any").prop ("checked", false);
 }
 
 function do_sched_item (ev) {
-  var elt = ev.target;
-  var checked = elt.checked;
-  
-  if (! checked) {
-    $("#sched_any").prop ("checked", false);
-    $(".sched_all_day").prop ("checked", false);
-  }
+  $("#sched_any").prop ("checked", false);
+  $(".sched_all_day").prop ("checked", false);
 }
 
 function do_session_option (ev) {
@@ -233,7 +261,6 @@ $(function () {
   $("#apply_form").submit (apply_submit);
 
   $("#sched_any").change (do_sched_any);
-  $(".sched_all_day").change (do_all_day);
   $(".sched_all_day").change (do_all_day);
   $(".sched_item").change (do_sched_item);
 
