@@ -420,9 +420,16 @@ foreach ($questions as $question) {
             $cols = array ();
             $cols[] = h($patch->ts);
             $cols[] = h($patch->username);
-            $txt = '';
             if (is_array ($patch->oldval)) {
-                $txt = implode ("; ", $patch->oldval);
+                if (associative_array ($patch->oldval)) {
+                    $avals = array ();
+                    foreach ($patch->oldval as $key => $val) {
+                        $avals[] = sprintf ("%s=%s", $key, $val);
+                    }
+                    $txt = implode ("; ", $avals);
+                } else {
+                    $txt = implode ("; ", $patch->oldval);
+                }
             } else {
                 $txt = $patch->oldval;
             }
