@@ -114,6 +114,7 @@
   },
 
   { "id": "availability",
+    "type": "radio",
     "array_val": 1,
     "q": "Availability",
     "desc_pre": "These hours refer to the times that you are available to perform, and NOT your preferred times. Please note that the greater your availability, the greater the likelihood that you will be scheduled."
@@ -212,7 +213,6 @@
     ]
   },
       
-  
   { "id": "event_type",
     "show_if": [ "app_category", "Caller", "Other" ],
     "q": "Event Type",
@@ -244,7 +244,7 @@
   },
 
   { "id": "room_sound",
-    "optional": 1,
+    "type": "radio",
     "show_if": [ "app_category", "Other" ],
     "q": "What room/sound combo would work for this event?" },
 
@@ -273,11 +273,6 @@
       { "val": "No" }
     ]
   },
-
-
-
-
-
 
   { "id": "shared",
     "show_if": [ "app_category", "Caller", "Other" ],

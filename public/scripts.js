@@ -54,59 +54,68 @@ function update_hides () {
     $(".debug").hide();
 }
 
-function is_availability_missing () {
-  let names = {};
+function is_radio_complete (q) {
   let saw_blank = false;
-  $("#s_availability input[type=radio]").each (function (idx, elt) {
-    if (! $(elt).is(":hidden")) {
-      let name = $(elt).attr("name");
-      let val = $(document.getElementsByName (name))
-	  .filter ("input:checked")
-	  .val();
-      if (val == undefined)
-	saw_blank = true;
-    }
-  });
-
-  return (saw_blank);
+  let section_id = "s_"+q.id;
+  $(document.getElementById(section_id))
+    .find("input[type=radio]")
+    .each(function (idx, elt) {
+      if (! $(elt).is(":hidden")) {
+	let name = $(elt).attr("name");
+	let val = $(document.getElementsByName (name))
+	    .filter ("input:checked")
+	    .val();
+	if (val == undefined)
+	  saw_blank = true;
+      }
+    });
+  return (! saw_blank);
 }
 
-function is_required_question_empty (q) {
-  if ($("#all_optional").is(":checked"))
-    return (false);
-
-  if (q.id == "availability")
-    return (is_availability_missing ());
-
-  if (q.optional)
-    return (false);
-  
+function is_choice_complete (q) {
   let input_id = "i_"+q.id;
-  let val;
-  if (q.choices) {
-    val = $(document.getElementsByName (input_id))
-      .filter("input:checked")
-      .val();
-  } else {
-    val = $(document.getElementById (input_id)).val();
-  }
-
+  val = $(document.getElementsByName (input_id))
+    .filter("input:checked")
+    .val();
   if (val != undefined && val.trim() != "")
-    return (false);
+    return (true);
+
+  return (false);
+}
+
+function valid_response (q) {
+  if ($("#all_optional").is(":checked"))
+    return (true);
 
   if (q.show_if) {
     var elt = document.getElementById ("s_"+q.id);
     if ($(elt).is(":hidden"))
-      return (false);
+      return (true);
   }
 
-  return (true);
+  if (q.optional)
+    return (true);
+
+  if (q.type == "radio")
+    return (is_radio_complete (q));
+
+  if (q.choices)
+    return (is_choice_complete (q));
+
+  let input_id = "i_"+q.id;
+  let val;
+  val = $(document.getElementById (input_id)).val();
+
+  if (val != undefined && val.trim() != "")
+    return (true);
+
+  return (false);
 }
 
 function apply_submit () {
   for (var idx in questions) {
     var q = questions[idx];
-    if (is_required_question_empty (q)) {
+    if (! valid_response (q)) {
       var section = document.getElementById("s_"+q.id);
       $(section).find(".required_text").html("required");
       $(window).scrollTop ($(section).offset().top);
