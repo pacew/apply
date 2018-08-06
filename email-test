@@ -1,0 +1,57 @@
+#! /usr/bin/php
+<?php
+
+require_once ("cli.php");
+
+require_once ("libphp-phpmailer/autoload.php");
+
+$q = query ("select val"
+            ." from vars"
+            ." where var = 'smtp_cred'");
+if (($r = fetch ($q)) == NULL) {
+    printf ("no smtp cred\n");
+    exit ();
+}
+
+$smtp_cred = $r->val;
+
+$arr = preg_split ('/ /', $smtp_cred);
+$smtp_user = $arr[0];
+$smtp_password = $arr[1];
+
+$mail = new PHPMailer;
+$mail->isSMTP();
+$mail->Host = 'email-smtp.us-east-1.amazonaws.com';
+$mail->Username = $smtp_user;
+$mail->Password = $smtp_password;
+$mail->SMTPAuth = true;
+$mail->SMTPSecure = 'tls';
+$mail->Port = 587;
+
+
+$mail->setFrom('pace@pacew.org', 'Pace Willisson');
+$mail->addAddress('pace.willisson@gmail.com', 'Pace Willisson');
+$mail->Subject = 'hello';
+
+// The HTML-formatted body of the email
+$mail->Body = '<h1>Email Test</h1>
+    <p>This email was sent through the 
+    <a href="https://aws.amazon.com/ses">Amazon SES</a> SMTP
+    interface using the <a href="https://github.com/PHPMailer/PHPMailer">
+    PHPMailer</a> class.</p>';
+
+
+// Tells PHPMailer to send HTML-formatted email
+$mail->isHTML(true);
+
+// The alternative email body; this is only displayed when a recipient
+// opens the email in a non-HTML email client. The \r\n represents a 
+// line break.
+$mail->AltBody = "Email Test\r\nThis email was sent through the 
+    Amazon SES SMTP interface using the PHPMailer class.";
+
+if(!$mail->send()) {
+    echo "Email not sent. " , $mail->ErrorInfo , PHP_EOL;
+} else {
+    echo "Email sent!" , PHP_EOL;
+}
