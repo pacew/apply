@@ -16,7 +16,7 @@ $application = NULL;
 if ($arg_app_id) {
     $body .= "<div class='admin'>"
           ."[ADMIN MODE: you may override the original answers;"
-          ." you can cancel your override by pasting in the original answer"
+          ." you can reverse your override by pasting in the original answer"
           ."]"
           ."</div>\n";
     $application = get_application ($arg_app_id);
@@ -253,7 +253,7 @@ $body .= "<button type='submit' onclick='return false' style='display:none'>"
 if ($username) {
     $body .= "<div class='debug_box'>\n";
 
-    $body .= "<input type='submit' value='Submit' />\n";
+    $body .= "<input name='submit' type='submit' value='Save-no-email' />\n";
 
     $body .= mklink ("[admin]", "admin.php");
 
@@ -444,7 +444,7 @@ foreach ($questions as $question) {
 
 }
 
-$body .= "<input type='submit' value='Submit' />\n";
+$body .= "<input name='submit' type='submit' value='Submit' />\n";
 
 $body .= "</form>\n";
 

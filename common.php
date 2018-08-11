@@ -375,11 +375,22 @@ function pfinish () {
     $pg .= "</script>\n";
 
 
+    $pg .= "<link rel='icon' href='https://www.neffa.org/wp-content/uploads/2017/12/cropped-favicon-32x32.png' sizes='32x32' />\n";
+    $pg .= "<link rel='icon' href='https://www.neffa.org/wp-content/uploads/2017/12/cropped-favicon-192x192.png' sizes='192x192' />\n";
+
     $pg .= "</head>\n";
     
                     
 
     $pg .= "<body>\n";
+
+    $pg .= "<div class='banner'>\n";
+    $pg .= "<a href='/'>";
+    $pg .= "<img src='logo-neffa-white.svg' alt='NEFFA' />\n";
+    $pg .= "</a>\n";
+    $pg .= "</div>\n";
+    $pg .= "<h1 class='banner_title'>2019 Performer Application</h1>\n";
+    $pg .= "<h2 class='banner_test'>TEST SITE ... data will be discarded</h2>\n";
 
     echo ($pg);
     $pg = "";

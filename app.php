@@ -111,7 +111,7 @@ function get_questions () {
 }
 
 function get_application ($app_id) {
-    $q = query ("select ts, username, val"
+    $q = query ("select ts, username, val, access_code"
                 ." from json"
                 ." where app_id = ?"
                 ." order by ts",
@@ -119,9 +119,11 @@ function get_application ($app_id) {
     
     $curvals = array ();
     $patches = array ();
+    $access_code = NULL;
     while (($r = fetch ($q)) != NULL) {
         if (strncmp ($r->val, "{", 1) == 0) {
             $curvals = json_decode ($r->val, TRUE);
+            $access_code = $r->access_code;
         } else {
             $p_arr = json_decode ($r->val, TRUE);
             $before_vals = array ();
@@ -149,6 +151,7 @@ function get_application ($app_id) {
     }
 
     $application = (object)NULL;
+    $application->access_code = $access_code;
     $application->curvals = $curvals;
     $application->patches = $patches;
     return ($application);

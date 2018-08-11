@@ -14,6 +14,10 @@ if ($app_id == 0) {
     $need_patch = 1;
 }
 
+$want_email = 0;
+if (@$_REQUEST['submit'] == "Submit")
+    $want_email = 1;
+
 $questions = get_questions ();
 
 $newvals = array ();
@@ -40,22 +44,38 @@ foreach ($questions as $question) {
     }
 }
 
-if ($need_patch == 0) {
-    query ("insert into json (app_id, ts, username, val)"
-           ." values (?,current_timestamp,?,?)",
-           array ($app_id, $username, json_encode ($newvals)));
-    redirect ("thanks.php");
+function make_access_code () {
+    return (generate_urandom_string (8));
 }
 
-if (($application = get_application ($app_id)) == NULL)
-    fatal ("can't find base application to update");
 
-$diff = mikemccabe\JsonPatch\JsonPatch::diff($application->curvals, $newvals);
+if ($need_patch == 0) {
+    $access_code = make_access_code ();
+    
+    query ("insert into json (app_id, ts, username, val, access_code)"
+           ." values (?,current_timestamp,?,?,?)",
+           array ($app_id, 
+                  $username, 
+                  json_encode ($newvals),
+                  $access_code));
+} else {
+    if (($application = get_application ($app_id)) == NULL)
+        fatal ("can't find base application to update");
 
-query ("insert into json (app_id, ts, username, val)"
-       ." values (?,current_timestamp,?,?)",
-       array ($app_id, $username, json_encode ($diff)));
+    $access_code = $application->access_code;
 
-redirect ("admin.php");
+    $diff = mikemccabe\JsonPatch\JsonPatch::diff($application->curvals, 
+                                                 $newvals);
+
+    query ("insert into json (app_id, ts, username, val)"
+           ." values (?,current_timestamp,?,?)",
+           array ($app_id, $username, json_encode ($diff)));
+}
+
+
+$t = sprintf ("thanks.php?a=%s&send_email=%d", 
+              rawurlencode ($access_code),
+              $want_email);
+redirect ($t);
 
 pfinish ();

@@ -170,3 +170,30 @@ p {
     font-size: smaller;
 }
 
+.banner {
+    background-color: #1224f4;
+    padding: 1em;
+}
+
+.banner_title {
+    text-align: center;
+    font-size: 300%;
+}
+
+.banner_test {
+    text-align: center;
+    font-size: 200%;
+    color: red;
+}
+
+.html_email {
+    border: 2px solid black;
+    margin: 1em;
+    padding: 1em;
+}
+
+.plain_email {
+    border: 2px solid black;
+    margin: 1em;
+    padding: 1em;
+}
