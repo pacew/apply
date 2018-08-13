@@ -73,10 +73,10 @@ if ($need_patch == 0) {
            ." values (?,current_timestamp,?,?)",
            array ($app_id, $username, json_encode ($diff)));
 
-    if (($application = get_application ($app_id)) == NULL)
-        fatal ("can't re-read application");
 }
 
+if (($application = get_application ($app_id)) == NULL)
+    fatal ("can't re-read application");
 
 do_commits ();
 
