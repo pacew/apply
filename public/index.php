@@ -1,13 +1,12 @@
 <?php
 
+$anon_ok = 1;
 require_once ($_SERVER['APP_ROOT'] . "/app.php");
 
 $arg_app_id = intval (@$_REQUEST['app_id']);
 $arg_show_all = intval (@$_REQUEST['show_all']);
 
 pstart ();
-
-$body .= mklink ("home", "/");
 
 $questions = get_questions ();
 
@@ -224,11 +223,6 @@ function make_room_sound ($application, $question_id) {
 
     return ($ret);
 }
-
-$body .= "<div>\n";
-$body .= mklink ("All questions as plain text page", "plain.php");
-$body .= "</div>\n";
-
 
 $body .= "<p>\n"
       ."Several questions ask for names of performers or groups.  It's"

@@ -385,10 +385,30 @@ function pfinish () {
     $pg .= "<body>\n";
 
     $pg .= "<div class='banner'>\n";
+    $pg .= "<div class='logo'>\n";
     $pg .= "<a href='/'>";
     $pg .= "<img src='logo-neffa-white.svg' alt='NEFFA' />\n";
     $pg .= "</a>\n";
     $pg .= "</div>\n";
+    $pg .= "<div class='login_link'>";
+    $pg .= "<span class='nav'>\n";
+    global $username;
+    if (@$username == "") {
+        $pg .= "<a href='login.php'>[ admin login ]</a>";
+    } else {
+        $pg .= "[ ";
+        $pg .= "<a href='admin.php'>applications</a>";
+        $pg .= " | ";
+        $pg .= "<a href='logout.php'>logout</a>";
+        $pg .= " ]";
+    }
+    $pg .= "</span>\n";
+    $pg .= "</div>\n";
+    $pg .= "<div style='clear:both'></div>\n";
+    $pg .= "</div>\n";
+
+    $pg .= "<div class='content'>\n";
+
     $pg .= "<h1 class='banner_title'>2019 Performer Application</h1>\n";
     $pg .= "<h2 class='banner_test'>TEST SITE ... data will be discarded</h2>\n";
 
@@ -397,6 +417,8 @@ function pfinish () {
 
     global $body;
     $pg .= $body;
+
+    $pg .= "</div>\n";
 
     $pg .= sprintf ("<script src='scripts.js?c=%s.js'></script>\n",
                     get_cache_defeater ());

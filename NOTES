@@ -1,3 +1,7 @@
+clean email response
+scrub input data
+
+
 apt-get install libphp-phpmailer
 
 NEFFA 2018 Application Development

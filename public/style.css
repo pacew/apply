@@ -25,6 +25,11 @@
     color: #ddd !important;
 }
 
+.content {
+    padding: 1em;
+    background: #c9d8f2;
+}
+
 a {
     text-decoration: none;
 }
@@ -109,8 +114,8 @@ h2 {
 
 .question {
     background: #eee;
-    padding: 1em;
-    margin: 1em;
+    padding: .5em;
+    margin: .5em 0;
 }
 
 .question h3 {
@@ -123,7 +128,7 @@ h2 {
 
 .orig_answer {
     border: 1px solid #eaa;
-    margin: .5em;
+    margin: .5em 0;
     padding: .5em;
     background: #fee;
 }
@@ -146,8 +151,8 @@ p {
 .debug_box {
     background: #fee;
     border: 1px solid #eaa;
-    margin: .2em;
-    padding: .2em;
+    margin: .2em 0;
+    padding: .5em;
 }
 
 .lookup_individual {
@@ -196,4 +201,16 @@ p {
     border: 2px solid black;
     margin: 1em;
     padding: 1em;
+}
+
+.banner .logo {
+    float: left;
+}
+
+.banner .login_link {
+    float: right;
+}
+
+.nav, .nav a {
+    color: white;
 }

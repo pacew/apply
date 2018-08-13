@@ -145,7 +145,7 @@ async function setup_apache (cfg) {
   conf += sprintf ("    RewriteEngine on\n");
   conf += sprintf ("    RewriteCond %%{REQUEST_FILENAME} !-d\n");
   conf += sprintf ("    RewriteCond %%{REQUEST_FILENAME} !-f\n");
-  conf += sprintf ("    RewriteRule ^.*$ index.php\n");
+  conf += sprintf ("    RewriteRule ^.*$ stray.php\n");
   conf += sprintf ("    <FilesMatch '\.(html|css|js)'>\n");
   conf += sprintf ("      Header set Cache-Control 'no-cache,"+
 		   " no-store, must-revalidate'\n");
