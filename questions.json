@@ -264,16 +264,6 @@
     "q": "If you are booked for a room with a full sound system, what is your preferred sound setup? (How many inputs, and for what instruments?) Write 'N/A' if you would not use a sounds system even if one was available."
   },
 
-  { "id": "piano",
-    "show_if": [ "app_category", "Band", "Other" ],
-    "q": "Do you need a piano?",
-    "optional": 1,
-    "choices": [
-      { "val": "Yes" },
-      { "val": "No" }
-    ]
-  },
-
   { "id": "shared",
     "show_if": [ "app_category", "Caller", "Other" ],
     "q": "Are you willing to work with others on a shared event?",
