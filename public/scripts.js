@@ -172,9 +172,13 @@ function do_lookup_change (ev) {
 		   txt += "Good match in master database!";
 		   txt += "</span>";
 		 } else {
-		   txt += "<span class='lookup_fail_msg'>";
-		   txt += "New name to create in master database.";
-		   txt += "</span>";
+		   txt += "<div class='lookup_fail_msg'>";
+		   txt += "We'll create this new name in master database"
+		     +" (but if you think the name should exist,"
+		     +" visit <a target='_blank'"
+		     +" href='https://cgi.neffa.org//public/showperf.pl?INDEX=ALL'>"
+		     +" the NEFFA Database</a> to do some hunting).";
+		   txt += "</div>";
 		 }
 		 $(span).append (txt);
 		 

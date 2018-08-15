@@ -1,7 +1,8 @@
 [
   { "id": "name",
     "q": "Your name",
-    "desc": "<p>This should be the name of the person filling out this application, so we can get back to you with questions.  Normally it should be the performer for solo events, or the person officially listed in the NEFFA database as the contact for a group.  If that doesn't work for you for some reason, please explain in the COMMENTS box at the end of this application, but it may delay consideration of your application.</p>" },
+    "class": "lookup_individual",
+    "desc": "<p>If this application is for an individual or duo, this should be the main performer name.  If for a group, this should be the name of the group leader.</p>" },
 
   { "id": "email",
     "q": "Your email address", 
@@ -13,28 +14,22 @@
   { "id": "main_performer",
     "q": "Main performer billing goes to:",
     "choices": [
-      { "val": "Individual", "desc": "An individual" },
-      { "val": "Duo", "desc": "A duo" },
+      { "val": "Individual", "desc": "The individual applying" },
+      { "val": "Duo", "desc": "A duo consiting of the individual applying an another performer" },
       { "val": "Group", "desc": "A group" }
     ]
   },
 
-  { "id": "performer1",
-    "show_if": [ "main_performer", "Individual", "Duo" ],
-    "q": "Performer name",
-    "class": "lookup_individual",
-    "desc": "<p>As you type, the system will try to find possible matches in the NEFFA database and show them in a popup box.  Please select an entry from there, if possible, to avoid creating duplicate entries.</p>" },
-
   { "id": "performer2",
     "show_if": [ "main_performer", "Duo" ],
-    "q": "Second perfomer name",
+    "q": "Second perfomer name for duo",
     "class": "lookup_individual" },
 
   { "id": "group_name",
     "show_if": [ "main_performer", "Group" ],
     "class": "lookup_group",
     "q": "Name of group?",
-    "desc": "<p>Make sure this name exactly matches the name of your group. Avoid abbreviations, but put \"The\" at the end after a comma, if applicable.</p><p>As you type, the system will try to find possible matches in the NEFFA database and show them in a popup box.  Please select the name from there, if possible, to avoid creating duplicate entries.  If the name is changing this year, select the old name and give the new name in the COMMENTS box at the end of this application.</p>"
+    "desc": "<p>Make sure this name exactly matches the name of your group. Avoid abbreviations, but put \"The\" at the end after a comma, if applicable.</p>"
   },
 
   { "id": "busy_people",
@@ -251,7 +246,6 @@
   { "id": "piano",
     "show_if": [ "app_category", "Band", "Other" ],
     "q": "Do you need a piano?",
-    "optional": 1,
     "choices": [
       { "val": "Yes" },
       { "val": "No" }

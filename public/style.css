@@ -28,6 +28,7 @@
 .content {
     padding: 1em;
     background: #c9d8f2;
+    line-height: 1.2;
 }
 
 a {
@@ -214,3 +215,9 @@ p {
 .nav, .nav a {
     color: white;
 }
+
+.preface ul {
+    list-style: disc;
+    margin: 1em;
+}
+

@@ -10,8 +10,12 @@ $index = NULL;
 function get_neffa_index () {
     global $index;
     if ($index == NULL) {
-        $filename = "/tmp/neffa_idx.json";
-        $index = json_decode (file_get_contents ($filename), TRUE);
+        $filename = $_SERVER['APP_ROOT'] . "/neffa_idx.json";
+        if (($val = file_get_contents ($filename)) == "") {
+            echo ("neffa_idx not found\n");
+            exit ();
+        }
+        $index = json_decode ($val, TRUE);
     }
     return ($index);
 }

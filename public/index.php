@@ -224,6 +224,10 @@ function make_room_sound ($application, $question_id) {
     return ($ret);
 }
 
+$body .= "<div class='preface'>\n";
+$body .= file_get_contents ($_SERVER['APP_ROOT'] . "/preface.html");
+$body .= "</div>\n";
+
 $body .= "<p>\n"
       ."Several questions ask for names of performers or groups.  It's"
       ." important to make sure these entries match the NEFFA Performer"

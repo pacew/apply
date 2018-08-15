@@ -68,7 +68,7 @@ function make_index ($db) {
 $db = get_db ("neffa_pdb", $dbparams);
 make_index ($db);
 
-$output = "/tmp/neffa_idx.json";
+$output = "neffa_idx.json";
 file_put_contents ($output, json_encode ($index, JSON_PRETTY_PRINT));
 
 printf ("output in %s\n", $output);
