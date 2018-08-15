@@ -87,3 +87,8 @@ Performers should let us know if there are duplicate entries!
       { "val": "O", "desc": "Other dance performance" }
     ]
   },
+
+sed -e "s/\s\s*/\t/" -e "s/ //" -e "s/\r//" < /home/pace/Downloads/pcodes.txt > /home/pace/p
+
+psql
+\copy pcodes from '/home/pace/p'

@@ -88,6 +88,12 @@ if ($arg_download_json) {
     exit ();
 }
 
+$q = query ("select id, pcode from pcodes");
+$pcodes = array ();
+while (($r = fetch ($q)) != NULL) {
+    $pcodes[$r->id] = $r->pcode;
+}
+
 $questions = get_questions ();
 
 $sched_codes = array ();
@@ -122,6 +128,7 @@ foreach ($questions as $question) {
         $csvhdr[] = $question_id;
         $csvhdr[] = sprintf ("%s_id", $question_id);
         $csvhdr[] = sprintf ("%s_link", $question_id);
+        $csvhdr[] = sprintf ("%s_pcode", $question_id);
     } else if ($question_id == "availability") {
         foreach ($sched_codes as $code) {
             $day = floor ($code / 100000);
@@ -163,10 +170,13 @@ foreach ($apps as $app) {
                 $link = sprintf (
                     "https://cgi.neffa.org//public/showperf.pl?P=%d",
                     $neffa_id);
+                $pcode = @$pcodes[$neffa_id];
             } else {
                 $link = "";
+                $pcode = "";
             }
             $cols[] = $link;
+            $cols[] = $pcode;
         } else if ($question_id == "availability") {
             foreach ($sched_codes as $code) {
                 $cols[] = @$val[$code];

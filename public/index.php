@@ -67,6 +67,7 @@ function make_schedule ($application, $question_id) {
     $hdr1 = "";
     $hdr2 = "";
     $hdr3 = "";
+    $hdr4 = "";
     for ($day = $full_from_day; $day <= $full_to_day; $day++) {
         $classes = array ();
         if ($day == 2)
