@@ -32,13 +32,11 @@
     "desc": "<p>Make sure this name exactly matches the name of your group. Avoid abbreviations, but put \"The\" at the end after a comma, if applicable.</p>"
   },
 
-  { "id": "busy_people",
-    "array_val": 1,
+  { "id": "busy",
     "optional": 1,
     "class": "lookup_individual",
-    "q": "Other performers supporting this event",
-    "desc": "<p>You can list other performers who will be helping during this event.  They might be unbilled accompanists, sound assistants, roadies, etc. If this event is scheduled, the people listed here will not be simultaneously scheduled for other events in the same timeslot.</p><p>If this event is for a group, don't list group members here - potential conflicts for them are handled separately.</p>" },
-
+    "q": "Another performer supporting this event",
+    "desc": "<p>You can list another performer who will be helping during this event.  It could be an unbilled accompanist, a sound assistant, roadie, etc. If this event is scheduled, the person listed here will not be simultaneously scheduled for other events in the same timeslot.</p><p>If this event is for a group, don't list group members here - potential conflicts for them are handled separately.</p><p>If you have additional names to list, put them in the notes at the end of this application.</p>" },
 
   { "id": "app_category",
     "q": "What category best describes this particular application?",
@@ -110,7 +108,6 @@
 
   { "id": "availability",
     "type": "radio",
-    "array_val": 1,
     "q": "Availability",
     "desc_pre": "These hours refer to the times that you are available to perform, and NOT your preferred times. Please note that the greater your availability, the greater the likelihood that you will be scheduled."
   },
@@ -255,7 +252,7 @@
   { "id": "sound_needs",
     "show_if": [ "app_category", "Caller", "Other" ],
     "textarea": 1,
-    "q": "If you are booked for a room with a full sound system, what is your preferred sound setup? (How many inputs, and for what instruments?) Write 'N/A' if you would not use a sounds system even if one was available."
+    "q": "If you are booked for a room with a full sound system, what is your preferred sound setup? (How many inputs, and for what instruments?) Write 'N/A' if you would not use a sound system even if one was available."
   },
 
   { "id": "shared",

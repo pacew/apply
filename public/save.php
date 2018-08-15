@@ -87,6 +87,11 @@ if (! preg_match ("/\S+@\S+\.\S+/", $to_email)) {
     $want_email = 0;
 }
 
+if (preg_match ("/@example.com/", $to_email)) {
+    $body .= "<p>[email suppressed because @example.com]</p>\n";
+    $want_email = 0;
+}
+
 $q = query ("select count(*) as count"
             ." from email_history"
             ." where email = ?",

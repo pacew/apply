@@ -255,6 +255,12 @@ if ($username) {
 
     $body .= mklink ("[admin]", "admin.php");
 
+    $body .= " | ";
+    $t = sprintf ("download.php?view_csv=1&app_id=%d", $arg_app_id);
+    $body .= mklink ("[view raw data]", $t);
+
+
+
     $body .= "<div>testing options</div>\n";
     $body .= "<div>\n";
     $c = "";
@@ -298,6 +304,8 @@ foreach ($questions as $question) {
     if (! @$question['optional']) {
         $body .= sprintf (" <span class='required_marker'>*</span>");
         $body .= " <span class='required_text'></span>";
+    } else {
+        $body .= " <span class='optional_text'>(optional)</span>";
     }
     $body .= "</h3>\n";
 
@@ -342,45 +350,6 @@ foreach ($questions as $question) {
         $body .= h(@$application->curvals[$question_id]);
         $body .= "</textarea>\n";
 
-    } else if (@$question['array_val']) {
-        $c = "";
-        if (@$question['class'])
-            $c = sprintf ("class=%s", $question['class']);
-        
-        $cur = @$application->curvals[$question_id];
-        if (is_string ($cur)) {
-            $cur = array ($cur);
-        } else if (! is_array ($cur)) {
-            $cur = array ();
-        }
-        if (count ($cur) == 0)
-            $cur = array ("");
-
-        $need_delete = 0;
-        if (@$cur[0])
-            $need_delete = 1;
-
-        foreach ($cur as $str) {
-            $body .= "<div>\n";
-            $body .= "<span>\n";
-            $cur = @$application->curvals[$question_id];
-            $body .= sprintf ("<input "
-                              ." type='text' id='%s' name='%s%s' %s"
-                              ." size='40' value='%s'/>\n",
-                              $input_id, 
-                              $input_id, @$question['array_val'] ? "[]" : "",
-                              $c,
-                              h($str));
-    
-            $s = "style='display:none'";
-            if ($need_delete)
-                $s = "";
-            
-            $body .= "<button type='button' $s class='del_button'>"
-                  ."delete</button>\n";
-            $body .= "</span>\n";
-            $body .= "</div>\n";
-        }
     } else {
         $c = "";
         if (@$question['class'])

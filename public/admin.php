@@ -39,17 +39,19 @@ while (($r = fetch ($q)) != NULL) {
     $cols = array ();
     $cols[] = mklink ($r->app_id, $target);
     $cols[] = mklink ($r->ts, $target);
-    $cols[] = mklink ($r->username, $target);
 
     $txt = "";
     $val = @json_decode ($r->val, TRUE);
     $txt = sprintf ("%s / %s", h(@$val['name']), h(@$val['event_title']));
-
     $cols[] = $txt;
+
+    $t = sprintf ("download.php?view_csv=1&app_id=%d", $r->app_id);
+    $cols[] = mklink ("raw data", $t);
+
     $rows[] = $cols;
 }
 
-$body .= mktable (array ("app_id", "ts", "username", "json"),
+$body .= mktable (array ("app_id", "ts", "name / title", ""),
                   $rows);
 
 

@@ -127,6 +127,10 @@ h2 {
     color: red;
 }
 
+.optional_text {
+    font-size: 90%;
+}
+
 .orig_answer {
     border: 1px solid #eaa;
     margin: .5em 0;

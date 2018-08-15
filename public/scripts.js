@@ -1,9 +1,20 @@
 function show_if_test (condition) {
   var target_id = "i_" + condition[0];
-  var val = $(document.getElementsByName (target_id))
+  var elts = $(document.getElementsByName (target_id))
+  if (elts.length == 0)
+    return true;
+
+  switch ($(elts[0]).attr("type")) {
+  case "radio":
+    var val = $(elts)
       .filter ("input:checked")
       .val();
-  return (condition.includes (val));
+    return (condition.includes (val));
+  case "text":
+    return ($(elts).val() != "");
+  default:
+    return false;
+  }
 }
 
 function update_sched_hides () {
@@ -149,9 +160,6 @@ function do_lookup_change (ev) {
   let input_wrapper = $(input_elt).parents(".input_wrapper");
   let span = $(input_elt).parents("span");
 
-  /* for removing extra busy_people */
-  $(input_wrapper).find(".del_button").show();
-
   if (val == "") {
     $(input_wrapper).find(".group_members").remove();
     $(span).find(".lookup_success_msg").remove();
@@ -195,26 +203,6 @@ function do_lookup_change (ev) {
   return (true);
 }
 
-function do_add_another (ev) {
-  let elt = $(ev.target).parents(".question").find(".input_wrapper");
-  $(elt).append("<div>\n"
-		+"<span>\n"
-		+"<input type='text' name='i_busy_people[]'"
-		+"   class='lookup_individual'"
-		+"   size='40' />\n"
-		+"<button type='button' style='display:none' class='del_button'>"
-		+"delete</button>\n"
-		+"</span>\n"
-		+"</div>");
-
-  setup_lookups ();
-}
-
-function do_del_button_click (ev) {
-  let elt = $(ev.target);
-  $(elt).parents("span").remove();
-}
-
 function setup_lookups () {
   $(".lookup_individual").autocomplete({ source: "lookup_individual.php" });
   $(".lookup_individual").attr("autocomplete","correspondent-name");
@@ -225,9 +213,6 @@ function setup_lookups () {
   $(".lookup_group").attr("autocomplete","correspondent-name");
   $(".lookup_group").off ("change.neffa");
   $(".lookup_group").on ("change.neffa", do_lookup_change);
-
-  $(".del_button").off ("click.neffa");
-  $(".del_button").on ("click.neffa", do_del_button_click);
 }
 
 function do_sched_any (ev) {
@@ -279,7 +264,7 @@ function do_session_option (ev) {
 }
 
 $(function () {
-  $("input[type='radio']").change (update_hides);
+  $("input").change (update_hides);
   $("#apply_form").submit (apply_submit);
 
   $("#sched_any").change (do_sched_any);
@@ -290,8 +275,6 @@ $(function () {
     update_hides ();
 
   setup_lookups ();
-  
-  $("#add_another").click(do_add_another);
   
   $("#show_all").change (do_session_option);
   $("#all_optional").change (do_session_option);

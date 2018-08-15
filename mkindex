@@ -8,6 +8,9 @@ $dbparams['host'] = 'neffaprog.neffa.dreamhosters.com';
 $dbparams['user'] = 'pace_willisson';
 $dbparams['password'] = trim (file_get_contents (".neffadb_passwd"));
 
+$dup_names = array ();
+$names_seen = array ();
+
 function make_index ($db) {
     global $index;
 
@@ -16,6 +19,7 @@ function make_index ($db) {
     $perfs = array ();
     $by_soundex = array ();
     $groups = array ();
+    $name_to_id = array ();
 
     $q = query_db ($db,
                    "select p.number, p.performerName, p.isGroup"
@@ -27,6 +31,14 @@ function make_index ($db) {
         $perfs[$p->id] = $p;
 
         $p->name = $r->performerName;
+
+        $name_to_id[$p->name] = $p->id;
+
+        if (isset ($names_seen[$p->name])) {
+            $dup_names[] = $p->name;
+        }
+        $names_seen[$p->name] = 1;
+
         if ($r->isGroup == "Y")
             $p->group = 1;
 
@@ -63,6 +75,7 @@ function make_index ($db) {
     $index->perfs = $perfs;
     $index->by_soundex = $by_soundex;
     $index->groups = $groups;
+    $index->name_to_id = $name_to_id;
 }
 
 $db = get_db ("neffa_pdb", $dbparams);
@@ -73,5 +86,10 @@ file_put_contents ($output, json_encode ($index, JSON_PRETTY_PRINT));
 
 printf ("output in %s\n", $output);
 
+if (count ($dup_names) > 0) {
+    printf ("dup names: %s", implode (", ", $dup_names));
+} else {
+    printf ("(no dup names found)\n");
+}
 
 

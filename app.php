@@ -20,6 +20,14 @@ function get_neffa_index () {
     return ($index);
 }
 
+function name_to_id ($name) {
+    global $index;
+    
+    get_neffa_index ();
+
+    return (@$index['name_to_id'][$name]);
+}
+
 function cmp_pct ($a, $b) {
     if ($a->pct < $b->pct)
         return (1);
@@ -35,7 +43,6 @@ function lookup_individual ($str) {
 function lookup_group ($str) {
     return (do_lookup ($str, 1));
 }
-
 
 function do_lookup ($str, $group_flag) {
     global $index;
