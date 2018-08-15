@@ -144,14 +144,28 @@ function apply_submit () {
   }
   return (true); /* ok for submit to go through */
 }
-/*
 
-  $(elt).find(".current_members").remove();
-  let txt = "<div class='current_members'>\n";
-  txt += "Current members: ";
-  txt += "</div>\n";
-  $(elt).append (txt);
-*/
+function do_comma (elt) {
+  let val = $(elt).val();
+  if ($(elt).hasClass ("lookup_individual")) {
+    if (! val.match(/,/)) {
+      let matches = val.trim().match (/^([\S]*)\s(.*)$/);
+      if (matches) {
+	let first = matches[1];
+	let last = matches[2];
+	$(elt).val(last.trim() + "," + first.trim());
+      }
+    }
+  } else if ($(elt).hasClass ("lookup_group")) {
+    if (! val.match(/,/)) {
+      let matches = val.trim().match (/^[Tt]he\s(.*)/);
+      if (matches) {
+	let name = matches[1];
+	$(elt).val(name.trim() + ",The");
+      }
+    }
+  }
+}
 
 function do_lookup_change (ev) {
   let input_elt = $(ev.target);
@@ -187,6 +201,8 @@ function do_lookup_change (ev) {
 		     +" href='https://cgi.neffa.org//public/showperf.pl?INDEX=ALL'>"
 		     +" the NEFFA Database</a> to do some hunting).";
 		   txt += "</div>";
+
+		   do_comma (input_elt);
 		 }
 		 $(span).append (txt);
 		 
