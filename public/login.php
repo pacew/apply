@@ -13,7 +13,7 @@ if ($arg_username) {
     if ($arg_password == "preview") {
         putsess ("username2", $arg_username);
         putsess ("admin", 1);
-        redirect ("/");
+        redirect ("admin.php");
     }
     $body .= "<p>invalid login</p>";
 }
