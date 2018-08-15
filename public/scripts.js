@@ -158,11 +158,13 @@ function do_comma (elt) {
     }
   } else if ($(elt).hasClass ("lookup_group")) {
     if (! val.match(/,/)) {
-      let matches = val.trim().match (/^[Tt]he\s(.*)/);
+      let matches = val.trim().match (/^The\s(.*)/i);
       if (matches) {
 	let name = matches[1];
-	$(elt).val(name.trim() + ",The");
+	val = name.trim() + ",The";
       }
+      val = val.replace (/\band\b/gi, "&");
+      $(elt).val(val);
     }
   }
 }
