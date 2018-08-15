@@ -246,6 +246,7 @@ function do_sched_any (ev) {
     });
 
     $(".sched_all_day").prop ("checked", true);
+    $(".sched_not_day").prop ("checked", false);
   }
 }
 
@@ -265,11 +266,32 @@ function do_all_day (ev) {
   }
 
   $("#sched_any").prop ("checked", false);
+  $(".sched_not_day").prop ("checked", false);
+}
+
+function do_not_day (ev) {
+  var elt = ev.target;
+  var checked = elt.checked;
+  var day = $(elt).data("day");
+
+  if (checked) {
+    $("#s_availability input[type=radio]").each (function (idx, elt) {
+      if (! $(elt).is(":hidden")) {
+	if ($(elt).data("day") == day && $(elt).val() == 0) {
+	  $(elt).prop ("checked", true);
+	}
+      }
+    });
+  }
+
+  $("#sched_any").prop ("checked", false);
+  $(".sched_all_day").prop ("checked", false);
 }
 
 function do_sched_item (ev) {
   $("#sched_any").prop ("checked", false);
   $(".sched_all_day").prop ("checked", false);
+  $(".sched_not_day").prop ("checked", false);
 }
 
 function do_session_option (ev) {
@@ -287,6 +309,7 @@ $(function () {
 
   $("#sched_any").change (do_sched_any);
   $(".sched_all_day").change (do_all_day);
+  $(".sched_not_day").change (do_not_day);
   $(".sched_item").change (do_sched_item);
 
   if (window.questions)

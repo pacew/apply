@@ -61,8 +61,8 @@ function make_schedule ($application, $question_id) {
 
     $ret = "<div class='schedule'>\n";
 
-    $ret .= "<div><input type='checkbox' id='sched_any'>"
-         ." Any time during the festival is OK</div>\n";
+    $ret .= "<p><input type='checkbox' id='sched_any'>"
+         ." Any time during the festival is OK</p>\n";
 
     $hdr1 = "";
     $hdr2 = "";
@@ -90,7 +90,14 @@ function make_schedule ($application, $question_id) {
                           ."</th>\n",
                           $class_str, $day);
 
-        $hdr3 .= sprintf ("<th class='%s'>No</th>\n"
+        $hdr3 .= sprintf ("<th colspan='3' class='%s'>"
+                          ."<input class='sched_not_day' type='checkbox'"
+                          ." data-day='%d' />"
+                          ." No time today"
+                          ."</th>\n",
+                          $class_str, $day);
+
+        $hdr4 .= sprintf ("<th class='%s'>No</th>\n"
                           ."<th class='%s'>OK</th>\n"
                           ."<th class='%s'>Preferred</th>\n",
                           $class_str,
@@ -115,6 +122,11 @@ function make_schedule ($application, $question_id) {
     $ret .= "<tr class='boxed_header'>\n";
     $ret .= "<th></th>\n";
     $ret .= $hdr3;
+    $ret .= "</tr>\n";
+
+    $ret .= "<tr class='boxed_header'>\n";
+    $ret .= "<th></th>\n";
+    $ret .= $hdr4;
     $ret .= "</tr>\n";
 
     $ret .= "</thead>\n";
