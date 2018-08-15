@@ -92,7 +92,7 @@ function do_lookup ($str, $group_flag) {
         $count++;
         if ($count >= $limit)
             break;
-        if ($p->pct < 50)
+        if ($p->pct < 30)
             break;
         $r = (object)NULL;
         $r->perf_id = $p->perf_id;
