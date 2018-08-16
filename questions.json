@@ -1,7 +1,7 @@
 [
   { "id": "name",
     "q": "Your name",
-    "desc": "<p>This should be the name of the person filling out this application, so we can get back to you with questions.  Normally it should be the performer for solo events, or the person officially listed in the NEFFA database as the contact for a group.  If that doesn't work for you for some reason, please explain in the COMMENTS box at the end of this application, but it may delay consideration of your application.</p>" },
+    "desc": "<p>This should be the name of the person filling out this application, so we can get back to you with questions.  Normally it should be the performer for solo events, or the person officially listed in the NEFFA database as the contact for a group.  If that doesn't work for you for some reason, please explain in the COMMENTS box at the end of this application.</p>" },
 
   { "id": "email",
     "q": "Your email address", 
@@ -11,7 +11,7 @@
     "q": "What is the best phone number at which to reach you?" },
 
   { "id": "main_performer",
-    "q": "Main performer billing goes to:",
+    "q": "Should the performer for this event be listed as an individual, a duo, or a named group?",
     "choices": [
       { "val": "Individual", "desc": "An individual" },
       { "val": "Duo", "desc": "A duo" },
@@ -42,7 +42,7 @@
     "optional": 1,
     "class": "lookup_individual",
     "q": "Other performers supporting this event",
-    "desc": "<p>You can list other performers who will be helping during this event.  They might be unbilled accompanists, sound assistants, roadies, etc. If this event is scheduled, the people listed here will not be simultaneously scheduled for other events in the same timeslot.</p><p>If this event is for a group, don't list group members here - potential conflicts for them are handled separately.</p>" },
+    "desc": "<p>Is there an unbilled accompanist or temporary addition to your band who will be joining you for NEFFA? If this event is scheduled, anyone mentioned here will not be simultaneously scheduled for other events in the same time slot.</p>" },
 
 
   { "id": "app_category",
@@ -54,7 +54,7 @@
       { "val": "Performance", "desc": "Other dance performance" },
       { "val": "Other", "desc": "Everything else" }
     ],
-    "desc": "The answer to this question may be different on other applications; please choose the option that best fits with this application only.  Please note that dance bands must submit their own applications and callers/dance leaders must submit separate applications. If a caller/teacher is a member of your dance band, this teacher/caller still is required to submit a separate application as an individual."
+    "desc": "The answer to this question may be different on other applications; please choose the option that best fits with this application only.  Please note that dance bands and callers/dance leaders MUST SUBMIT SEPARATE APPLICATIONS. If a caller wants to work with a specific band, they can specify that below."
   },
 
   { "id": "dance_style",
