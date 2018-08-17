@@ -107,6 +107,23 @@
     "desc": "There are no guarantees about pairings of bands/musicians and callers/dance leaders, but if you have a preference, please indicate it. "
   },
 
+  { "id": "indoor_ritual",
+    "show_if": [ "app_category", "Ritual" ],
+    "q": "Indoor Performances",
+    "desc": "Is your team interested in an indoor performing slot (usually less than 10 minutes)? This would be a part of the Dance Performances. If so, check the time of performance below. This performance would be in addition to a performance in the Courtyard.",
+    "choices": [
+      { "val": "Sat", "desc": "Saturday afternoon" },
+      { "val": "Sun", "desc": "Sunday afternoon" }
+    ]
+  },
+  
+  { "id": "conflicts",
+    "show_if": [ "app_category", "Ritual" ],
+    "q": "Conflicts and Preferences",
+    "textarea": 1,
+    "desc": "<p>Please use this box to indicate any other scheduling preferences or potential conflicts. This includes other Morris teams or other NEFFA events/groups involving members of your team. Please use performer/group names as they have been listed on the grid, for example:</p><p>Different time from Best Band Ever<br/>Not in same slot as Morris Team Z<br/>Same day as Choral Group ABC<br/></p>"
+  },
+
   { "id": "availability",
     "type": "radio",
     "q": "Availability",

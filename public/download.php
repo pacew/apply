@@ -19,16 +19,104 @@ $q = query ("select app_id, val"
 while (($r = fetch ($q)) != NULL) {
     $app_id = intval ($r->app_id);
     if (strncmp ($r->val, "{", 1) == 0) {
-        $apps[$app_id] = json_decode ($r->val, TRUE);
+        $app = (object)NULL;
+        $app->app_id = $app_id;
+        $app->curvals = json_decode ($r->val, TRUE);
+        $apps[$app_id] = $app;
     } else {
         $patch = json_decode ($r->val, TRUE);
-        if (isset ($apps[$app_id])) {
-            $curvals = @$apps[$app_id];
-            $curvals = mikemccabe\JsonPatch\JsonPatch::patch($curvals, $patch);
-            $apps[$app_id] = $curvals;
+        if (($app = @$apps[$app_id]) != NULL) {
+            $app->curvals = mikemccabe\JsonPatch\JsonPatch::patch(
+                $app->curvals,
+                $patch);
         }
     }
 }
+
+$evid_info = array ();
+$max_evid_core = 9;
+function get_evid_info ($key, $evid_core) {
+    global $evid_info, $max_evid_core;
+
+    if (($ei = @$evid_info[$key]) != NULL)
+        return ($ei);
+    
+    if ($evid_core == 0) {
+        $max_evid_core++;
+        $evid_core = $max_evid_core;
+
+        query (
+            "insert into evid_info (key, evid_core) values (?,?)",
+            array ($key, $evid_core));
+        do_commits ();
+    }
+
+    $ei = (object)NULL;
+    $ei->key = $key;
+    $ei->evid_core = $evid_core;
+    $ei->seq = 0;
+    $evid_info[$key] = $ei;
+
+    return ($ei);
+}
+
+$q = query ("select key, evid_core from evid_info");
+while (($r = fetch ($q)) != NULL) {
+    $key = trim ($r->key);
+    $evid_core = intval ($r->evid_core);
+    if ($evid_core > $max_evid_core)
+        $max_evid_core = $evid_core;
+    get_evid_info ($key, $evid_core);
+}
+
+foreach ($apps as $app) {
+    if (($neffa_id = name_to_id ($app->curvals['name'])) != 0) {
+        $key = $neffa_id;
+    } else if (($email = @$app['email']) != "") {
+        $key = $email;
+    } else {
+        $key = NULL;
+    }
+
+    if ($key) {
+        $ei = get_evid_info ($key, 0);
+        $ei->seq++;
+
+        $app->ei = $ei;
+        $app->evid_seq = $ei->seq;
+    }
+}
+
+foreach ($apps as $app) {
+    $curvals = $app->curvals;
+    if (
+        $curvals['app_category'] == "Band" 
+        || $curvals['app_category'] == "Caller") {
+        switch (@$curvals['dance_style']) {
+        case "American": $prefix = "T"; break;
+        case "English": $prefix = "P"; break;
+        case "Couples": $prefix = "P"; break;
+        case "Int_Line": $prefix = "R"; break;
+        default: $prefix = "oops"; break;
+        }
+    } else {
+        $prefix = "M";
+    }
+
+    if (($ei = @$app->ei) == NULL) {
+        $evid_core = 0;
+        $suffix = "";
+    } else {
+        $evid_core = $ei->evid_core;
+        if ($ei->seq == 1) {
+            $suffix = "";
+        } else {
+            $suffix = chr (ord ("a") - 1 + $app->evid_seq);
+        }
+    }
+
+    $app->evid = $prefix . $evid_core . $suffix;
+}    
 
 $body .= "<div>\n";
 $body .= mklink ("home", "/");
@@ -38,9 +126,11 @@ $body .= "</div>\n";
 
 if ($arg_view_data) {
     foreach ($apps as $app) {
+        $curvals = $app->curvals;
         $body .= "<div class='display_data'>\n";
-        $body .= sprintf ("<h2>%d</h2>\n", $app['app_id']);
-        foreach ($app as $key => $val) {
+        $body .= sprintf ("<h2>%d</h2>\n", $app->app_id);
+        $body .= sprintf ("evid=<strong>%s</strong> ", $app->evid);
+        foreach ($curvals as $key => $val) {
             if (is_array ($val)) {
                 if (count ($val) > 0) {
                     $body .= sprintf ("%s=", h($key));
@@ -120,6 +210,7 @@ $room_sound_choices = array (
 
 $csvhdr = array ();
 $csvhdr[] = "app_id";
+$csvhdr[] = "evid";
 foreach ($questions as $question) {
     $question_id = $question['id'];
     $class = @$question['class'];
@@ -153,14 +244,16 @@ foreach ($questions as $question) {
 
 $rows = array ();
 foreach ($apps as $app) {
-    if ($arg_app_id && $arg_app_id != $app['app_id'])
+    $curvals = $app->curvals;
+    if ($arg_app_id && $arg_app_id != $app->app_id)
         continue;
     $cols = array ();
-    $cols[] = $app['app_id'];
+    $cols[] = $app->app_id;
+    $cols[] = $app->evid;
     foreach ($questions as $question) {
         $question_id = $question['id'];
         $class = @$question['class'];
-        $val = @$app[$question_id];
+        $val = @$curvals[$question_id];
 
         if ($class == "lookup_individual" || $class == "lookup_group") {
             $cols[] = $val;
