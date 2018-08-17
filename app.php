@@ -8,9 +8,9 @@ $title_html = "NEFFA Performer Application 2019";
 $index = NULL;
 
 function get_neffa_index () {
-    global $index;
+    global $index, $cfg;
     if ($index == NULL) {
-        $filename = $_SERVER['APP_ROOT'] . "/neffa_idx.json";
+        $filename = $cfg['auxdir'] . "/neffa_idx.json";
         if (($val = file_get_contents ($filename)) == "") {
             echo ("neffa_idx not found\n");
             exit ();

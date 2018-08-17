@@ -138,6 +138,11 @@ async function setup_apache (cfg) {
     printf ("sudo ln -s %s/public %s\n", cfg.srcdir, www_dir);
   }
 
+  if (! fs.existsSync (cfg.auxdir)) {
+    printf ("sudo sh -c 'mkdir -p -m 2775 %s; chown www-data.www-data %s'\n",
+	    cfg.auxdir, cfg.auxdir);
+  }
+  
   conf += sprintf ("  php_flag display_errors on\n");
   conf += sprintf ("  DocumentRoot %s\n", www_dir);
   conf += sprintf ("  SetEnv APP_ROOT %s\n", cfg.srcdir);
@@ -229,8 +234,10 @@ async function install_site () {
     }
   }
 
-  cfg.srcdir = process.cwd ();
   cfg.siteid = sprintf ("%s-%s", cfg.site_name, cfg.conf_key);
+  cfg.srcdir = process.cwd ();
+  cfg.auxdir = sprintf ("/var/%s", cfg.siteid);
+  
   if (cfg.ssl_port == 443) {
     cfg.ssl_url = sprintf ("https://%s/", cfg.external_name);
   } else {

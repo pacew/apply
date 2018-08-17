@@ -1,5 +1,5 @@
 #! /usr/bin/php
-<?php
+<?php /* -*- mode: php -*- */
 
 require_once ("cli.php");
 
@@ -81,8 +81,11 @@ function make_index ($db) {
 $db = get_db ("neffa_pdb", $dbparams);
 make_index ($db);
 
-$output = "neffa_idx.json";
-file_put_contents ($output, json_encode ($index, JSON_PRETTY_PRINT));
+$output = sprintf ("%s/%s", $cfg['auxdir'], "neffa_idx.json");
+$tname = tempnam ($cfg['auxdir'], "TMP.");
+file_put_contents ($tname, json_encode ($index, JSON_PRETTY_PRINT));
+chmod ($tname, 0664);
+rename ($tname, $output);
 
 printf ("output in %s\n", $output);
 
