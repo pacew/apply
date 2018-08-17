@@ -110,8 +110,10 @@ foreach ($apps as $app) {
         $evid_core = $ei->evid_core;
         if ($ei->seq == 1) {
             $suffix = "";
-        } else {
+        } else if ($app->evid_seq <= 26) {
             $suffix = chr (ord ("a") - 1 + $app->evid_seq);
+        } else {
+            $suffix = sprintf ("-%d", $app->evid_seq);
         }
     }
 
