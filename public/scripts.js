@@ -187,7 +187,7 @@ function do_lookup_change (ev) {
 		 $(input_wrapper).find(".group_members").remove();
 		 $(span).find(".lookup_success_msg").remove();
 		 $(span).find(".lookup_fail_msg").remove();
-		 
+		 $(span).find(".initial_attention").remove();
 		 if (typeof (ret) != "object")
 		   ret = {};
 		 let txt = "";

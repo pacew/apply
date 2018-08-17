@@ -342,10 +342,10 @@ foreach ($questions as $question) {
             $c = "";
             if ($choice['val'] == @$application->curvals[$question_id])
                 $c = "checked='checked'";
-            $body .= sprintf ("<input type='radio' name='%s' value='%s' %s />\n",
-                              $input_id,
-                              h($choice['val']),
-                              $c);
+            $body.=sprintf("<input type='radio' name='%s' value='%s' %s />\n",
+                           $input_id,
+                           h($choice['val']),
+                           $c);
             if (@$choice['desc']) {
                 $body .= h($choice['desc']);
             } else {
@@ -364,15 +364,21 @@ foreach ($questions as $question) {
         $body .= "</textarea>\n";
 
     } else {
-        $c = "";
-        if (@$question['class'])
-            $c = sprintf ("class=%s", $question['class']);
+        $class = @$question['class'];
         $body .= "<span>\n";
         $cur = @$application->curvals[$question_id];
         $body .= sprintf ("<input "
-                          ." type='text' id='%s' name='%s' %s"
+                          ." type='text' id='%s' name='%s' class='%s'"
                           ." size='40' value='%s'/>\n",
-                          $input_id, $input_id, $c, h($cur));
+                          $input_id, $input_id, $class, h($cur));
+
+        if ($class == "lookup_individual" || $class == "lookup_group") {
+            if ($cur && name_to_id ($cur) == 0) {
+                $body .= "<span class='initial_attention attention'>"
+                    ."not found in NEFFA database</span>"
+                    ."</span>\n";
+            }
+        }
         $body .= "</span>\n";
     }
 
