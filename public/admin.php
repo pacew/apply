@@ -5,6 +5,7 @@ require_once ($_SERVER['APP_ROOT'] . "/app.php");
 pstart ();
 
 $arg_refresh_idx = intval (@$_REQUEST['refresh_idx']);
+$arg_just_new = intval (@$_REQUEST['just_new']);
 
 if ($arg_refresh_idx) {
     $cmd = sprintf ("sh -c 'cd %s; ./mkindex'", $cfg['srcdir']);
@@ -26,7 +27,9 @@ if ($arg_refresh_idx) {
 $body .= "<h2>Admin page</h2>\n";
 
 $body .= "<div>";
-$body .= mklink ("home", "/");
+$body .= mklink ("show all", "admin.php");
+$body .= " | ";
+$body .= mklink ("new performers", "admin.php?just_new=1");
 $body .= " | ";
 $body .= mklink ("view data", "download.php?view_data=1");
 $body .= " | ";
@@ -56,7 +59,8 @@ $body .= "<button type='submit' onclick='return false' style='display:none'>"
 $body .= "<input type='submit' value='Refresh performer index' />\n";
 $body .= "</form>\n";
 
-$q = query ("select app_id, ts, username, val"
+$q = query ("select app_id, to_char (ts, 'YYYY-MM-DD HH24:MI:SS') as ts,"
+            ."   username, val, attention"
             ." from json"
             ." order by app_id, ts");
 
@@ -68,9 +72,16 @@ while (($r = fetch ($q)) != NULL) {
     if (strncmp ($r->val, "[", 1) == 0)
         continue;
 
+    if ($r->attention) {
+        $css = "attention";
+    } else {
+        if ($arg_just_new)
+            continue;
+        $css = "";
+    }
     $cols = array ();
-    $cols[] = mklink ($r->app_id, $target);
-    $cols[] = mklink ($r->ts, $target);
+    $cols[] = mklink_span ($r->app_id, $target, $css);
+    $cols[] = mklink_span ($r->ts, $target, $css);
 
     $txt = "";
     $val = @json_decode ($r->val, TRUE);
@@ -83,8 +94,12 @@ while (($r = fetch ($q)) != NULL) {
     $rows[] = $cols;
 }
 
-$body .= mktable (array ("app_id", "ts", "name / title", ""),
-                  $rows);
+if (count ($rows) == 0) {
+    $body .= "<p>no data to display</p>\n";
+} else {
+    $body .= mktable (array ("app_id", "ts", "name / title", ""),
+    $rows);
+}
 
 
 pfinish ();

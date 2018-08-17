@@ -46,6 +46,20 @@ foreach ($questions as $question) {
     }
 }
 
+$needs_attention = 0;
+foreach ($questions as $question) {
+    $question_id = $question['id'];
+    $class = @$question['class'];
+
+    if ($class == "lookup_individual" || $class == "lookup_group") {
+        $val = trim ($newvals[$question_id]);
+        if ($val != "" && name_to_id ($val) == 0) {
+            $needs_attention = 1;
+            break;
+        }
+    }
+}
+
 function make_access_code () {
     return (generate_urandom_string (8));
 }
@@ -75,10 +89,16 @@ if ($need_patch == 0) {
 
 }
 
+query (
+    "update json set attention = ? where app_id = ?",
+    array ($needs_attention, $app_id));
+
+
+do_commits ();
+
 if (($application = get_application ($app_id)) == NULL)
     fatal ("can't re-read application");
 
-do_commits ();
 
 
 $to_email = trim (strtolower ($application->curvals['email']));

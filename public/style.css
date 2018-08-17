@@ -225,3 +225,6 @@ p {
     margin: 1em;
 }
 
+.attention {
+    color: red;
+}

@@ -547,6 +547,23 @@ function mklink_nw ($text, $target) {
 			 fix_target ($target), h($text)));
 }
 
+function mklink_span ($text, $target, $span_class = "") {
+	if (trim ($text) == "")
+		return ("");
+	if (trim ($target) == "")
+		return (h($text));
+
+	$str = sprintf ("<a href='%s'>", fix_target ($target));
+	$str .= "<span";
+	if ($span_class != "")
+		$str .= sprintf (" class='%s'", $span_class);
+	$str .= ">";
+	$str .= h($text);
+	$str .= "</span>";
+	$str .= "</a>";
+	return ($str);
+}
+
 function make_confirm ($question, $button, $args) {
 	global $request_uri;
 	$ret = "";
