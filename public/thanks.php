@@ -64,6 +64,13 @@ $body .= sprintf ("<p>%s</p>\n", mklink ($target, $target));
 
 $body .= "<p>Here are the responses you provided:</p>";
 
+$sound = array ();
+$sound['stage_with'] = "Stage with sound system";
+$sound['stage_without'] = "Stage without sound system";
+$sound['double_with'] = "Double classroom with sound system";
+$sound['double_without'] = "Double classroom without sound system";
+$sound['single_mic'] = "Single classroom with self service mic";
+$sound['single_without'] = "Single classroom without sound system";
 
 $rows = array ();
 foreach ($questions as $question) {
@@ -72,28 +79,53 @@ foreach ($questions as $question) {
     $q_text = $question['q'];
     $answer = $application->curvals[$question_id];
   
-    if ($answer == null) {
-        $val = "";
-    } else if (is_string ($answer)) {
-        $val = $answer;
-    } else if (is_array ($answer)) {
-        $strs = array ();
-        foreach ($answer as $elt) {
-            if (is_string ($elt)) {
-                if ($elt != "") {
-                    $strs[] = $elt;
+    if ($question_id == "availability") {
+        $dnames = array ("", "Fri", "Sat", "Sun");
+
+        $days = array ();
+        $saw_preferred = 0;
+
+        for ($day = 1; $day <= 3; $day++) {
+            $hours = array ();
+            for ($hour = 10; $hour <= 22; $hour++) {
+                $key = $day * 100000 + $hour * 100;
+                if (@$answer[$key]) {
+                    if ($hour < 12) {
+                        $htext = $hour;
+                    } else if ($hour == 12) {
+                        $htext = "noon";
+                    } else {
+                        $htext = sprintf ("%dp", $hour - 12);
+                    }
+                    if (@$answer[$key] == 2) {
+                        $saw_preferred = 1;
+                        $htext .= "*";
+                    }
+                    $hours[] = $htext;
                 }
-            } else {
-                $strs[] = "TYPE?";
             }
+            if (count ($hours)) {
+                $txt = sprintf ("<strong>%s</strong> %s", 
+                $dnames[$day], implode (",", $hours));
+            } else {
+                $txt = sprintf ("%s none", $dnames[$day]);
+            }
+            $days[] = $txt;
         }
-        if (count ($strs) > 0) {
-            $val = sprintf ("[%s]", implode (",", $strs));
-        } else {
-            $val = "";
+        $val = implode ("<br/>", $days);
+        if ($saw_preferred) {
+            $val .= "<br/>( * means preferred)";
+        }
+    } else if ($question_id == "room_sound") {
+        $val = "";
+        foreach ($sound as $key => $txt) {
+            $val .= sprintf (
+                "%s: %s<br/>\n", 
+                h($sound[$key]),
+                h($answer[$key]));
         }
     } else {
-        $val = "TYPE?";
+        $val = h($answer);
     }
 
     if ($val == "")
@@ -102,13 +134,17 @@ foreach ($questions as $question) {
     $cols = array ();
     $cols[] = h($q_text);
 
-    $cols[] = h($val);
+    $cols[] = $val;
 
     $rows[] = $cols;
 }
 
 
-$body .= mktable (array ("Question", "Answer"), $rows);
+$body .= mktable (
+    array (
+        "<th style='width:30em'>Question</th>", 
+        "Answer"), 
+    $rows);
 
 pfinish ();
 
