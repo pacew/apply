@@ -12,7 +12,7 @@
     "q": "What is the best phone number at which to reach you?" },
 
   { "id": "main_performer",
-    "q": "Main performer billing goes to:",
+    "q": "Should the performer for this event be listed as an individual, a duo, or a named group?",
     "choices": [
       { "val": "Individual", "desc": "The individual applying" },
       { "val": "Duo", "desc": "A duo consiting of the individual applying an another performer" },
@@ -35,8 +35,9 @@
   { "id": "busy",
     "optional": 1,
     "class": "lookup_individual",
-    "q": "Another performer supporting this event",
-    "desc": "<p>You can list another performer who will be helping during this event.  It could be an unbilled accompanist, a sound assistant, roadie, etc. If this event is scheduled, the person listed here will not be simultaneously scheduled for other events in the same timeslot.</p><p>If this event is for a group, don't list group members here - potential conflicts for them are handled separately.</p><p>If you have additional names to list, put them in the notes at the end of this application.</p>" },
+    "q": "Other performers supporting this event",
+    "desc": "<p>Is there an unbilled accompanist or temporary addition to your band who will be joining you for NEFFA? If this event is scheduled, these people will not be simultaneously scheduled for other events in the same time slot.  You can list one person here, then put any additional names in the comment section at the end.</p>" },
+
 
   { "id": "app_category",
     "q": "What category best describes this particular application?",
@@ -47,7 +48,7 @@
       { "val": "Performance", "desc": "Other dance performance" },
       { "val": "Other", "desc": "Everything else" }
     ],
-    "desc": "The answer to this question may be different on other applications; please choose the option that best fits with this application only.  Please note that dance bands must submit their own applications and callers/dance leaders must submit separate applications. If a caller/teacher is a member of your dance band, this teacher/caller still is required to submit a separate application as an individual."
+    "desc": "The answer to this question may be different on other applications; please choose the option that best fits with this application only.  Please note that dance bands and callers/dance leaders MUST SUBMIT SEPARATE APPLICATIONS. If a caller wants to work with a specific band, they can specify that below."
   },
 
   { "id": "dance_style",
