@@ -228,3 +228,7 @@ p {
 .attention {
     color: red;
 }
+
+.attention_good {
+    color: green;
+}

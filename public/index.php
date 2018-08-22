@@ -373,10 +373,14 @@ foreach ($questions as $question) {
                           $input_id, $input_id, $class, h($cur));
 
         if ($class == "lookup_individual" || $class == "lookup_group") {
-            if ($cur && name_to_id ($cur) == 0) {
-                $body .= "<span class='initial_attention attention'>"
-                    ."not found in NEFFA database</span>"
-                    ."</span>\n";
+            if ($cur) {
+                if (name_to_id ($cur) == 0) {
+                    $body .= "<span class='initial_attention attention'>"
+                        ."not found in NEFFA database</span>"
+                        ."</span>\n";
+                } else {
+                    $body .= "<span class='initial_attention attention_good'>matched in database!</span>";
+                }
             }
         }
         $body .= "</span>\n";
