@@ -49,6 +49,10 @@ foreach ($questions as $question) {
 $needs_attention = 0;
 foreach ($questions as $question) {
     $question_id = $question['id'];
+
+    if (! active_question ($question_id, $newvals))
+        continue;
+
     $class = @$question['class'];
 
     if ($class == "lookup_individual" || $class == "lookup_group") {

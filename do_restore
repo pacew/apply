@@ -1,0 +1,20 @@
+#! /bin/sh
+
+file=$1
+
+if [ ! -r "$file" ]
+then
+    echo "can't open $file"
+    exit 1
+fi
+
+psql apply-pace <<!
+drop table email_history;
+drop table evid_info;
+drop table json;
+drop table pcodes;
+drop table seq;
+drop table vars;
+!
+
+psql apply-pace -f $file

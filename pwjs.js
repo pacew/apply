@@ -434,7 +434,20 @@ async function setup_postgres (cfg) {
 		   cfg.siteid);
   }
   fs.writeFileSync ("sql", txt);
-  fs.chmodSync ("sql", 0755);
+  fs.chmodSync ("sql", 0700);
+
+  if (conf.password) {
+    txt = sprintf ("#! /bin/sh\n" +
+		   "PGPASSWORD='%s' exec pg_dump" +
+		   "  --host='%s' --user='%s' --dbname='%s' \"\$@\"\n",
+		   conf.password, conf.host, conf.user, cfg.siteid);
+  } else {
+    txt = sprintf ("#! /bin/sh\n" +
+		   "exec pg_dump --dbname='%s' \"\$@\"\n",
+		   cfg.siteid);
+  }
+  fs.writeFileSync ("dbdump", txt);
+  fs.chmodSync ("dbdump", 0700);
 
   conf.database = "template1";
   let pool = new Pool (conf);

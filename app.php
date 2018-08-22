@@ -184,3 +184,36 @@ function associative_array ($arr) {
     return (0);
 }
 
+function show_if_test ($condition, $curvals) {
+    global $questions_by_id;
+    
+    $target_id = $condition[0];
+    $target_question = $questions_by_id[$target_id];
+    
+    $val = $curvals[$target_id];
+    if (@$target_question['choices']) {
+        return (array_search ($val, $condition) !== FALSE);
+    } else {
+        return ($val != "");
+    }
+}
+
+function active_question ($question_id, $curvals) {
+    global $questions_by_id;
+
+    $question = $questions_by_id[$question_id];
+
+    if (($show_if = @$question['show_if']) != NULL) {
+        if (is_array ($show_if[0])) {
+            foreach ($show_if as $condition) {
+                if (! show_if_test ($condition, $curvals))
+                    return (FALSE);
+            }
+        } else {
+            if (! show_if_test ($show_if, $curvals))
+                return (FALSE);
+        }
+    }
+    
+    return (TRUE);
+}
