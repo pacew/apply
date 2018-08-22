@@ -212,8 +212,8 @@ $room_sound_choices = array (
 );
 
 $csvhdr = array ();
-$csvhdr[] = "app_id";
 $csvhdr[] = "evid";
+$csvhdr[] = "app_id";
 foreach ($questions as $question) {
     $question_id = $question['id'];
     $class = @$question['class'];
@@ -251,8 +251,8 @@ foreach ($apps as $app) {
     if ($arg_app_id && $arg_app_id != $app->app_id)
         continue;
     $cols = array ();
-    $cols[] = $app->app_id;
     $cols[] = $app->evid;
+    $cols[] = $app->app_id;
     foreach ($questions as $question) {
         $question_id = $question['id'];
         $class = @$question['class'];
