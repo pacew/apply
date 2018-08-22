@@ -72,6 +72,20 @@ $sound['double_without'] = "Double classroom without sound system";
 $sound['single_mic'] = "Single classroom with self service mic";
 $sound['single_without'] = "Single classroom without sound system";
 
+function show_if_test ($question_id, $condition) {
+    global $questions_by_id, $application;
+    
+    $target_id = $condition[0];
+    $target_question = $questions_by_id[$target_id];
+    
+    $val = $application->curvals[$target_id];
+    if (@$target_question['choices']) {
+        return (array_search ($val, $condition) !== FALSE);
+    } else {
+        return ($val != "");
+    }
+}
+
 $rows = array ();
 foreach ($questions as $question) {
     $question_id = $question['id'];
@@ -79,6 +93,21 @@ foreach ($questions as $question) {
     $q_text = $question['q'];
     $answer = $application->curvals[$question_id];
   
+    $want_field = true;
+    if (($show_if = @$question['show_if']) != NULL) {
+        if (is_array ($show_if[0])) {
+            foreach ($show_if as $condition) {
+                if (! show_if_test ($question_id, $condition))
+                    $want_field = false;
+            }
+        } else {
+            if (! show_if_test ($question_id, $show_if))
+                $want_field = false;
+        }
+    }
+    if (! $want_field)
+        continue;
+
     if ($question_id == "availability") {
         $dnames = array ("", "Fri", "Sat", "Sun");
 

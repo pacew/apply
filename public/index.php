@@ -30,7 +30,7 @@ function h24_to_12 ($hour) {
         return (sprintf ("%dam", $hour));
     } else if ($hour == 12) {
         return ("noon");
-    } else if ($hour < 24) {
+    } else if ($hour < 23) {
         return (sprintf ("%dpm", $hour - 12));
     } else {
         return ("11:30pm");
@@ -43,7 +43,7 @@ function make_schedule ($application, $question_id) {
 
     $full_from_day = 1;
     $full_to_day = 3;
-    $full_from_hour = array (24, 16, 10, 10);
+    $full_from_hour = array (24, 19, 10, 10);
     $full_to_hour =   array ( 0, 22, 22, 16);
 
     $core_from_day = 2;

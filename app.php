@@ -107,15 +107,21 @@ function do_lookup ($str, $group_flag) {
 }
 
 $questions = NULL;
+$questions_by_id = NULL;
 
 function get_questions () {
-    global $questions;
+    global $questions, $questions_by_id;
     if ($questions == NULL) {
         $filename = sprintf ("%s/questions.json", $_SERVER['APP_ROOT']);
         $questions = json_decode (file_get_contents ($filename), TRUE);
         if (json_last_error ()) {
             $msg = json_last_error_msg ();
             fatal ("syntax error in questions.json - try jq: " . $msg);
+        }
+        $questions_by_id = array ();
+        foreach ($questions as $question) {
+            $question_id = $question['id'];
+            $questions_by_id[$question_id] = $question;
         }
     }
     return ($questions);

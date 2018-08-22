@@ -91,6 +91,7 @@ foreach ($apps as $app) {
     $curvals = $app->curvals;
     if (
         $curvals['app_category'] == "Band" 
+        || $curvals['app_category'] == "Band_Solo" 
         || $curvals['app_category'] == "Caller") {
         switch (@$curvals['dance_style']) {
         case "American": $prefix = "T"; break;

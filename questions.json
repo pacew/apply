@@ -15,14 +15,14 @@
     "q": "Should the performer for this event be listed as an individual, a duo, or a named group?",
     "choices": [
       { "val": "Individual", "desc": "The individual applying" },
-      { "val": "Duo", "desc": "A duo consiting of the individual applying an another performer" },
+      { "val": "Duo", "desc": "A duo consisting of the individual applying and another performer" },
       { "val": "Group", "desc": "A group" }
     ]
   },
 
   { "id": "performer2",
     "show_if": [ "main_performer", "Duo" ],
-    "q": "Second perfomer name for duo",
+    "q": "Second performer name for duo",
     "class": "lookup_individual" },
 
   { "id": "group_name",
@@ -42,25 +42,36 @@
   { "id": "app_category",
     "q": "What category best describes this particular application?",
     "choices": [ 
-      { "val": "Band", "desc": "Dance band" },
-      { "val": "Caller", "desc": "Dance caller/teacher" },
+      { "val": "Band_Solo", "desc": "Dance band proposing a session requiring no additional caller or teacher" },
+      { "val": "Band", "desc": "Dance band proposing to play for a session led by a caller or teacher (who is not a member of the band)" },
+      { "val": "Caller", "desc": "Dance caller or teacher" },
       { "val": "Ritual", "desc": "Ritual dance (morris, rapper, etc)" },
       { "val": "Performance", "desc": "Other dance performance" },
       { "val": "Other", "desc": "Everything else" }
     ],
-    "desc": "The answer to this question may be different on other applications; please choose the option that best fits with this application only.  Please note that dance bands and callers/dance leaders MUST SUBMIT SEPARATE APPLICATIONS. If a caller wants to work with a specific band, they can specify that below."
+    "desc": "The answer to this question may be different on other applications; please choose the option that best fits with this application only.  Please note that dance bands and callers/dance leaders MUST SUBMIT SEPARATE APPLICATIONS unless the caller is in the band. If a caller wants to work with a specific band, they can specify that below."
   },
 
   { "id": "dance_style",
-    "show_if": [ "app_category", "Band", "Caller" ],
-    "q": "What best describes the style of dance?",
+    "show_if": [ "app_category", "Band", "Band_Solo", "Caller" ],
+    "q": "What category describes the style of dance?",
     "desc": "Bands may wish to play for more than one type of dance event, but for this application, you have to choose JUST one.  If you would like to be considered for more than one type of dancing, PLEASE fill out another application!",
     "choices": [
-      { "val": "American", "desc": "American (contra/square)" },
-      { "val": "English", "desc": "English" },
-      { "val": "Couples", "desc": "Couples dance" },
-      { "val": "Int_Line", "desc": "International and/or line" }
+      { "val": "American", "desc": "American (contra/square) dance" },
+      { "val": "English", "desc": "English country dance" },
+      { "val": "Int_Line", "desc": "International line dance" },
+      { "val": "Couples", "desc": "Couples dance (including international and set dances)" },
+      { "val": "Family", "desc": "Family dance" },
+      { "val": "Other", "desc": "Other (rapper, step dance, etc.)" }
+      
     ]
+  },
+
+  { "id": "specific_dance_style",
+    "show_if": [ "app_category", "Band" ],
+    "textarea": 1,
+    "optional": 1,
+    "q": "If you have a preference, what specific style or styles of dance would you like to play for?"
   },
 
   { "id": "music_pref",
@@ -75,11 +86,11 @@
   },
 
   { "id": "preferred_band",
-    "class": "lookup_group",
+    "textarea": 1,
+    "optional": 1,
     "show_if": [ "music_pref", "band", "either" ],
     "q": "Preferred band",
-    "optional": 1,
-    "desc": "There are no guarantees about pairings of bands/musicians and callers/dance leaders, but if you want a band and have a preference, please indicate it." },
+    "desc": "If you have a preference, please specify what band or bands you would prefer to work with. We may not be able to pair you with your preferred band. Again, note that the band must submit a separate application."},
 
   { "id": "recorded_type",
     "show_if": [ "music_pref", "either", "recorded" ],
@@ -90,27 +101,18 @@
     ]
   },
 
-  { "id": "need_caller",
-    "show_if": [ "app_category", "Band" ],
-    "q": "Do you need a caller?",
-    "choices": [
-      { "val": "Yes" },
-      { "val": "No" }
-    ]
-  },
-
   { "id": "preferred_caller",
-    "class": "lookup_individual",
-    "show_if": [ "need_caller", "Yes" ],
+    "textarea": 1,
     "optional": 1,
+    "show_if": [ "app_category", "Band" ],
     "q": "Preferred caller/dance leader",
-    "desc": "There are no guarantees about pairings of bands/musicians and callers/dance leaders, but if you have a preference, please indicate it. "
+    "desc": "If you have a preference, please specify what callers or dance leaders you would prefer to work with. We may not be able to pair you with your preferred callers or dance leaders. Note that the caller must submit a separate application, even if they are part of your group."
   },
 
   { "id": "indoor_ritual",
     "show_if": [ "app_category", "Ritual" ],
     "q": "Indoor Performances",
-    "desc": "Is your team interested in an indoor performing slot (usually less than 10 minutes)? This would be a part of the Dance Performances. If so, check the time of performance below. This performance would be in addition to a performance in the Courtyard.",
+    "desc": "Is your team interested in an indoor performing slot (usually less than 10 minutes)? This would be a part of the Dance Performances. If so, check the time of performance. This performance would be in addition to a performance in the Courtyard.",
     "choices": [
       { "val": "Sat", "desc": "Saturday afternoon" },
       { "val": "Sun", "desc": "Sunday afternoon" }
@@ -131,16 +133,16 @@
   },
 
   { "id": "event_title",
-    "show_if": [ "app_category", "Caller", "Other" ],
+    "show_if": [ "app_category", "Band_Solo", "Caller", "Other" ],
     "q": "What is your EVENT'S TITLE? (30 characters at most)",
     "desc": "Please be careful about avoiding spelling errors, and do not use all capital letters. This title will appear on the web Festival Schedule, the Paper Grid, and in the Program Book. When crafting an event title, please try to be descriptive, although cleverness is also welcome. The event title should be different from the group name (for example, don't use  \"[your name] in Concert\") and should provide audience members with an idea of the theme.  The Program Committee may change the title because of printing constraints or clarity issues."
   },
 
   { "id": "event_desc",
-    "show_if": [ "app_category", "Caller", "Other" ],
+    "show_if": [ "app_category", "Band_Solo", "Caller", "Other" ],
     "q": "Please describe your EVENT (NOT your group!)",
     "textarea": 1,
-    "desc": "This is a description of this specific, proposed PERFORMANCE. This text will be read by Festival-goers. Please avoid spelling errors, and do not use all capital letters. Try to limit this description to no more than 30 words (fewer is better!). This description gives the Program Committee and Festival participants a more precise idea of what to expect from your event. This description should give additional information, and not be a repeat of the Event Title."
+    "desc": "This is a description of this specific, proposed NEFFA session. This text will be read by Festival-goers. Please avoid spelling errors, and do not use all capital letters. Try to limit this description to no more than 30 words (fewer is better!). This description gives the Program Committee and Festival participants a more precise idea of what to expect from your event. This description should give additional information, and not be a repeat of the Event Title."
   },
 
 
@@ -224,7 +226,7 @@
   },
       
   { "id": "event_type",
-    "show_if": [ "app_category", "Caller", "Other" ],
+    "show_if": [ "app_category", "Band_Solo", "Caller", "Other" ],
     "q": "Event Type",
     "choices": [
       { "val": "E", "desc": "ENTERTAINMENT -- Events that people watch or listen to (concerts, performance, etc.)." },
@@ -239,7 +241,7 @@
 
   { "id": "level",
     "show_if": [
-      [ "app_category", "Caller", "Other" ],
+      [ "app_category", "Band_Solo", "Caller", "Other" ],
       [ "event_type", "G", "T", "D", "N" ]
     ],
     "q": "Level Code",
@@ -268,7 +270,7 @@
   },
 
   { "id": "sound_needs",
-    "show_if": [ "app_category", "Caller", "Other" ],
+    "show_if": [ "app_category", "Band", "Band_Solo", "Other" ],
     "textarea": 1,
     "q": "If you are booked for a room with a full sound system, what is your preferred sound setup? (How many inputs, and for what instruments?) Write 'N/A' if you would not use a sound system even if one was available."
   },
