@@ -92,7 +92,9 @@ foreach ($questions as $question) {
             $hours = array ();
             for ($hour = 10; $hour <= 22; $hour++) {
                 $key = $day * 100000 + $hour * 100;
-                if (@$answer[$key]) {
+                $ynp = @$answer[$key];
+
+                if ($ynp == "Y" || $ynp == "P") {
                     if ($hour < 12) {
                         $htext = $hour;
                     } else if ($hour == 12) {
@@ -100,7 +102,7 @@ foreach ($questions as $question) {
                     } else {
                         $htext = sprintf ("%dp", $hour - 12);
                     }
-                    if (@$answer[$key] == 2) {
+                    if ($ynp == "P") {
                         $saw_preferred = 1;
                         $htext .= "*";
                     }
