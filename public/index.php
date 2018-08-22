@@ -163,7 +163,7 @@ function make_schedule ($application, $question_id) {
             
             $name = sprintf ("%s[%d]", $input_id, $code);
             
-            for ($val = 0; $val <= 2; $val++) {
+            foreach (array ("N", "Y", "P") as $val) {
                 $checked = "";
                 if (isset ($curvals[$code]) && $curvals[$code] == $val)
                     $checked = "checked='checked'";
@@ -174,7 +174,7 @@ function make_schedule ($application, $question_id) {
                     && $hour <= $full_to_hour[$day]) {
                     $ret .= sprintf (
                         "<input class='sched_item' type='radio' data-day='%d'"
-                        ." name='%s' value='%d' %s>",
+                        ." name='%s' value='%s' %s>",
                         $day, $name, $val, $checked);
                 }
                 

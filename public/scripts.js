@@ -240,7 +240,7 @@ function do_sched_any (ev) {
   if (checked) {
     $("#s_availability input[type=radio]").each (function (idx, elt) {
       if (! $(elt).is(":hidden")) {
-	if ($(elt).val() == 1)
+	if ($(elt).val() == "Y")
 	  $(elt).prop ("checked", true);
       }
     });
@@ -258,7 +258,7 @@ function do_all_day (ev) {
   if (checked) {
     $("#s_availability input[type=radio]").each (function (idx, elt) {
       if (! $(elt).is(":hidden")) {
-	if ($(elt).data("day") == day && $(elt).val() == 1) {
+	if ($(elt).data("day") == day && $(elt).val() == "Y") {
 	  $(elt).prop ("checked", true);
 	}
       }
@@ -277,7 +277,7 @@ function do_not_day (ev) {
   if (checked) {
     $("#s_availability input[type=radio]").each (function (idx, elt) {
       if (! $(elt).is(":hidden")) {
-	if ($(elt).data("day") == day && $(elt).val() == 0) {
+	if ($(elt).data("day") == day && $(elt).val() == "N") {
 	  $(elt).prop ("checked", true);
 	}
       }

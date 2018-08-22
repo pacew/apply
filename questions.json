@@ -60,10 +60,7 @@
       { "val": "American", "desc": "American (contra/square) dance" },
       { "val": "English", "desc": "English country dance" },
       { "val": "Int_Line", "desc": "International line dance" },
-      { "val": "Couples", "desc": "Couples dance (including international and set dances)" },
-      { "val": "Family", "desc": "Family dance" },
-      { "val": "Other", "desc": "Other (rapper, step dance, etc.)" }
-      
+      { "val": "Couples", "desc": "Couples dance (including international and set dances)" }      
     ]
   },
 
@@ -129,7 +126,7 @@
   { "id": "availability",
     "type": "radio",
     "q": "Availability",
-    "desc_pre": "These hours refer to the times that you are available to perform, and NOT your preferred times. Please note that the greater your availability, the greater the likelihood that you will be scheduled."
+    "desc_pre": "These hours refer to the times that you are available to perform. Please note that the greater your availability, the greater the likelihood that you will be scheduled.  If some times are better than others, mark them Preferred."
   },
 
   { "id": "event_title",
@@ -261,7 +258,7 @@
     "q": "What room/sound combo would work for this event?" },
 
   { "id": "piano",
-    "show_if": [ "app_category", "Band", "Other" ],
+    "show_if": [ "app_category", "Band", "Band_Solo", "Other" ],
     "q": "Do you need a piano?",
     "choices": [
       { "val": "Yes" },
@@ -276,7 +273,7 @@
   },
 
   { "id": "shared",
-    "show_if": [ "app_category", "Caller", "Other" ],
+    "show_if": [ "app_category", "Caller", "Band_Solo", "Other" ],
     "q": "Are you willing to work with others on a shared event?",
     "optional": 1,
     "desc": "(NEFFA often gets applications for similar events.)",
