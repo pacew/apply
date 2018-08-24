@@ -370,7 +370,7 @@ function pfinish () {
     $pg .= "<script src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js'></script>\n";
     
     global $cfg;
-    $pg .= "<script type='text/javascript'>\n";
+    $pg .= "<script>\n";
     $pg .= sprintf ("var cfg = %s;\n", json_encode ($cfg));
     $pg .= "</script>\n";
 

@@ -568,7 +568,7 @@ function build_page (pg) {
   if (pg.head_scripts) {
     for (let idx in pg.head_scripts) {
       let head_script = pg.head_scripts[idx];
-      ret += sprintf (" <script type='text/javascript' src='%s'></script>\n",
+      ret += sprintf (" <script src='%s'></script>\n",
 		      p.h(head_script));
     }
   }

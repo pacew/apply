@@ -21,7 +21,7 @@ if ($arg_app_id) {
     $application = get_application ($arg_app_id);
 }
 
-$body .= sprintf ("<script type='text/javascript'>\n");
+$body .= sprintf ("<script>\n");
 $body .= sprintf ("var questions = %s;\n", json_encode ($questions));
 $body .= "</script>\n";
 
@@ -301,7 +301,7 @@ foreach ($questions as $question) {
     $section_id = sprintf ("s_%s", $question_id);
     $input_id = sprintf ("i_%s", $question_id);
     
-    $body .= sprintf ("<div class='question', id='%s'>\n", $section_id);
+    $body .= sprintf ("<div class='question' id='%s'>\n", $section_id);
 
     $body .= "<div class='debug debug_box'>\n";
     $body .= sprintf ("id: %s", h($question_id));
