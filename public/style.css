@@ -223,3 +223,19 @@ p {
 .attention_good {
     color: green;
 }
+
+#apply_form {
+    padding-bottom: 3em;
+}
+
+#more_below {
+    position: fixed;
+    background-color: blue;
+    color: white;
+    height: 2em;
+    width: 100%;
+    bottom: 0;
+    padding: .5em;
+    font-weight: bold;
+    text-align: center;
+}

@@ -8,6 +8,8 @@ $arg_show_all = intval (@$_REQUEST['show_all']);
 
 pstart ();
 
+$body .= "<div id='more_below'>More below (click to scroll)...</div>\n";
+
 $questions = get_questions ();
 
 $application = NULL;
@@ -434,9 +436,12 @@ foreach ($questions as $question) {
 
 }
 
-$body .= "<input name='submit' type='submit' value='Submit' />\n";
+$body .= "<input id='submit_button'"
+    ." name='submit' type='submit' value='Submit' />\n";
 
 $body .= "</form>\n";
+
+
 
 
 pfinish ();
