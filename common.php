@@ -389,7 +389,7 @@ function pfinish () {
     $pg .= "<span class='nav'>\n";
     global $username;
     if (@$username == "") {
-        $pg .= "<a href='login.php'>[ admin login ]</a>";
+        $pg .= "<a target='_blank' href='login.php'>[ admin login ]</a>";
     } else {
         $pg .= "[ ";
         $pg .= "<a href='admin.php'>applications</a>";
