@@ -27,6 +27,8 @@ if ($arg_refresh_idx) {
 $body .= "<h2>Admin page</h2>\n";
 
 $body .= "<div>";
+$body .= mklink ("home", "/");
+$body .= " | ";
 $body .= mklink ("show all", "admin.php");
 $body .= " | ";
 $body .= mklink ("new performers", "admin.php?just_new=1");

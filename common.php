@@ -385,11 +385,6 @@ function pfinish () {
     $pg .= "<body>\n";
 
     $pg .= "<div class='banner'>\n";
-    $pg .= "<div class='logo'>\n";
-    $pg .= "<a href='/'>";
-    $pg .= "<img src='logo-neffa-white.svg' alt='NEFFA' />\n";
-    $pg .= "</a>\n";
-    $pg .= "</div>\n";
     $pg .= "<div class='login_link'>";
     $pg .= "<span class='nav'>\n";
     global $username;

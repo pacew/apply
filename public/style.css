@@ -27,7 +27,6 @@
 
 .content {
     padding: 1em;
-    background: #c9d8f2;
     line-height: 1.2;
 }
 
@@ -180,11 +179,6 @@ p {
     font-size: smaller;
 }
 
-.banner {
-    background-color: #1224f4;
-    padding: 1em;
-}
-
 .banner_title {
     text-align: center;
     font-size: 300%;
@@ -216,9 +210,6 @@ p {
     float: right;
 }
 
-.nav, .nav a {
-    color: white;
-}
 
 .preface ul {
     list-style: disc;
