@@ -369,6 +369,8 @@ function pfinish () {
         ." href='https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css'>\n";
     $pg .= "<script src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js'></script>\n";
     
+    $pg .= "<script type='text/javascript' src='https://www.neffa.org/wp-content/themes/NEFFA_2017/js/Iframe-Resize/iframeResizer.contentWindow.min.js'></script>\n";
+
     global $cfg;
     $pg .= "<script>\n";
     $pg .= sprintf ("var cfg = %s;\n", json_encode ($cfg));
