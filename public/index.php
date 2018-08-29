@@ -8,7 +8,9 @@ $arg_show_all = intval (@$_REQUEST['show_all']);
 
 pstart ();
 
-$body .= "<div id='more_below'>More below (click to scroll)...</div>\n";
+if (0) {
+    $body .= "<div id='more_below'>More below (click to scroll)...</div>\n";
+}
 
 $questions = get_questions ();
 
