@@ -143,7 +143,11 @@ function apply_submit () {
     if (! valid_response (q)) {
       var section = document.getElementById("s_"+q.id);
       $(section).find(".required_text").html("required");
-      $(window).scrollTop ($(section).offset().top);
+      if ('parentIFrame' in window) {
+	parentIFrame.scrollToOffset (0, $(section).offset().top);
+      } else {
+	$(window).scrollTop ($(section).offset().top);
+      }
       return (false); /* kill submit */
     }
   }
@@ -308,24 +312,6 @@ function do_session_option (ev) {
   });
 }
 
-function force_scroll () {
-  $(window).scrollTop ($(window).scrollTop () + 200);
-  return true;
-}
-
-function do_scroll_event () {
-  let window_bottom = $(window).scrollTop() + $(window).height();
-  let button_bottom = $("#submit_button").offset().top 
-      + $("#submit_button").height();
-  let diff = button_bottom - window_bottom;
-  if (diff >= 0) {
-    $("#more_below").show();
-  } else {
-    $("#more_below").hide();
-  }
-  return true;
-}
-
 $(function () {
   $("input").change (update_hides);
   $("#apply_form").submit (apply_submit);
@@ -342,8 +328,5 @@ $(function () {
   
   $("#show_all").change (do_session_option);
   $("#all_optional").change (do_session_option);
-
-  $("#more_below").click (force_scroll);
-  $(window).on ("scroll", do_scroll_event);
 
 });
