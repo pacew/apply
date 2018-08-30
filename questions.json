@@ -29,7 +29,7 @@
     "show_if": [ "main_performer", "Group" ],
     "class": "lookup_group",
     "q": "Name of group?",
-    "desc": "<p>Make sure this name exactly matches the name of your group and avoid abbreviations.</p>"
+    "desc": "<p>Make sure this name exactly matches the name of your group and avoid abbreviations.  After we complete the initial processing of your application, we'll send you a link that will allow you to manage your group membership list.</p>"
   },
 
   { "id": "busy",
@@ -127,7 +127,7 @@
   { "id": "availability",
     "type": "radio",
     "q": "Availability",
-    "desc_pre": "These hours refer to the times that you are available to perform. Please note that the greater your availability, the greater the likelihood that you will be scheduled.  If some times are better than others, mark them Preferred."
+    "desc_pre": "<p>These hours refer to the times that you are available to perform. Please note that the greater your availability, the greater the likelihood that you will be scheduled.  If some times are better than others, mark them Preferred. <strong>You must make a selection for every timeslot.</strong></p>"
   },
 
   { "id": "event_title",
@@ -256,7 +256,8 @@
   { "id": "room_sound",
     "type": "radio",
     "show_if": [ "app_category", "Other" ],
-    "q": "What room/sound combo would work for this event?" },
+    "q": "What room/sound combo would work for this event?",
+    "desc_pre": "<p><em>You must make a selection for every type of room.</em></p>" },
 
   { "id": "piano",
     "show_if": [ "app_category", "Band", "Band_Solo", "Other" ],

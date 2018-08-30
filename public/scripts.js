@@ -148,9 +148,12 @@ function apply_submit () {
       } else {
 	$(window).scrollTop ($(section).offset().top);
       }
+      $("#submit_button_warning").show();
       return (false); /* kill submit */
     }
   }
+  
+  $("#submit_button_warning").hide();
   return (true); /* ok for submit to go through */
 }
 
@@ -217,7 +220,8 @@ function do_lookup_change (ev) {
 		 }
 		 $(span).append (txt);
 		 
-		 if (ret.group && ret.members) {
+		 /* disabled */
+		 if (false && ret.group && ret.members) {
 		   $(input_wrapper).remove (".group_members");
 		   var div = document.createElement("div");
 		   $(div).attr ("class", "group_members");

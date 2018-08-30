@@ -122,8 +122,14 @@ h2 {
     font-weight: bold;
 }
 
-.required_marker, .required_text {
+.required_marker {
     color: red;
+}
+
+.required_text {
+    color: red;
+    font-size: 180%;
+    font-weight: bold;
 }
 
 .optional_text {
