@@ -74,6 +74,9 @@ function make_schedule ($application, $question_id) {
     $hdr4 = "";
     for ($day = $full_from_day; $day <= $full_to_day; $day++) {
         $classes = array ();
+        if ($day == 1)
+            $classes[] = "sched_fri";
+        
         if ($day == 2)
             $classes[] = "group2";
 
@@ -151,6 +154,9 @@ function make_schedule ($application, $question_id) {
         $ret .= sprintf ("<td>%s to %s</td>\n", $from, $to);
         for ($day = $full_from_day; $day <= $full_to_day; $day++) {
             $classes = array ();
+            if ($day == 1)
+                $classes[] = "sched_fri";
+            
             if ($day == 2)
                 $classes[] = "group2";
 
@@ -302,6 +308,7 @@ $body .= sprintf ("<input type='hidden' name='app_id' value='%d' />\n",
 
 foreach ($questions as $question) {
     $question_id = $question['id'];
+    $class = @$question['class'];
     $section_id = sprintf ("s_%s", $question_id);
     $input_id = sprintf ("i_%s", $question_id);
     
@@ -318,6 +325,7 @@ foreach ($questions as $question) {
 
     $body .= "<h3>";
     $body .= h($question['q']);
+
     if (! @$question['optional']) {
         $body .= sprintf (" <span class='required_marker'>*</span>");
         $body .= " <span class='required_text'></span>";
@@ -325,6 +333,12 @@ foreach ($questions as $question) {
         $body .= " <span class='optional_text'>(optional)</span>";
     }
     $body .= "</h3>\n";
+
+    if ($class == "lookup_individual") {
+        $body .= "<p><em>For our convenience, please enter names in the format Lastname,Firstname (as in Cannon,Jon).</em></p>\n";
+    } else if ($class == "lookup_group") {
+        $body .= "<p><em>For our convenience, please write group names that start with &quot;The&quot; in the format Beatles,The or Talking Heads,The.</em></p>\n";
+    }
 
     if (($desc = @$question['desc_pre']) != "") {
         if (strncmp ($desc, "<", 1) == 0)
@@ -368,7 +382,6 @@ foreach ($questions as $question) {
         $body .= "</textarea>\n";
 
     } else {
-        $class = @$question['class'];
         $body .= "<span>\n";
         $cur = @$application->curvals[$question_id];
         $body .= sprintf ("<input "

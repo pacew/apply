@@ -21,8 +21,13 @@ function update_sched_hides () {
   let val = $("input[name=i_app_category]:checked").val();
   if (val == "Performance") {
     $(".sched_ext").hide();
+    $(".sched_fri").hide();
+  } else if (val == "Ritual") {
+    $(".sched_ext").show();
+    $(".sched_fri").hide();
   } else {
     $(".sched_ext").show();
+    $(".sched_fri").show();
   }
 }
 

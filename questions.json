@@ -29,7 +29,7 @@
     "show_if": [ "main_performer", "Group" ],
     "class": "lookup_group",
     "q": "Name of group?",
-    "desc": "<p>Make sure this name exactly matches the name of your group. Avoid abbreviations, but put \"The\" at the end after a comma, if applicable.</p>"
+    "desc": "<p>Make sure this name exactly matches the name of your group and avoid abbreviations.</p>"
   },
 
   { "id": "busy",
@@ -111,6 +111,7 @@
     "q": "Indoor Performances",
     "desc": "Is your team interested in an indoor performing slot (usually less than 10 minutes)? This would be a part of the Dance Performances. If so, check the time of performance. This performance would be in addition to a performance in the Courtyard.",
     "choices": [
+      { "val": "No", "desc": "No, not interested in indoor slot" },
       { "val": "Sat", "desc": "Saturday afternoon" },
       { "val": "Sun", "desc": "Sunday afternoon" }
     ]
