@@ -407,7 +407,6 @@ function pfinish () {
     $pg .= "<div class='content'>\n";
 
     $pg .= "<h1 class='banner_title'>2019 Performer Application</h1>\n";
-    $pg .= "<h2 class='banner_test'>TEST SITE ... data will be discarded</h2>\n";
 
     echo ($pg);
     $pg = "";
