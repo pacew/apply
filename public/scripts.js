@@ -333,4 +333,8 @@ $(function () {
   $("#show_all").change (do_session_option);
   $("#all_optional").change (do_session_option);
 
+  if ('parentIFrame' in window) {
+    $(".login_anchor").hide();
+  }
+  
 });
