@@ -198,7 +198,7 @@ $sched_codes = array ();
 for ($day = 1; $day <= 3; $day++) {
     for ($hour = 10; $hour <= 22; $hour++) {
         $code = $day * 100000 + $hour * 100;
-        if ($day == 1 && $hour < 16)
+        if ($day == 1 && $hour < 19)
             $code = 0;
         if ($day == 3 && $hour > 16)
             $code = 0;
