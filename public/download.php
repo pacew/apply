@@ -34,7 +34,13 @@ while (($r = fetch ($q)) != NULL) {
 }
 
 $evid_info = array ();
-$max_evid_core = 9;
+
+$q = query ("select max(evid_core) as evid_core from evid_info");
+$r = fetch ($q);
+$max_evid_core = intval ($r->evid_core);
+if ($max_evid_core < 10)
+    $max_evid_core = 10;
+
 function get_evid_info ($key, $evid_core) {
     global $evid_info, $max_evid_core;
 
@@ -72,19 +78,17 @@ while (($r = fetch ($q)) != NULL) {
 foreach ($apps as $app) {
     if (($neffa_id = name_to_id ($app->curvals['name'])) != 0) {
         $key = $neffa_id;
-    } else if (($email = @$app['email']) != "") {
+    } else if (($email = @$app->curvals['email']) != "") {
         $key = $email;
     } else {
-        $key = NULL;
+        $key = sprintf ("oops%d", $app->app_id);
     }
 
-    if ($key) {
-        $ei = get_evid_info ($key, 0);
-        $ei->seq++;
+    $ei = get_evid_info ($key, 0);
+    $ei->seq++;
 
-        $app->ei = $ei;
-        $app->evid_seq = $ei->seq;
-    }
+    $app->ei = $ei;
+    $app->evid_seq = $ei->seq;
 }
 
 foreach ($apps as $app) {
@@ -97,6 +101,7 @@ foreach ($apps as $app) {
         case "American": $prefix = "T"; break;
         case "English": $prefix = "P"; break;
         case "Couples": $prefix = "P"; break;
+        case "English_Couples": $prefix = "P"; break;
         case "Int_Line": $prefix = "R"; break;
         default: $prefix = "oops"; break;
         }

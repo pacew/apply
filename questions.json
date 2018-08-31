@@ -54,13 +54,12 @@
 
   { "id": "dance_style",
     "show_if": [ "app_category", "Band", "Band_Solo", "Caller" ],
-    "q": "What category describes the style of dance?",
+    "q": "Which dance committee would be best to evaluate your application?",
     "desc": "Bands may wish to play for more than one type of dance event, but for this application, you have to choose JUST one.  If you would like to be considered for more than one type of dancing, PLEASE fill out another application!",
     "choices": [
-      { "val": "American", "desc": "American (contra/square) dance" },
-      { "val": "English", "desc": "English country dance" },
-      { "val": "Int_Line", "desc": "International line dance" },
-      { "val": "Couples", "desc": "Couples dance (including international and set dances)" }      
+      { "val": "American", "desc": "American Dance (contra, square, etc.)" },
+      { "val": "Int_Line", "desc": "International and Line Dance (Balkan, Israeli, Breton, etc.)" },
+      { "val": "English_Couples", "desc": "English, Couples, and Other Dance (English, Scottish, Irish, Scandi, waltz, swing, tango, rapper, other)" }
     ]
   },
 
