@@ -68,6 +68,9 @@ $q = query ("select app_id, to_char (ts, 'YYYY-MM-DD HH24:MI:SS') as ts,"
 
 $rows = array ();
 while (($r = fetch ($q)) != NULL) {
+    if (! $show_test_data && $r->app_id < $first_prod_app_id)
+        continue;
+
     $target = sprintf ("index.php?app_id=%d", $r->app_id);
 
     /* ignore patches */

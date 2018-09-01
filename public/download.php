@@ -18,6 +18,10 @@ $q = query ("select app_id, val"
             ." order by app_id, ts");
 while (($r = fetch ($q)) != NULL) {
     $app_id = intval ($r->app_id);
+
+    if (! $show_test_data && $app_id < $first_prod_app_id)
+        continue;
+
     if (strncmp ($r->val, "{", 1) == 0) {
         $app = (object)NULL;
         $app->app_id = $app_id;

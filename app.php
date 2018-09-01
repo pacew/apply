@@ -3,6 +3,21 @@
 require_once ($_SERVER['APP_ROOT'] . "/common.php");
 require_once ($_SERVER['APP_ROOT'] . "/JsonPatch.php");
 
+switch ($cfg['conf_key']) {
+case "pace":
+    $show_test_data = 0;
+    $first_prod_app_id = 105;
+    break;
+case "aws":
+    $show_test_data = 0;
+    $first_prod_app_id = 116;
+    break;
+default:
+    $show_test_data = 1;
+    $first_prod_app_id = 0;
+    break;
+}
+
 $title_html = "NEFFA Performer Application 2019";
 
 $index = NULL;
