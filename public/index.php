@@ -405,10 +405,20 @@ foreach ($questions as $question) {
 
     $body .= "</div>\n"; /* input_wrapper */
     
-    if ($question_id == "busy_people") {
-        $body .= "<div>\n";
-        $body .= "<button type='button' id='add_another'>Add another</button>\n";
-        $body .= "</div>\n";
+    if ($question_id == "name") {
+        if (($cur = @$application->curvals[$question_id]) != "") {
+            if (($id = name_to_id ($cur)) != 0) {
+                $q = query ("select pcode from pcodes where id = ?", $id);
+                if (($r = fetch ($q)) != NULL) {
+                    $body .= "<div class='debug_box'>\n";
+                    $body .= "<strong>pcode</strong>\n";
+                    $body .= sprintf (
+                        "<input class='pcode' type='text' readonly='readonly'"
+                        ." value='%s' />\n", h($r->pcode));
+                    $body .= "</div>\n";
+                }
+            }
+        }
     }
 
     if (($desc = @$question['desc']) != "") {

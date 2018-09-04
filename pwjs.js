@@ -465,7 +465,7 @@ async function setup_postgres (cfg) {
   txt = sprintf ("#! /bin/sh\n" +
 		 "# created by pwjs.js\n" +
 		 "mkdir -p %s\n" +
-		 "%s/db pg_dump \\\n" +
+		 "%s/remdb pg_dump \\\n" +
 		 "   --clean \\\n" +
 		 "   --if-exists \\\n" +
 		 "   --create \\\n" +
