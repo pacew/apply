@@ -425,11 +425,13 @@ async function setup_postgres (cfg) {
   let txt;
   if (conf.password) {
     txt = sprintf ("#! /bin/sh\n" +
+		   "# created by pwjs.js\n" +
 		   "PGPASSWORD='%s' exec psql" +
 		   "  --host='%s' --user='%s' --dbname='%s' \"\$@\"\n",
 		   conf.password, conf.host, conf.user, cfg.siteid);
   } else {
     txt = sprintf ("#! /bin/sh\n" +
+		   "# created by pwjs.js\n" +
 		   "exec psql --dbname='%s' \"\$@\"\n",
 		   cfg.siteid);
   }
@@ -438,16 +440,36 @@ async function setup_postgres (cfg) {
 
   if (conf.password) {
     txt = sprintf ("#! /bin/sh\n" +
+		   "# created by pwjs.js\n" +
 		   "PGPASSWORD='%s' exec pg_dump" +
 		   "  --host='%s' --user='%s' --dbname='%s' \"\$@\"\n",
 		   conf.password, conf.host, conf.user, cfg.siteid);
   } else {
     txt = sprintf ("#! /bin/sh\n" +
+		   "# created by pwjs.js\n" +
 		   "exec pg_dump --dbname='%s' \"\$@\"\n",
 		   cfg.siteid);
   }
   fs.writeFileSync ("dbdump", txt);
   fs.chmodSync ("dbdump", 0700);
+
+  const backups_dir = sprintf ("%s/backups", cfg.auxdir);
+  txt = sprintf ("#! /bin/sh\n" +
+		 "# created by pwjs.js\n" +
+		 "mkdir -p %s\n" +
+		 "%s/dbdump \\\n" +
+		 "   --clean \\\n" +
+		 "   --if-exists \\\n" +
+		 "   --create \\\n" +
+		 "   --no-owner \\\n" +
+		 "   --no-acl \\\n" +
+		 "   --compress=6 \\\n" +
+		 "   --lock-wait-timeout=60000 \\\n" +
+		 "   --file=%s/`date +%s-%%Y%%m%%dT%%H%%M%%S`.sql.gz\n",
+		 backups_dir,
+		 cfg.srcdir, backups_dir, cfg.siteid);
+  fs.writeFileSync ("daily-backup", txt);
+  fs.chmodSync ("daily-backup", 0755);
 
   conf.database = "template1";
   let pool = new Pool (conf);

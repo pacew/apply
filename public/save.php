@@ -44,6 +44,11 @@ foreach ($questions as $question) {
     } else {
         $newvals[$id] = $raw_val;
     }
+
+    foreach (array ("availability", "room_sound") as $arr_name) {
+        if (! is_array (@$newvals[$arr_name]))
+            $newvals[$arr_name] = array ();
+    }
 }
 
 $needs_attention = 0;
