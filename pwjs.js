@@ -429,17 +429,29 @@ async function setup_postgres (cfg) {
 
   let txt;
   if (conf.password) {
-    printf ("ssh -N -L 54320:%s:5432 %s\n",
-	    conf.host, cfg.external_name);
+    let fwd_port = 54320;
+    printf ("ssh -N -L %d:%s:5432 %s\n",
+	    fwd_port, conf.host, cfg.external_name);
 
     txt = sprintf ("#! /bin/sh\n" +
 		   "# created by pwjs.js\n" +
-		   "PGHOST='%s'" +
+		   "if [ -r /etc/ec2_version ]\n" +
+		   "then\n" +
+		   " PGHOST='%s'" +
 		   " PGUSER='%s'" +
 		   " PGDATABASE='%s'" +
 		   " PGPASSWORD='%s'" +
-		   " \"$@\"\n",
-		   conf.host, conf.user, cfg.siteid, conf.password);
+		   " exec \"$@\"\n",
+		   "else\n" +
+		   " PGHOST='localhost'" +
+		   " PGPORT='%d'" +
+		   " PGUSER='%s'" +
+		   " PGDATABASE='%s'" +
+		   " PGPASSWORD='%s'" +
+		   " exec \"$@\"\n" +
+		   "fi\n",
+		   conf.host, conf.user, cfg.siteid, conf.password,
+		   fwd_port, conf.user, cfg.siteid, conf.password);
     fs.writeFileSync ("awsdb", txt);
     fs.chmodSync ("awsdb", 0700);
   }
