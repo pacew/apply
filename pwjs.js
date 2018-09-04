@@ -178,6 +178,7 @@ async function setup_apache (cfg) {
 }
 
 async function install_site () {
+  let want_crontab = 0;
   const cfg = get_cfg ();
 
   if (! cfg.options.site_type) {
@@ -290,6 +291,7 @@ async function install_site () {
   
   if (cfg.options.db == "postgres") {
     await setup_postgres (cfg);
+    want_crontab = 1;
   }    
 
   if (cfg.options.site_type == "php") {
@@ -306,6 +308,9 @@ async function install_site () {
   if (cfg.options.example_path) {
     printf ("%s%s\n", cfg.ssl_url, cfg.options.example_path);
   }
+
+  if (want_crontab)
+    make_crontab (cfg);
 
   const tmpname = "TMP.cfg";
   let cfg1 = Object.assign ({}, cfg);
@@ -486,6 +491,14 @@ async function setup_postgres (cfg) {
   pool.end();
 
   knex_setup_postgres (cfg);
+}
+
+function make_crontab (cfg) {
+  let txt = sprintf ("# created by pwjs.js\n" +
+		     "23 3 * * * cd %s && ./daily-backup\n",
+		     cfg.srcdir);
+  let fname = sprintf ("%s.crontab", cfg.siteid);
+  fs.writeFileSync (fname, txt);
 }
 
 function knex_setup_postgres (cfg) {
