@@ -35,8 +35,8 @@
   { "id": "busy",
     "optional": 1,
     "class": "lookup_individual",
-    "q": "Other performers supporting this event",
-    "desc": "<p>Is there an unbilled accompanist or temporary addition to your band who will be joining you for NEFFA? If this event is scheduled, these people will not be simultaneously scheduled for other events in the same time slot.  You can list one person here, then put any additional names in the comment section at the end.</p>" },
+    "q": "Other performers (besides group members) supporting this event",
+    "desc": "<p>Is there an unbilled accompanist or temporary addition to your band who will be joining you for NEFFA? If this event is scheduled, these people will not be simultaneously scheduled for other events in the same time slot.  You can list one person here, then put any additional names in the comment section at the end.  If this application is for a group, don't list the members here -- you'll receive a link by email that will allow you to manage your membership list.</p>" },
 
 
   { "id": "app_category",
