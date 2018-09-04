@@ -429,6 +429,22 @@ async function setup_postgres (cfg) {
 
   let txt;
   if (conf.password) {
+    printf ("ssh -N -L 54320:%s:5432 %s\n",
+	    conf.host, cfg.external_name);
+
+    txt = sprintf ("#! /bin/sh\n" +
+		   "# created by pwjs.js\n" +
+		   "PGHOST='%s'" +
+		   " PGUSER='%s'" +
+		   " PGDATABASE='%s'" +
+		   " PGPASSWORD='%s'" +
+		   " \"$@\"\n",
+		   conf.host, conf.user, cfg.siteid, conf.password);
+    fs.writeFileSync ("awsdb", txt);
+    fs.chmodSync ("awsdb", 0700);
+  }
+
+  if (conf.password) {
     txt = sprintf ("#! /bin/sh\n" +
 		   "# created by pwjs.js\n" +
 		   "PGPASSWORD='%s' exec psql" +
