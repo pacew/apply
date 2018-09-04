@@ -441,7 +441,7 @@ async function setup_postgres (cfg) {
 		   " PGUSER='%s'" +
 		   " PGDATABASE='%s'" +
 		   " PGPASSWORD='%s'" +
-		   " exec \"$@\"\n",
+		   " exec \"$@\"\n" +
 		   "else\n" +
 		   " PGHOST='localhost'" +
 		   " PGPORT='%d'" +
