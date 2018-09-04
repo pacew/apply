@@ -430,67 +430,42 @@ async function setup_postgres (cfg) {
   let txt;
   if (conf.password) {
     let fwd_port = 54320;
-    printf ("ssh -N -L %d:%s:5432 %s\n",
-	    fwd_port, conf.host, cfg.external_name);
 
     txt = sprintf ("#! /bin/sh\n" +
 		   "# created by pwjs.js\n" +
-		   "if [ -r /etc/ec2_version ]\n" +
-		   "then\n" +
-		   " PGHOST='%s'" +
+		   "PGHOST='%s'" +
 		   " PGUSER='%s'" +
 		   " PGDATABASE='%s'" +
 		   " PGPASSWORD='%s'" +
-		   " exec \"$@\"\n" +
-		   "else\n" +
-		   " PGHOST='localhost'" +
-		   " PGPORT='%d'" +
-		   " PGUSER='%s'" +
-		   " PGDATABASE='%s'" +
-		   " PGPASSWORD='%s'" +
-		   " exec \"$@\"\n" +
-		   "fi\n",
-		   conf.host, conf.user, cfg.siteid, conf.password,
-		   fwd_port, conf.user, cfg.siteid, conf.password);
-    fs.writeFileSync ("awsdb", txt);
-    fs.chmodSync ("awsdb", 0700);
-  }
+		   " exec \"$@\"\n",
+		   conf.host, conf.user, cfg.siteid, conf.password);
+    fs.writeFileSync ("db", txt);
+    fs.chmodSync ("db", 0700);
 
-  if (conf.password) {
-    txt = sprintf ("#! /bin/sh\n" +
-		   "# created by pwjs.js\n" +
-		   "PGPASSWORD='%s' exec psql" +
-		   "  --host='%s' --user='%s' --dbname='%s' \"\$@\"\n",
-		   conf.password, conf.host, conf.user, cfg.siteid);
-  } else {
-    txt = sprintf ("#! /bin/sh\n" +
-		   "# created by pwjs.js\n" +
-		   "exec psql --dbname='%s' \"\$@\"\n",
-		   cfg.siteid);
+    txt = "#! /bin/bash\n";
+    txt += "# created by pwjs.js\n";
+    txt += "ctl=`mktemp`\n";
+    txt += "rm $ctl\n";
+    txt += sprintf ("trap \"ssh -q -S $ctl -O exit %s\" 0 1 2 3 15\n",
+		    cfg.external_name);
+    txt += sprintf ("ssh -M -S $ctl -N -f -L %d:%s:5432 %s\n",
+		    fwd_port, conf.host, cfg.external_name);
+    txt += sprintf ("PGHOST='127.0.0.1'" +
+		    " PGPORT='%d'" +
+		    " PGUSER='%s'" +
+		    " PGDATABASE='%s'" +
+		    " PGPASSWORD='%s'" +
+		    " \"$@\"\n",
+		    fwd_port, conf.user, cfg.siteid, conf.password);
+    fs.writeFileSync ("remdb", txt);
+    fs.chmodSync ("remdb", 0700);
   }
-  fs.writeFileSync ("sql", txt);
-  fs.chmodSync ("sql", 0700);
-
-  if (conf.password) {
-    txt = sprintf ("#! /bin/sh\n" +
-		   "# created by pwjs.js\n" +
-		   "PGPASSWORD='%s' exec pg_dump" +
-		   "  --host='%s' --user='%s' --dbname='%s' \"\$@\"\n",
-		   conf.password, conf.host, conf.user, cfg.siteid);
-  } else {
-    txt = sprintf ("#! /bin/sh\n" +
-		   "# created by pwjs.js\n" +
-		   "exec pg_dump --dbname='%s' \"\$@\"\n",
-		   cfg.siteid);
-  }
-  fs.writeFileSync ("dbdump", txt);
-  fs.chmodSync ("dbdump", 0700);
 
   const backups_dir = sprintf ("%s/backups", cfg.auxdir);
   txt = sprintf ("#! /bin/sh\n" +
 		 "# created by pwjs.js\n" +
 		 "mkdir -p %s\n" +
-		 "%s/dbdump \\\n" +
+		 "%s/db pg_dump \\\n" +
 		 "   --clean \\\n" +
 		 "   --if-exists \\\n" +
 		 "   --create \\\n" +

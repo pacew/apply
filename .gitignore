@@ -5,5 +5,7 @@ TMP.*
 node_modules/
 cfg.json
 knexfile.js
-sql
-dbdump
+db
+remdb
+daily-backup
+*.crontab
