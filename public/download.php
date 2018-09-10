@@ -319,6 +319,22 @@ foreach ($apps as $app) {
             foreach ($room_sound_choices as $choice) {
                 $cols[] = @$val[$choice];
             }
+        } else if ($question_id == "event_title") {
+            switch (@$curvals['app_category']) {
+            case "Band":
+                $title = "playing for a dance";
+                break;
+            case "Ritual":
+                $title = "ritual dance";
+                break;
+            case "Performance":
+                $title = "dance performance";
+                break;
+            default:
+                $title = $val;
+                break;
+            }
+            $cols[] = $title;
         } else {
             $cols[] = $val;
         }
