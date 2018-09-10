@@ -1,0 +1,8 @@
+#! /bin/sh
+
+awk '{printf ("%s,%s\n", $1, $2)}' /home/pace/Downloads/pcodes.txt > TMP.pcodes
+./remdb psql -c "delete from pcodes"
+./remdb psql -c "\\copy pcodes from 'TMP.pcodes' with csv"
+rm -f TMP.pcodes
+
+
