@@ -227,8 +227,14 @@ foreach ($questions as $question) {
     $question_id = $question['id'];
     $class = @$question['class'];
 
-    if ($class == "lookup_individual" || $class == "lookup_group") {
-        $csvhdr[] = $question_id;
+    if ($class == "lookup_individual") {
+        $csvhdr[] = sprintf ("%s_last", $question_id);
+        $csvhdr[] = sprintf ("%s_first", $question_id);
+        $csvhdr[] = sprintf ("%s_id", $question_id);
+        $csvhdr[] = sprintf ("%s_link", $question_id);
+        $csvhdr[] = sprintf ("%s_pcode", $question_id);
+    } else if ($class == "lookup_group") {
+        $csvhdr[] = sprintf ("%s", $question_id);
         $csvhdr[] = sprintf ("%s_id", $question_id);
         $csvhdr[] = sprintf ("%s_link", $question_id);
         $csvhdr[] = sprintf ("%s_pcode", $question_id);
@@ -267,7 +273,30 @@ foreach ($apps as $app) {
         $class = @$question['class'];
         $val = @$curvals[$question_id];
 
-        if ($class == "lookup_individual" || $class == "lookup_group") {
+        if ($class == "lookup_individual") {
+            if (preg_match ('/^([^,]*),(.*)$/', $val, $parts)) {
+                $lname = $parts[1];
+                $fname = $parts[2];
+            } else {
+                $lname = $val;
+                $fname = "";
+            }
+            $cols[] = $lname;
+            $cols[] = $fname;
+            $neffa_id = name_to_id ($val);
+            $cols[] = $neffa_id;
+            if ($neffa_id) {
+                $link = sprintf (
+                    "https://cgi.neffa.org//public/showperf.pl?P=%d",
+                    $neffa_id);
+                $pcode = @$pcodes[$neffa_id];
+            } else {
+                $link = "";
+                $pcode = "";
+            }
+            $cols[] = $link;
+            $cols[] = $pcode;
+        } else if ($class == "lookup_group") {
             $cols[] = $val;
             $neffa_id = name_to_id ($val);
             $cols[] = $neffa_id;
