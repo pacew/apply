@@ -8,13 +8,17 @@ then
     exit 1
 fi
 
-psql apply-pace <<!
+psql --quiet apply-pace <<!
 drop table email_history;
 drop table evid_info;
 drop table json;
+drop table knex_migrations;
+drop table knex_migrations_lock;
 drop table pcodes;
 drop table seq;
+drop table sessions;
 drop table vars;
 !
 
-psql apply-pace -f $file
+gunzip < $file | psql --quiet apply-pace
+

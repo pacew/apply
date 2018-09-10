@@ -465,17 +465,17 @@ async function setup_postgres (cfg) {
   txt = sprintf ("#! /bin/sh\n" +
 		 "# created by pwjs.js\n" +
 		 "mkdir -p %s\n" +
+		 "fname=%s/`date +%s-%%Y%%m%%dT%%H%%M%%S`.sql.gz\n" +
 		 "%s/remdb pg_dump \\\n" +
-		 "   --clean \\\n" +
-		 "   --if-exists \\\n" +
-		 "   --create \\\n" +
 		 "   --no-owner \\\n" +
 		 "   --no-acl \\\n" +
 		 "   --compress=6 \\\n" +
 		 "   --lock-wait-timeout=60000 \\\n" +
-		 "   --file=%s/`date +%s-%%Y%%m%%dT%%H%%M%%S`.sql.gz\n",
+		 "   --file=$fname\n" +
+		 "ln -sf $fname %s/latest.gz\n",
 		 backups_dir,
-		 cfg.srcdir, backups_dir, cfg.siteid);
+		 backups_dir, cfg.siteid,
+		 cfg.srcdir, backups_dir);
   fs.writeFileSync ("daily-backup", txt);
   fs.chmodSync ("daily-backup", 0755);
 
