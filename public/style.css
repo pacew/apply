@@ -249,3 +249,7 @@ p {
 .pcode {
     background: #ddd;
 }
+
+.desc {
+    margin-top: 0.5em;
+}

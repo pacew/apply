@@ -58,7 +58,7 @@ if ($arg_email_suppressed) {
 
 $body .= "<p>If you want to submit an application for another event,"
       ." please follow this link:</p>\n";
-$target = sprintf ("https://%s", $_SERVER['HTTP_HOST']);
+$target = "https://www.neffa.org/folk-festival/performer-application";
 $body .= sprintf ("<p>%s</p>\n", mklink ($target, $target));
 
 

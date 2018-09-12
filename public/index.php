@@ -425,10 +425,12 @@ foreach ($questions as $question) {
     }
 
     if (($desc = @$question['desc']) != "") {
+        $body .= "<div class='desc'>\n";
         if (strncmp ($desc, "<", 1) == 0)
             $body .= $desc;
         else
             $body .= sprintf ("<div>%s</div>\n", h($desc));
+        $body .= "</div>\n";
     }
 
     $patches = @$application->patches[$question_id];

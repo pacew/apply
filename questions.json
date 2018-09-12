@@ -13,9 +13,10 @@
 
   { "id": "main_performer",
     "q": "Should the performer for this event be listed as an individual, a duo, or a named group?",
+    "desc": "The Duo category is new this year for use when two performers are getting together for a special event at NEFFA, but don't want to bother with choosing a group name.  Duos are free to use the Group category, if desired.",
     "choices": [
       { "val": "Individual", "desc": "The individual applying" },
-      { "val": "Duo", "desc": "A duo consisting of the individual applying and another performer" },
+      { "val": "Duo", "desc": "A an-hoc duo consisting of the individual applying and another performer" },
       { "val": "Group", "desc": "A group" }
     ]
   },
