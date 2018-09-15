@@ -7,6 +7,16 @@ $app_root = @$_SERVER['APP_ROOT'];
 $cfg = json_decode (file_get_contents ($app_root . "/cfg.json"), TRUE);
 $options = json_decode (file_get_contents ($app_root . "/options.json"), TRUE);
 
+function get_dbinst ($dbinst) {
+    $secrets_file = "/var/lightsail-conf/secrets.json";
+    if (file_exists ($secrets_file)) {
+        $secrets = json_decode (file_get_contents ($secrets_file), TRUE);
+        if (@$secrets[$dbinst] != NULL)
+            return ($secrets[$dbinst]);
+    }
+    return (NULL);
+}
+
 function make_db_connection ($db, $dbparams, $create) {
 	global $default_dbparams, $cfg, $options;
 
@@ -14,24 +24,16 @@ function make_db_connection ($db, $dbparams, $create) {
         fatal ("no db configured");
 
 	if ($dbparams == NULL && ! isset ($default_dbparams)) {
-        $default_dbparams = array ();
-        $default_dbparams['dbtype'] = "pgsql";
-
-        $pw = posix_getpwuid (posix_geteuid ());
-        $os_user = $pw['name'];
-        
         $dbinst = $cfg['dbinst'];
         if ($dbinst == "local") {
+            $default_dbparams = array ();
+            $default_dbparams['dbtype'] = "pgsql";
             $default_dbparams['host'] = "";
             $default_dbparams['user'] = "";
             $default_dbparams['password'] = "";
         } else {
-            $secrets_file = "/var/lightsail-conf/secrets.json";
-            $secrets = json_decode (file_get_contents ($secrets_file), TRUE);
-            $sinfo = $secrets[$dbinst];
-            $default_dbparams['host'] = $sinfo['host'];
-            $default_dbparams['password'] = $sinfo['password'];
-            $default_dbparams['user'] = $sinfo['user'];
+            if (($default_dbparams = get_dbinst ($dbinst)) == NULL)
+                fatal ("invalid dbinst");
         }
     }
 
