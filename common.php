@@ -303,7 +303,7 @@ function get_seq ($db = NULL) {
 		       ." from seq"
 		       ." limit 1");
 	if (($r = fetch ($q)) == NULL) {
-		$newval = 100;
+		$newval = 150;
 		query_db ($db, "insert into seq (lastval) values (?)",
 			  $newval);
 	} else {

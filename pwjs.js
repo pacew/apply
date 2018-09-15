@@ -227,9 +227,9 @@ async function find_certs (cfg) {
 
   if (cfg.external_name.match (/pacew.org$/)
       && fs.existsSync ("/etc/apache2/wildcard.pacew.org.crt")) {
-    cfg.crt_file = "/etc/apache2/wildcard.pacew.crt";
-    cfg.key_file = "/etc/apache2/wildcard.pacew.key";
-    cfg.chain_file = "/etc/apache2/wildcard.pacew.chain.pem";
+    cfg.crt_file = "/etc/apache2/wildcard.pacew.org.crt";
+    cfg.key_file = "/etc/apache2/wildcard.pacew.org.key";
+    cfg.chain_file = "/etc/apache2/wildcard.pacew.org.chain.pem";
     return;
   }
 
