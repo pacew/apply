@@ -9,3 +9,5 @@ db
 remdb
 daily-backup
 *.crontab
+sql
+dbdump

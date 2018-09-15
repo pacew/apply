@@ -68,6 +68,11 @@ const { Pool } = require ('pg');
 
 let app, server, wss;
 
+function system (cmd) {
+  return (child_process.execSync (cmd, { encoding: "utf8" })
+	  .trim());
+}
+
 function slurp_file (filename) {
     try {
       return (fs.readFileSync (filename, "utf8"));
@@ -118,39 +123,27 @@ function get_cfg () {
 }
 exports.get_cfg = get_cfg;
 
-async function setup_apache (cfg) {
+async function make_virtual_host (cfg, ssl_flag, port) {
   let conf = "";
-
-  if (cfg.ssl_port != 443) {
-    conf += sprintf ("Listen %d\n", cfg.ssl_port);
+  if (port != 80 && port != 443) {
+    conf += sprintf ("Listen %d\n", port);
   }
-  conf += sprintf ("<VirtualHost *:%d>\n", cfg.ssl_port);
+  conf += sprintf ("<VirtualHost *:%d>\n", port);
   conf += sprintf ("  ServerName %s\n", cfg.external_name);
-  conf += sprintf ("  SSLEngine on\n");
-  conf += sprintf ("  SSLCertificateFile %s\n", cfg.crt_file);
-  conf += sprintf ("  SSLCertificateKeyFile %s\n", cfg.key_file);
-  if (cfg.chain_file)
-    conf += sprintf ("  SSLCertificateChainFile %s\n", cfg.chain_file);
+  conf += sprintf ("  ServerAlias www.%s\n", cfg.external_name);
 
-  const www_dir = sprintf ("/var/www/%s", cfg.siteid);
-
-  if (! fs.existsSync (www_dir)) {
-    printf ("sudo ln -s %s/public %s\n", cfg.srcdir, www_dir);
+  if (ssl_flag) {
+    conf += sprintf ("  SSLEngine on\n");
+    conf += sprintf ("  SSLCertificateFile %s\n", cfg.crt_file);
+    conf += sprintf ("  SSLCertificateKeyFile %s\n", cfg.key_file);
+    if (cfg.chain_file)
+      conf += sprintf ("  SSLCertificateChainFile %s\n", cfg.chain_file);
   }
 
-  if (! fs.existsSync (cfg.auxdir)) {
-    printf ("sudo sh -c 'mkdir -p -m 2775 %s; chown www-data.www-data %s'\n",
-	    cfg.auxdir, cfg.auxdir);
-  }
-  
   conf += sprintf ("  php_flag display_errors on\n");
-  conf += sprintf ("  DocumentRoot %s\n", www_dir);
+  conf += sprintf ("  DocumentRoot %s\n", cfg.www_dir);
   conf += sprintf ("  SetEnv APP_ROOT %s\n", cfg.srcdir);
-  conf += sprintf ("  <Directory %s>\n", www_dir);
-  conf += sprintf ("    RewriteEngine on\n");
-  conf += sprintf ("    RewriteCond %%{REQUEST_FILENAME} !-d\n");
-  conf += sprintf ("    RewriteCond %%{REQUEST_FILENAME} !-f\n");
-  conf += sprintf ("    RewriteRule ^.*$ stray.php\n");
+  conf += sprintf ("  <Directory %s>\n", cfg.www_dir);
   conf += sprintf ("    <FilesMatch '\.(html|css|js)'>\n");
   conf += sprintf ("      Header set Cache-Control 'no-cache,"+
 		   " no-store, must-revalidate'\n");
@@ -159,8 +152,52 @@ async function setup_apache (cfg) {
   conf += sprintf ("    </FilesMatch>\n");
   conf += sprintf ("  </Directory>\n");
   conf += sprintf ("  DirectoryIndex index.php\n");
+
+  conf += sprintf ("  RewriteEngine on\n");
+  conf += sprintf ("  RewriteCond %%{REQUEST_URI} /.well-known/.*\n");
+  conf += sprintf ("  RewriteRule ^(.*) /var/www/html/$1 [L]\n");
+  conf += "\n";
+
+  if (ssl_flag == 0) {
+    if (cfg.ssl_url) {
+      conf += sprintf ("  RewriteRule ^/(.*) %s$1 [R]\n", cfg.ssl_url);
+    } else {
+      conf += sprintf ("  RewriteCond %%{HTTP_HOST} www.%s\n", 
+		       cfg.external_name);
+      conf += sprintf ("  RewriteRule ^/(.*) %s$1 [R]\n", cfg.plain_url);
+    }
+  } else {
+    conf += sprintf ("  RewriteCond %%{HTTP_HOST} www.%s\n", cfg.external_name);
+    conf += sprintf ("  RewriteRule ^/(.*) %s$1 [R]\n", cfg.ssl_url);
+  }
+  conf += "\n";
+
+
   conf += sprintf ("</VirtualHost>\n");
-  
+  conf += "\n";
+
+  return (conf);
+}
+
+async function setup_apache (cfg) {
+  let conf = "";
+
+  cfg.www_dir = sprintf ("/var/www/%s", cfg.siteid);
+  if (! fs.existsSync (cfg.www_dir)) {
+    printf ("sudo ln -s %s/public %s\n", cfg.srcdir, cfg.www_dir);
+  }
+
+  if (! fs.existsSync (cfg.auxdir)) {
+    printf ("sudo sh -c 'mkdir -p -m 2775 %s; chown www-data.www-data %s'\n",
+	    cfg.auxdir, cfg.auxdir);
+  }
+
+  if (cfg.plain_port)
+    conf += await make_virtual_host (cfg, 0, cfg.plain_port);
+
+  if (cfg.ssl_port)
+    conf += await make_virtual_host (cfg, 1, cfg.ssl_port);
+
   fs.writeFileSync ("TMP.conf", conf);
 
   av_name = sprintf ("/etc/apache2/sites-available/%s.conf", cfg.siteid);
@@ -177,8 +214,91 @@ async function setup_apache (cfg) {
 
 }
 
+async function find_certs (cfg) {
+  delete cfg.crt_file;
+  delete cfg.key_file;
+  delete cfg.chain_file;
+
+  if (cfg.external_name == "localhost") {
+    cfg.crt_file = "/etc/apache2/localhost.crt";
+    cfg.key_file ="/etc/apache2/localhost.key";
+    return;
+  }
+
+  if (cfg.external_name.match (/pacew.org$/)
+      && fs.existsSync ("/etc/apache2/wildcard.pacew.org.crt")) {
+    cfg.crt_file = "/etc/apache2/wildcard.pacew.crt";
+    cfg.key_file = "/etc/apache2/wildcard.pacew.key";
+    cfg.chain_file = "/etc/apache2/wildcard.pacew.chain.pem";
+    return;
+  }
+
+  const live = "/etc/letsencrypt/live";
+  let crt_file = sprintf ("%s/%s/fullchain.pem", live, cfg.external_name);
+  if (fs.existsSync (crt_file)) {
+    cfg.crt_file = crt_file;
+    cfg.key_file = sprintf ("%s/%s/privkey.pem", live, cfg.external_name);
+    return;
+  }
+
+  if (! fs.existsSync ("/var/www/html/.well-known")) {
+    printf ("sudo sh -c '" +
+	    " mkdir -m 2775 /var/www/html/.well-known;" +
+	    " chown www-data.www-data /var/www/html/.well-known" +
+	    "'\n");
+  }
+
+  let gid = parseInt(system("getent group ssl-cert | awk -F: '{print $3}'"));
+
+  let dirs = [ 
+    "/var/log/letsencrypt", 
+    "/etc/letsencrypt", 
+    "/var/lib/letsencrypt" 
+  ];
+  let die = 0;
+  for (let dir of dirs) {
+    if (! fs.existsSync (dir)) {
+      printf ("sudo mkdir -m 2770 %s\n", dir);
+      printf ("sudo chgrp ssl-cert %s\n", dir);
+      die = 1;
+    } else if (fs.statSync(dir).gid != gid) {
+      printf ("sudo find %s -type d " +
+	      " -exec chgrp ssl-cert {} \\;" +
+	      " -exec chmod 2770 {} \\;\n",
+	      dir);
+    }
+  }
+
+  if (! fs.existsSync ("/etc/letsencrypt/accounts")) {
+    printf ("you need something like this on a devel system:\n");
+    printf ("rsync -a /etc/letsencrypt/accounts" +
+	    " %s:/etc/letsencrypt\n",
+	    cfg.external_name);
+  }
+
+  let cmd = sprintf ("certbot" +
+		     " certonly" +
+		     " --webroot" +
+		     " --webroot-path /var/www/html" +
+		     " --domain %s",
+		     cfg.external_name);
+  if (! cfg.external_name.match (new RegExp ("[.].*[.]"))) {
+    /* only one dot in name, so add www */
+    cmd += sprintf (" --domain www.%s", cfg.external_name);
+  }
+  printf ("you'll need this, but get the non-ssl site up first:\n");
+  printf ("%s\n", cmd);
+}
+
+function make_url (scheme, host, port) {
+  let url = sprintf ("%s://%s", scheme, host);
+  if (port != 80 && port != 443)
+    url += sprintf (":%d", port);
+  url += "/";
+  return (url);
+}
+
 async function install_site () {
-  let want_crontab = 0;
   const cfg = get_cfg ();
 
   if (! cfg.options.site_type) {
@@ -186,93 +306,60 @@ async function install_site () {
     process.exit (1);
   }
 
-  let external_name;
+  let nat_name;
   let port_base;
   const nat_info = slurp_file ("/etc/apache2/NAT_INFO");
   if (nat_info) {
     const arr = nat_info.split (" ");
-    external_name = arr[0];
+    nat_name = arr[0];
     port_base = parseInt (arr[1]);
   } else {
-    external_name = "localhost";
+    nat_name = os.hostname();
     port_base = 8000;
   }
 
   cfg.srcdir = process.cwd ();
-
-  if (! cfg.site_name) {
-    cfg.site_name = path.basename (cfg.srcdir);
-  }
-
-  let matches = (/^(.*)-([^-]*)$/).exec (cfg.site_name);
+  let basename = path.basename (cfg.srcdir);
+  let matches = /(.*)-([^-]*)$/.exec (basename);
   if (matches) {
     cfg.site_name = matches[1];
     cfg.conf_key = matches[2];
-  } else if (! cfg.conf_key) {
+  } else {
+    cfg.site_name = basename;
     cfg.conf_key = path.basename (os.homedir ());
   }    
-
-  if (cfg.conf_key == "aws") {
-    if (! cfg.options.aws_hostname) {
-      printf ("options.aws_hostname missing\n");
-      process.exit (1);
-    }
-    cfg.external_name = cfg.options.aws_hostname;
-    cfg.ssl_port = 443;
-
-  } else {
-    if (! cfg.ssl_port) {
-      cfg.ssl_port = get_free_port (port_base);
-    }
-
-    cfg.external_name = external_name;
-
-    if (cfg.external_name.match (new RegExp ("[.].*[.]"))) {
-      /* two dots in name */
-      const local_name = cfg.external_name.replace (new RegExp ("^[^.]*"), 
-						    "local");
-      cfg.local_url = sprintf ("https://%s:%d/", local_name, cfg.ssl_port);
-    }
-  }
-
   cfg.siteid = sprintf ("%s-%s", cfg.site_name, cfg.conf_key);
-  cfg.srcdir = process.cwd ();
   cfg.auxdir = sprintf ("/var/%s", cfg.siteid);
   
-  if (cfg.ssl_port == 443) {
-    cfg.ssl_url = sprintf ("https://%s/", cfg.external_name);
+  server_name = os.hostname();
+  if (cfg.options[server_name] && cfg.options[server_name][cfg.siteid]) {
+    let sinfo = cfg.options[server_name][cfg.siteid];
+    cfg.external_name = sinfo.external_name;
+    cfg.dbinst = sinfo.dbinst;
+    cfg.plain_port = sinfo.plain_port ? sinfo.plain_port : 80;
+    cfg.ssl_port = sinfo.ssl_port ? sinfo.ssl_port : 443;
   } else {
-    cfg.ssl_url = sprintf ("https://%s:%d/", cfg.external_name, cfg.ssl_port);
+    cfg.external_name = nat_name;
+    cfg.dbinst = "local";
   }
 
-  const cert_dir = "/etc/apache2";
+  if (! cfg.plain_port)
+    cfg.plain_port = get_free_port (port_base);
 
-  let cert_base = cfg.external_name;
+  cfg.plain_url = make_url ("http", cfg.external_name, cfg.plain_port);
+  cfg.main_url = cfg.plain_url;
 
-  let crt_file = sprintf ("%s/%s.crt", cert_dir, cert_base);
-  if (slurp_file (crt_file) == "") {
-    if (cfg.external_name.match (new RegExp ("[.].*[.]"))) {
-      /* 2 dots, like www.example.com, replace the first word */
-      cert_base = cfg.external_name.replace (new RegExp ("^[^.]*"), 
-					     "wildcard");
-    } else {
-      /* 1 dot, like example.com, prepend wildcard */
-      cert_base = sprintf ("wildcard.%s", cfg.external_name);
-    }
-    crt_file = cert_dir + "/" + cert_base + ".crt";
-  }
-  
-  cfg.crt_file = crt_file;
-  cfg.key_file = sprintf ("%s/%s.key", cert_dir, cert_base);
-  
-  let chain_file = sprintf ("%s/%s.chain.pem", cert_dir, cert_base);
-  if (slurp_file (chain_file) != "") {
-    cfg.chain_file = chain_file;
+  await find_certs (cfg);
+
+  if (cfg.crt_file) {
+    if (! cfg.ssl_port)
+      cfg.ssl_port = get_free_port (port_base);
+
+    cfg.ssl_url = make_url ("https", cfg.external_name, cfg.ssl_port);
+    cfg.main_url = cfg.ssl_url;
   } else {
-    chain_file = sprintf ("%s/%s.ca-bundle", cert_dir, cert_base);
-    if (slurp_file (chain_file) != "") {
-      cfg.chain_file = chain_file;
-    }
+    cfg.ssl_port = 0;
+    cfg.ssl_url = null;
   }
 
   if (cfg.options.node_packages) {
@@ -291,7 +378,6 @@ async function install_site () {
   
   if (cfg.options.db == "postgres") {
     await setup_postgres (cfg);
-    want_crontab = 1;
   }    
 
   if (cfg.options.site_type == "php") {
@@ -301,16 +387,15 @@ async function install_site () {
   if (! cfg.session_secret)
     cfg.session_secret = 's' + Math.floor (Math.random () * 1e9);
 
-  printf ("%s\n", cfg.ssl_url);
-  if (cfg.local_url)
-    printf ("%s\n", cfg.local_url);
+  
+  if (cfg.ssl_url)
+    printf ("%s\n", cfg.ssl_url);
+  if (cfg.plain_url)
+    printf ("%s\n", cfg.plain_url);
 
   if (cfg.options.example_path) {
-    printf ("%s%s\n", cfg.ssl_url, cfg.options.example_path);
+    printf ("%s%s\n", cfg.main_url, cfg.options.example_path);
   }
-
-  if (want_crontab)
-    make_crontab (cfg);
 
   const tmpname = "TMP.cfg";
   let cfg1 = Object.assign ({}, cfg);
@@ -354,7 +439,7 @@ function get_db_pool () {
   return (db_pool);
 }
 
-page_func (async function query_raw (stmt, params = []) {
+async function query_raw (stmt, params = []) {
   let pool = get_db_pool ();
 
   if (db_client == null) {
@@ -367,25 +452,12 @@ page_func (async function query_raw (stmt, params = []) {
   }
 
   return (db_client.query (stmt, params));
-});
+}
 
-page_func (function get_head_commit () {
-  let head = slurp_file (".git/HEAD");
-  let matches = /^ref: (.*)/.exec (head);
-  if (matches) {
-    head = slurp_file (sprintf (".git/%s", matches[1]));
-  }
-  head = head.trim();
-  if (! head.match(/^[0-9a-f]{40}$/))
-    return null;
-  
-  return (head);
-});
-
-page_func (async function query (stmt, params = []) {
+async function query (stmt, params = []) {
   let res = await p.query_raw (stmt, params);
   return (res.rows);
-});
+}
 
 async function do_commit () {
   if (db_client) {
@@ -398,89 +470,71 @@ async function do_commit () {
   }
 }
 
-async function do_rollback () {
-  if (db_client) {
-    if (in_transaction) {
-      await db_client.query ("rollback");
-      in_transaction = false;
-    }
-    db_client.release ();
-    db_client = null;
-  }
-}  
-
 function get_pg_conf (cfg) {
-  let conf = {};
-  
-  if (cfg.conf_key == "aws") {
-    let lsconf = JSON.parse (slurp_file ("/etc/lsconf-dbinfo"));
-    conf.host = lsconf.host;
-    conf.user = lsconf.user;
-    conf.password = lsconf.password;
+  let conn = {};
+
+  if (cfg.dbinst == "local") {
+    conn.host ="/var/run/postgresql";
   } else {
-    conf.host = '/var/run/postgresql';
+    let secrets = JSON.parse (slurp_file ("/var/lightsail-conf/secrets.json"));
+    let val = secrets[cfg.dbinst];
+    if (val == null)
+      fatal ("can't find dbinst " + cfg.dbinst);
+
+    conn.host = val.host;
+    if (val.password)
+      conn.password = val.password;
+    if (val.user)
+      conn.user = val.user;
   }
+  
+  let conf = {};
+  conf.client = "pg";
+  conf.connection = conn;
+  
   return (conf);
 }
-
 
 async function setup_postgres (cfg) {
   let conf = get_pg_conf (cfg);
 
-  let txt;
-  if (conf.password) {
-    let fwd_port = 54320;
+  if (conf.connection.password) {
+    let new_row = sprintf ("%s:*:*:%s:%s",
+			   conf.connection.host,
+			   conf.connection.user,
+			   conf.connection.password);
+    let pgpass = sprintf ("%s/.pgpass", process.env['HOME']);
+    let new_rows = [];
+    let used = false;
 
-    txt = sprintf ("#! /bin/sh\n" +
-		   "# created by pwjs.js\n" +
-		   "PGHOST='%s'" +
-		   " PGUSER='%s'" +
-		   " PGDATABASE='%s'" +
-		   " PGPASSWORD='%s'" +
-		   " exec \"$@\"\n",
-		   conf.host, conf.user, cfg.siteid, conf.password);
-    fs.writeFileSync ("db", txt);
-    fs.chmodSync ("db", 0700);
-
-    txt = "#! /bin/bash\n";
-    txt += "# created by pwjs.js\n";
-    txt += "ctl=`mktemp`\n";
-    txt += "rm $ctl\n";
-    txt += sprintf ("trap \"ssh -q -S $ctl -O exit %s\" 0 1 2 3 15\n",
-		    cfg.external_name);
-    txt += sprintf ("ssh -M -S $ctl -N -f -L %d:%s:5432 %s\n",
-		    fwd_port, conf.host, cfg.external_name);
-    txt += sprintf ("PGHOST='127.0.0.1'" +
-		    " PGPORT='%d'" +
-		    " PGUSER='%s'" +
-		    " PGDATABASE='%s'" +
-		    " PGPASSWORD='%s'" +
-		    " \"$@\"\n",
-		    fwd_port, conf.user, cfg.siteid, conf.password);
-    fs.writeFileSync ("remdb", txt);
-    fs.chmodSync ("remdb", 0700);
+    if (fs.existsSync (pgpass)) {
+      let old_rows = slurp_file(pgpass).split("\n");
+      let key = new_row.replace (/[^:]*$/, "");
+      for (let old_row of old_rows) {
+	if (old_row.substring (0, key.length) == key) {
+	  used = true;
+	  new_rows.push (new_row);
+	} else if (old_row.trim() != "") {
+	  new_rows.push (old_row);
+	}
+      }
+    }
+    if (! used)
+      new_rows.push (new_row);
+    fs.writeFileSync (pgpass, new_rows.join("\n") + "\n");
+    fs.chmodSync (pgpass, 0600);
   }
+  delete (conf.connection.password);
 
-  const backups_dir = sprintf ("%s/backups", cfg.auxdir);
-  txt = sprintf ("#! /bin/sh\n" +
-		 "# created by pwjs.js\n" +
-		 "mkdir -p %s\n" +
-		 "fname=%s/`date +%s-%%Y%%m%%dT%%H%%M%%S`.sql.gz\n" +
-		 "%s/remdb pg_dump \\\n" +
-		 "   --no-owner \\\n" +
-		 "   --no-acl \\\n" +
-		 "   --compress=6 \\\n" +
-		 "   --lock-wait-timeout=60000 \\\n" +
-		 "   --file=$fname\n" +
-		 "ln -sf $fname %s/latest.gz\n",
-		 backups_dir,
-		 backups_dir, cfg.siteid,
-		 cfg.srcdir, backups_dir);
-  fs.writeFileSync ("daily-backup", txt);
-  fs.chmodSync ("daily-backup", 0755);
-
-  conf.database = "template1";
-  let pool = new Pool (conf);
+  conf.connection.database = cfg.siteid;
+    
+  fs.writeFileSync ("knexfile.js",
+		    "module.exports = " +
+		    JSON.stringify (conf , null, "\t") +
+		    "\n");
+   
+  conf.connection.database = "template1";
+  let pool = new Pool (conf.connection);
   
   let res = await pool.query ("select 0"
 			      +" from pg_database"
@@ -493,224 +547,30 @@ async function setup_postgres (cfg) {
 
   pool.end();
 
-  knex_setup_postgres (cfg);
-}
-
-function make_crontab (cfg) {
-  let txt = sprintf ("# created by pwjs.js\n" +
-		     "23 3 * * * cd %s && ./daily-backup\n",
-		     cfg.srcdir);
-  let fname = sprintf ("%s.crontab", cfg.siteid);
-  fs.writeFileSync (fname, txt);
-}
-
-function knex_setup_postgres (cfg) {
-  let conf = get_pg_conf (cfg);
-  let opts = {};
-  opts.client ="pg";
-  opts.connection = Object.assign ({}, conf);
-  opts.connection.database = cfg.siteid;
-    
-  fs.writeFileSync ("knexfile.js",
-		    "module.exports = " +
-		    JSON.stringify (opts , null, "\t") +
-		    "\n");
-   
   if (! fs.existsSync ("migrations")) {
     printf ("knex migrate:make start\n");
   }
-}
 
-let ws_clients = [];
-
-function ws_client_setup (client) {
-  console.log ("ws client connected");
-  ws_clients.push (client);
-  client.on ('close', () => {
-    console.log ("ws client disconnected");
-    ws_clients = ws_clients.filter (c => c !== client);
-    console.log ("client count " + ws_clients.length);
-  });
-
-  let msg = { "foo": "bar" };
-  client.send (JSON.stringify (msg));
-}
-
-function ws_notify (msg) {
-  if (ws_clients.length > 0) {
-    const msg_str = JSON.stringify (msg);
-    for (let client of ws_clients) {
-      client.send (msg_str);
-    }
+  let evars = "";
+  if (cfg.dbinst != "local") {
+    evars += sprintf ("PGHOST='%s' PGUSER='%s' ",
+		      conf.connection.host, 
+		      conf.connection.user);
   }
-}
-exports.ws_notify = ws_notify;
+  evars += sprintf ("PGDATABASE='%s'", cfg.siteid);
 
-function make_app () {
-  let cfg = get_cfg ();
-  
-  app = express();
+  let txt;
 
-  app.use(express.static('public'));
+  txt = "#! /bin/sh\n";
+  txt += sprintf ("%s exec psql \"$@\"\n", evars, cfg.siteid);
+  fs.writeFileSync ("sql", txt);
+  fs.chmodSync ("sql", 0775);
 
-  app.disable('etag');
-
-  app.use(session({
-    store: new pgSession ({ pool: get_db_pool () }),
-    secret: cfg.session_secret,
-    resave: false,
-    cookie: { expires: false },
-    saveUninitialized: false
-  }));
-  
-  let key = fs.readFileSync (cfg.key_file, "utf8");
-  let crt = fs.readFileSync (cfg.crt_file, "utf8");
-  if (cfg.chain_file) {
-    let chain = fs.readFileSync (cfg.chain_file, "utf8");
-    crt = sprintf ("%s\n%s\n", crt.trim (), chain.trim ());
-  }
-
-  server = https.createServer ({ key: key, cert: crt }, app);
-
-  wss = new ws.Server({ server });
-
-  wss.on ('connection', ws_client_setup);
-  
-  server.listen (cfg.ssl_port);
-
-  printf ("%s\n", cfg.ssl_url);
-  if (cfg.local_url)
-    printf ("%s\n", cfg.local_url);
-
-  exports.app = app;
-  exports.server = server;
-
-  return ({
-    app: app,
-    server: server
-  });
-}
-exports.make_app = make_app;
-
-function build_page (pg) {
-  let ret = "";
-
-  ret += "<!DOCTYPE html>\n";
-  ret += "<html>\n";
-  ret += "  <head>\n";
-  ret += "    <title>test</title>\n";
-
-  let target = sprintf ("style.css?c=%s", p.cache_defeater);
-  ret += sprintf ("<link href='%s' rel='stylesheet' />\n", p.fix_target(target));
-
-  if (pg.head_scripts) {
-    for (let idx in pg.head_scripts) {
-      let head_script = pg.head_scripts[idx];
-      ret += sprintf (" <script src='%s'></script>\n",
-		      p.h(head_script));
-    }
-  }
-
-  ret += "  </head>\n";
-
-  let attrs = "";
-  if (pg.body_id)
-    attrs += sprintf (" id='%s'", pg.body_id);
-  ret += sprintf ("  <body %s>\n", attrs);
-  ret += pg.body;
-  ret += "  </body>\n";
-  ret += "</html>\n";
-
-  return (ret);
+  txt = "#! /bin/sh\n";
+  txt += sprintf ("%s exec pg_dump \"$@\"\n", evars, cfg.siteid);
+  fs.writeFileSync ("dbdump", txt);
+  fs.chmodSync ("dbdump", 0775);
 }
 
-async function get_handler (req, res, page_module) {
-  res.set ('Cache-Control', 'max-age=0, no-cache');
-  try {
-    const pg = await page_module.exports.make_page(req, res);
-    res.send (build_page (pg));
 
-  } catch (e) {
-    throw e;
-  }
-}
-
-exports.register_page = function (filename, page_module) {
-  let pagename = path.basename (filename, ".js");
-  const url_path = sprintf ("/%s", pagename);
-
-  app.get(url_path, async (req, res) => {
-    console.log ("serve", url_path);
-    try {
-      await get_handler (req, res, page_module);
-    } catch (e) {
-      await do_rollback ();
-      let msg = sprintf ("<h3>%s</h3><pre>%s</pre>\n",
-			 p.h(e.message),
-			 p.h(e.stack));
-      res.send (msg);
-    }
-    await do_commit ();
-  });
-
-  return (exports);
-}
-
-function page_func (func) {
-  exports[func.name] = func;
-  p[func.name] = func;
-}
-
-page_func (function put (str) {
-  this.body += str;
-});
-
-page_func (function h (str) {
-  return (he.encode (str));
-});
-
-page_func (function head_script (url) {
-  this.head_scripts.push (url);
-});
-
-
-page_func (function mklink (text, target) {
-  text = text.trim();
-  if (text == "")
-    return ("");
-  target = target.trim();
-  if (target == "")
-    return (p.h(target));
-  return (sprintf ("<a href='%s'>%s</a>",
-		   p.fix_target (target), p.h(text)));
-});
-
-page_func (function fix_target (path) {
-  return path.replace (/\&/g, '&amp;', path);
-});
-
-page_func (function rawurlencode (str) {
-  return (encodeURIComponent (str));
-});
-
-page_func (async function getvar (name) {
-  let rows = await p.query ("select val from vars where var = $1", [name]);
-  let val = "";
-  if (rows.length)
-    val = rows[0].val;
-  return (val);
-});
-
-page_func (async function setvar (name, val) {
-  let res = await p.query_raw ("update vars set val = $1 where var = $2",
-			     [val, name]);
-  if (res.rowCount == 0) {
-    p.query ("insert into vars (val, var) values ($1, $2)", [val, name]);
-  }
-});
-
-page_func (async function get_seq () {
-  let rows = await p.query ("select nextval('seq') as seq");
-  return (parseInt (rows[0].seq));
-});
 

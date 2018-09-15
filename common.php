@@ -13,43 +13,42 @@ function make_db_connection ($db, $dbparams, $create) {
     if (@$options['db'] == "")
         fatal ("no db configured");
 
-	if ($dbparams == NULL) {
-		if (! isset ($default_dbparams)) {
-            $default_dbparams = array ();
+	if ($dbparams == NULL && ! isset ($default_dbparams)) {
+        $default_dbparams = array ();
+        $default_dbparams['dbtype'] = "pgsql";
 
-            $pw = posix_getpwuid (posix_geteuid ());
-            if ($options['db'] == "postgres") {
-                $default_dbparams['dbtype'] = "pgsql";
-                if ($cfg['conf_key'] == "aws") {
-                    $lsconf=json_decode(file_get_contents("/etc/lsconf-dbinfo"), 
-                                        TRUE);
-                    $default_dbparams['host'] = $lsconf['host'];
-                    $default_dbparams['user'] = $lsconf['user'];
-                    $default_dbparams['password'] = $lsconf['password'];
-                } else {
-                    $default_dbparams['host'] = '';
-                    $default_dbparams['user'] = $pw['name'];
-                    $default_dbparams['password'] = '';
-                }
-            } else if ($options['db'] == "mysql") {
-                $default_dbparams['dbtype'] = "mysql";
-                $default_dbparams['host'] = '';
-                $default_dbparams['user'] = $pw['name'];
-                $default_dbparams['password'] = '';
-            }
-		}
+        $pw = posix_getpwuid (posix_geteuid ());
+        $os_user = $pw['name'];
+        
+        $dbinst = $cfg['dbinst'];
+        if ($dbinst == "local") {
+            $default_dbparams['host'] = "";
+            $default_dbparams['user'] = "";
+            $default_dbparams['password'] = "";
+        } else {
+            $secrets_file = "/var/lightsail-conf/secrets.json";
+            $secrets = json_decode (file_get_contents ($secrets_file), TRUE);
+            $sinfo = $secrets[$dbinst];
+            $default_dbparams['host'] = $sinfo['host'];
+            $default_dbparams['password'] = $sinfo['password'];
+            $default_dbparams['user'] = $sinfo['user'];
+        }
+    }
+
+    if ($dbparams == NULL)
 		$dbparams = $default_dbparams;
-	}
 		
 	try {
         if ($dbparams['dbtype'] == "pgsql") {
             $attrs = array ();
             $attrs[] = sprintf ("dbname=%s", $db->dbname);
-            $attrs[] = sprintf ("user=%s", $dbparams['user']);
 
+            if ($dbparams['user'])
+                $attrs[] = sprintf ("user=%s", $dbparams['user']);
+            
             if ($dbparams['host'])
                 $attrs[] = sprintf ("host=%s", $dbparams['host']);
-            
+
             if ($dbparams['password'])
                 $attrs[] = sprintf ("password=%s", $dbparams['password']);
 
@@ -74,10 +73,9 @@ function make_db_connection ($db, $dbparams, $create) {
 }
 
 $db_connections = array ();
-$default_db = NULL;
 
 function get_db ($dbname = "", $dbparams = NULL, $create = 0) {
-	global $cfg, $db_connections, $default_db;
+	global $cfg, $db_connections;
 
 	if ($dbname == "") {
 		if (! isset ($cfg['siteid'])) {
@@ -99,20 +97,10 @@ function get_db ($dbname = "", $dbparams = NULL, $create = 0) {
 	
 	$db_connections[$dbname] = $db;
 
-	if ($dbparams == NULL)
-		$default_db = $db;
-
 	return ($db);
 }
 
-function quote_for_db ($db = NULL, $str = "") {
-	global $default_db;
-	if ($db == NULL)
-		$db = $default_db;
-	return ($db->pdo->quote ($str));
-}
-
-function ckerr_mysql ($q, $stmt = "") {
+function ckerr ($q, $stmt = "") {
 	$err = $q->q->errorInfo ();
 	if ($err[0] == "00000")
 		return;
@@ -168,7 +156,7 @@ function query_db ($db, $stmt, $arr = NULL) {
 	if ($op != "commit") {
 		if ($db->in_transaction == 0) {
 			$q->q = $db->pdo->query("start transaction");
-			ckerr_mysql ($q);
+			ckerr ($q);
 			$db->in_transaction = 1;
 		}
 	}
@@ -176,7 +164,7 @@ function query_db ($db, $stmt, $arr = NULL) {
 	if ($arr === NULL) {
 		$q->q = $db->pdo->prepare ($stmt);
 		if (! $q->q->execute (NULL))
-			ckerr_mysql ($q, $stmt);
+			ckerr ($q, $stmt);
 	} else {
 		if (! is_array ($arr))
 			$arr = array ($arr);
@@ -186,7 +174,7 @@ function query_db ($db, $stmt, $arr = NULL) {
 		}
 		$q->q = $db->pdo->prepare ($stmt);
 		if (! $q->q->execute ($arr))
-			ckerr_mysql ($q, $stmt);
+			ckerr ($q, $stmt);
 		$q->row_count = $q->q->rowCount ();
 	}
 

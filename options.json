@@ -1,5 +1,27 @@
 {
   "site_type": "php",
   "db": "postgres",
-  "aws_hostname": "apply.pacew.org"
+
+  "xx2015": {
+    "apply-pace": {
+      "external_name": "k.pacew.org",
+      "plain_port": 12133,
+      "ssl_port": 12569,
+      "dbinst": "db3"
+    }
+  },
+
+  "l1.pacew.org": {
+    "apply-aws": {
+      "external_name": "apply.pacew.org",
+      "dbinst": "main"
+    }
+  },
+
+  "l2.pacew.org": {
+    "apply-production": {
+      "external_name": "apply2.pacew.org",
+      "dbinst": "db3"
+    }
+  }
 }

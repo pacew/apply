@@ -3,4 +3,5 @@
 
 const pwjs = require ('./pwjs');
 
-pwjs.install_site ();
+pwjs.install_site().catch((err)=>{console.log(err);process.exit(1);});
+
