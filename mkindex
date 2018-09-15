@@ -3,7 +3,10 @@
 
 require_once ("cli.php");
 
-$dbparams = get_dbinst ("neffa");
+if (($dbparams = get_dbinst ("neffa")) == NULL) {
+    printf ("can't get db info for neffa\n");
+    exit(1);
+}
 
 $dup_names = array ();
 $names_seen = array ();
