@@ -410,6 +410,7 @@ function pfinish () {
                     get_cache_defeater ());
 
     $pg .= "</body>\n";
+    $pg .= "</html>\n";
     echo ($pg);
 
 
@@ -504,6 +505,13 @@ function redirect ($target) {
 function fatal ($str = "error") {
 	echo ("fatal: " . htmlentities ($str));
 	exit();
+}
+
+function insert_javascript ($script) {
+    $ret = "<script>\n";
+    $ret .= h($script);
+    $ret .= "</script>\n";
+    return ($ret);
 }
 
 function h($val) {

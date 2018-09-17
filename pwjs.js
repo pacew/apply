@@ -144,6 +144,10 @@ async function make_virtual_host (cfg, ssl_flag, port) {
   conf += sprintf ("  DocumentRoot %s\n", cfg.www_dir);
   conf += sprintf ("  SetEnv APP_ROOT %s\n", cfg.srcdir);
   conf += sprintf ("  <Directory %s>\n", cfg.www_dir);
+  conf += sprintf("     <IfModule valhtml_module>\n");
+  conf += sprintf ("      AddOutputFilterByType VALHTML text/html\n");
+  conf += sprintf ("      SetEnv no-gzip 1\n");
+  conf += sprintf ("    </IfModule>\n");
   conf += sprintf ("    <FilesMatch '\.(html|css|js)'>\n");
   conf += sprintf ("      Header set Cache-Control 'no-cache,"+
 		   " no-store, must-revalidate'\n");

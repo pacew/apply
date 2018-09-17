@@ -25,9 +25,8 @@ if ($arg_app_id) {
     $application = get_application ($arg_app_id);
 }
 
-$body .= sprintf ("<script>\n");
-$body .= sprintf ("var questions = %s;\n", json_encode ($questions));
-$body .= "</script>\n";
+$script = sprintf ("var questions = %s;\n", json_encode ($questions));
+$body .= insert_javascript ($script);
 
 function h24_to_12 ($hour) {
     if ($hour < 12) {
