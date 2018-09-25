@@ -29,8 +29,10 @@ $questions = get_questions ();
 if (getsess ("admin")) {
     $t = sprintf ("https://%s/index.php?app_id=%d", $_SERVER['HTTP_HOST'],
                   $application->curvals['app_id']);
-    $body .= sprintf ("<p class='debug_box'>[%s]</p>\n", 
-                      mklink ("debug link", $t));
+    $body .= sprintf (
+        "<p class='debug_box'>app_id %d [%s]</p>\n", 
+        $application->curvals['app_id'],
+        mklink ("debug link", $t));
 }
 
 
@@ -124,10 +126,12 @@ foreach ($questions as $question) {
     } else if ($question_id == "room_sound") {
         $val = "";
         foreach ($sound as $key => $txt) {
-            $val .= sprintf (
-                "%s: %s<br/>\n", 
-                h($sound[$key]),
-                h($answer[$key]));
+            if (isset ($answer[$key])) {
+                $val .= sprintf (
+                    "%s: %s<br/>\n", 
+                    h($sound[$key]),
+                    h($answer[$key]));
+            }
         }
     } else {
         $val = h($answer);

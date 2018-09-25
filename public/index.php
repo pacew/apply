@@ -282,7 +282,13 @@ if ($username) {
     $t = sprintf ("download.php?view_csv=1&app_id=%d", $arg_app_id);
     $body .= mklink ("[view raw data]", $t);
 
-
+    if ($application->access_code) {
+        $body .= " | ";
+        $t = sprintf (
+            "thanks.php?a=%s", 
+            rawurlencode ($application->access_code));
+        $body .= mklink ("[view thanks page]", $t);
+    }    
 
     $body .= "<div>testing options</div>\n";
     $body .= "<div>\n";
@@ -335,7 +341,7 @@ foreach ($questions as $question) {
     $body .= "</h3>\n";
 
     if ($class == "lookup_individual") {
-        $body .= "<p><em>For our convenience, please enter names in the format Lastname,Firstname (as in Cannon,Jon).</em></p>\n";
+        $body .= "<p><em>For our convenience, please enter names in the format Lastname COMMA Firstname (as in Cannon,Jon).</em></p>\n";
     } else if ($class == "lookup_group") {
         $body .= "<p><em>For our convenience, please write group names that start with &quot;The&quot; in the format Beatles,The or Talking Heads,The.</em></p>\n";
     }
