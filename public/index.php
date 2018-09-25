@@ -282,7 +282,7 @@ if ($username) {
     $t = sprintf ("download.php?view_csv=1&app_id=%d", $arg_app_id);
     $body .= mklink ("[view raw data]", $t);
 
-    if ($application->access_code) {
+    if (isset ($application->access_code)) {
         $body .= " | ";
         $t = sprintf (
             "thanks.php?a=%s", 
