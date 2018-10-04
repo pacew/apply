@@ -43,14 +43,10 @@
   { "id": "app_category",
     "q": "What category best describes this particular application?",
     "choices": [ 
-      { "val": "Band_Solo", "desc": "Dance band proposing a session requiring no additional caller or teacher" },
-      { "val": "Band", "desc": "Dance band proposing to play for a session led by a caller or teacher (who is not a member of the band)" },
-      { "val": "Caller", "desc": "Dance caller or teacher" },
       { "val": "Ritual", "desc": "Ritual dance (morris, rapper, etc)" },
-      { "val": "Performance", "desc": "Other dance performance" },
-      { "val": "Other", "desc": "Everything else" }
+      { "val": "Performance", "desc": "Other dance performance" }
     ],
-    "desc": "The answer to this question may be different on other applications; please choose the option that best fits with this application only.  Please note that dance bands and callers/dance leaders MUST SUBMIT SEPARATE APPLICATIONS unless the caller is in the band. If a caller wants to work with a specific band, they can specify that below."
+    "desc": "<p style='color:red'>The deadline has passed for all event types excpet Ritual dance groups and Other dance performances.</p><p>The answer to this question may be different on other applications; please choose the option that best fits with this application only.  Please note that dance bands and callers/dance leaders MUST SUBMIT SEPARATE APPLICATIONS unless the caller is in the band. If a caller wants to work with a specific band, they can specify that below.</p>"
   },
 
   { "id": "dance_style",
