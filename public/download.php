@@ -109,6 +109,10 @@ foreach ($apps as $app) {
         case "Int_Line": $prefix = "R"; break;
         default: $prefix = "oops"; break;
         }
+    } else if ($curvals['app_category'] == "Performance") {
+        $prefix = "F";
+    } else if ($curvals['app_category'] == "Ritual") {
+        $prefix = "J";
     } else {
         $prefix = "M";
     }
