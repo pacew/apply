@@ -224,11 +224,63 @@ $room_sound_choices = array (
     "single_without" 
 );
 
+$output_order = array (
+    "BLANK",
+	"evid",
+	"event_title",
+	"app_id",
+    "name",
+	"main_performer",
+	"group_name",
+	"busy",
+	"app_category",
+	"dance_style",
+	"specific_dance_style",
+	"music_pref",
+	"preferred_band",
+	"recorded_type",
+	"preferred_caller",
+	"indoor_ritual",
+	"conflicts",
+    "availability",
+	"event_desc",
+	"num_dancers",
+	"how_long",
+	"showcased",
+	"music_begins",
+	"lights_on",
+	"lights_on_other",
+	"lights_off",
+	"lights_off_other",
+	"lighting_mood",
+	"costume_colors",
+	"props",
+	"enter_from",
+	"event_type",
+	"level",
+    "room_sound",
+	"piano",
+	"sound_needs",
+	"shared",
+	"email",
+	"phone",
+	"url",
+	"notes"
+);
+
 $csvhdr = array ();
-$csvhdr[] = "evid";
-$csvhdr[] = "app_id";
-foreach ($questions as $question) {
-    $question_id = $question['id'];
+foreach ($output_order as $question_id) {
+    if ($question_id == "BLANK" 
+    || $question_id == "evid" 
+    || $question_id == "app_id") {
+        $csvhdr[] = $question_id;
+        continue;
+    }
+
+    if (($question = @$questions_by_id[$question_id]) == NULL) {
+        fatal ("bad question_id " . $question_id);
+    }
+
     $class = @$question['class'];
 
     if ($class == "lookup_individual") {
@@ -270,10 +322,23 @@ foreach ($apps as $app) {
     if ($arg_app_id && $arg_app_id != $app->app_id)
         continue;
     $cols = array ();
-    $cols[] = $app->evid;
-    $cols[] = $app->app_id;
-    foreach ($questions as $question) {
-        $question_id = $question['id'];
+    foreach ($output_order as $question_id) {
+        if ($question_id == "BLANK") {
+            $cols[] = "";
+            continue;
+        }
+        if ($question_id == "evid") {
+            $cols[] = $app->evid;
+            continue;
+        }
+        if ($question_id == "app_id") {
+            $cols[] = $app->app_id;
+            continue;
+        }
+        if (($question = @$questions_by_id[$question_id]) == NULL) {
+            fatal ("bad question_id 2 " . $question_id);
+        }
+
         $class = @$question['class'];
         $val = @$curvals[$question_id];
 
