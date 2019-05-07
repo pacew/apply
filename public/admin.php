@@ -49,7 +49,7 @@ $body .= "</div>\n";
 $body .= "<div class='direct_download'>\n";
 $body .= "<p>Direct csv download link.  Includes secret access key."
       ." Protect like a password.</p>\n";
-$t = sprintf ("download.php?direct_download=%s",
+$t = sprintf ("/download.php?direct_download=%s",
               rawurlencode ($download_access_key));
 $url = make_absolute ($t);
 $body .= sprintf ("<input type='text' readonly='readonly' "
