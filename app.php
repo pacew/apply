@@ -3,6 +3,8 @@
 require_once ($_SERVER['APP_ROOT'] . "/common.php");
 require_once ($_SERVER['APP_ROOT'] . "/JsonPatch.php");
 
+$download_access_key = "1YXfx4Qmyx";
+
 switch ($cfg['conf_key']) {
 case "pace":
     $show_test_data = 0;

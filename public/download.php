@@ -1,8 +1,21 @@
 <?php
 
+$anon_ok = 1;
+
 require_once ($_SERVER['APP_ROOT'] . "/app.php");
 
 pstart ();
+
+$arg_direct_download = trim (@$_REQUEST['direct_download']);
+if ($arg_direct_download) {
+    if ($arg_direct_download != $download_access_key) {
+        echo ("invalid");
+        exit ();
+    }
+} else {
+    if ($username == "")
+        redirect ("login.php");
+}
 
 $arg_view_data = intval (@$_REQUEST['view_data']);
 $arg_view_json = intval (@$_REQUEST['view_json']);
@@ -446,6 +459,16 @@ foreach ($rows as $row) {
 
 rewind ($outf);
     
+if ($arg_direct_download) {
+    ob_end_clean();
+    header ("Content-Type: application/csv");
+    header ("Content-Disposition: inline; filename=applications.csv");
+    fpassthru ($outf);
+    exit();
+}
+
+
+
 if ($arg_view_csv) {
     $body .= "<pre>\n";
     $body .= h(fread ($outf, 100000));

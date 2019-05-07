@@ -253,3 +253,11 @@ p {
 .desc {
     margin-top: 0.5em;
 }
+
+.direct_download {
+    background: #ccc;
+    padding: 1em;
+    margin: 1em;
+    border: 2px solid #888;
+    width: 100%;
+}
