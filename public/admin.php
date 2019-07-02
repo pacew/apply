@@ -46,16 +46,19 @@ $body .= " | ";
 $body .= mklink ("test lookup", "lookup_individual.php?term=willisson");
 $body .= "</div>\n";
 
-$body .= "<div class='direct_download'>\n";
-$body .= "<p>Direct csv download link.  Includes secret access key."
-      ." Protect like a password.</p>\n";
-$t = sprintf ("/download.php?direct_download=%s",
-              rawurlencode ($download_access_key));
-$url = make_absolute ($t);
-$body .= sprintf ("<input type='text' readonly='readonly' "
-                  ." size='%d' value='%s'/>\n", strlen($url) + 10, h($url));
+$key = getvar ("download_key");
 
-$body .= "</div>\n";
+if ($key != "") {
+    $body .= "<div class='direct_download'>\n";
+    $body .= "<p>Direct csv download link.  Includes secret access key."
+        ." Protect like a password.</p>\n";
+    $t = sprintf ("/download.php?direct_download=%s", rawurlencode ($key));
+    $url = make_absolute ($t);
+    $body .= sprintf ("<input type='text' readonly='readonly' "
+        ." size='%d' value='%s'/>\n", strlen($url) + 10, h($url));
+    
+    $body .= "</div>\n";
+}
 
 $idx_name = sprintf ("%s/neffa_idx.json", $cfg['auxdir']);
 $mtime = filemtime ($idx_name);

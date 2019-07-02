@@ -307,6 +307,16 @@ function clrsess () {
 	}
 }
 
+function getvar ($name) {
+    $q = query ("select val"
+        ." from vars"
+        ." where var = ?",
+        $name);
+    if (($r = fetch ($q)) != NULL)
+        return ($r->val);
+    return ("");
+}
+
 function get_seq ($db = NULL) {
 	$q = query_db ($db,
 		       "select lastval"

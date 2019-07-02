@@ -7,8 +7,9 @@ require_once ($_SERVER['APP_ROOT'] . "/app.php");
 pstart ();
 
 $arg_direct_download = trim (@$_REQUEST['direct_download']);
-if ($arg_direct_download) {
-    if ($arg_direct_download != $download_access_key) {
+if ($arg_direct_download != "") {
+    $key = getvar ("download_key");
+    if (strcmp ($arg_direct_download, $key) != 0) {
         echo ("invalid");
         exit ();
     }
