@@ -75,7 +75,13 @@ $body .= "<button type='submit' onclick='return false' style='display:none'>"
 $body .= "<input type='submit' value='Refresh performer index' />\n";
 $body .= "</form>\n";
 
-$q = query ("select app_id, to_char (ts, 'YYYY-MM-DD HH24:MI:SS') as ts,"
+if ($options['db'] == "postgres") {
+    $ts_col = "to_char (ts, 'YYYY-MM-DD HH24:MI:SS') as ts";
+} else {
+    $ts_col = "ts";
+}
+
+$q = query ("select app_id, $ts_col,"
             ."   username, val, attention"
             ." from json"
             ." order by app_id, ts");

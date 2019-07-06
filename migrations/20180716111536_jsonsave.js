@@ -5,7 +5,7 @@ exports.up = function(knex, Promise) {
       t.integer ("app_id"),
       t.timestamp ("ts"),
       t.string ("username"),
-      t.string ("val", 100000)
+      t.string ("val", 60000)
     });
 };
 

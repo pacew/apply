@@ -8,7 +8,7 @@ const child_process = require ('child_process');
 
 /* extra packages we'll have available below */
 const pkgs = [ "sprintf-js", "express", "https", "he", "express-session", 
-	       "connect-pg-simple", "ws", "knex" ];
+	       "connect-pg-simple", "ws", "knex", "mysql", "mysql2" ];
 
 
 if (! fs.existsSync ("package.json")) {
@@ -64,7 +64,8 @@ const session = require ('express-session');
 const pgSession = require ('connect-pg-simple')(session);
 const ws = require('ws');
 
-const { Pool } = require ('pg');
+const pg = require ('pg');
+const mysql = require ('mysql2/promise');
 
 let app, server, wss;
 
@@ -292,6 +293,9 @@ async function install_site () {
   if (cfg.options.db == "postgres") {
     await setup_postgres (cfg);
     want_crontab = 1;
+  } else if (cfg.options.db == "mysql") {
+    await setup_mysql (cfg);
+    want_crontab = 1;
   }    
 
   if (cfg.options.site_type == "php") {
@@ -346,10 +350,17 @@ let in_transaction = false;
 function get_db_pool () {
   if (db_pool == null) {
     let cfg = get_cfg ();
-    db_pool = new Pool ({
-      host: '/var/run/postgresql',
-      database: cfg.siteid
-    });
+    if (cfg.options.db == "postgres") {
+      db_pool = new pg.Pool ({
+	host: '/var/run/postgresql',
+	database: cfg.siteid
+      });
+    } else if (cfg.options.db == "mysql") {
+      db_pool = new pg.Pool ({
+	host: '127.0.0.1',
+	database: cfg.siteid
+      });
+    }
   }
   return (db_pool);
 }
@@ -409,7 +420,7 @@ async function do_rollback () {
   }
 }  
 
-function get_pg_conf (cfg) {
+function get_db_conf (cfg) {
   let conf = {};
   
   if (cfg.conf_key == "aws") {
@@ -417,15 +428,29 @@ function get_pg_conf (cfg) {
     conf.host = lsconf.host;
     conf.user = lsconf.user;
     conf.password = lsconf.password;
-  } else {
+  } else if (cfg.options.db == "postgres") {
     conf.host = '/var/run/postgresql';
+  } else if (cfg.options.db == "mysql") {
+    conf.socketPath = "/var/run/mysqld/mysqld.sock";
+    conf.user = os.userInfo().username;
+    
+    conf.authSwitchHandler = (unused, cb) => {
+      // workaround for node mysql bug #1507
+      if (pluginName === 'auth_socket') {
+        cb(null, Buffer.alloc(0));
+      } else {
+        cb(new Error("Unsupported auth plugin"));
+      }
+    };
+
+
   }
   return (conf);
 }
 
 
 async function setup_postgres (cfg) {
-  let conf = get_pg_conf (cfg);
+  let conf = get_db_conf (cfg);
 
   let txt;
   if (conf.password) {
@@ -480,7 +505,7 @@ async function setup_postgres (cfg) {
   fs.chmodSync ("daily-backup", 0755);
 
   conf.database = "template1";
-  let pool = new Pool (conf);
+  let pool = new pg.Pool (conf);
   
   let res = await pool.query ("select 0"
 			      +" from pg_database"
@@ -496,6 +521,68 @@ async function setup_postgres (cfg) {
   knex_setup_postgres (cfg);
 }
 
+async function setup_mysql (cfg) {
+  let conf = get_db_conf (cfg);
+
+  let txt;
+  if (conf.password) {
+    let fwd_port = 54320;
+
+    txt = sprintf ("#! /bin/sh\n" +
+		   "# created by pwjs.js\n" +
+		   "PGHOST='%s'" +
+		   " PGUSER='%s'" +
+		   " PGDATABASE='%s'" +
+		   " PGPASSWORD='%s'" +
+		   " exec \"$@\"\n",
+		   conf.host, conf.user, cfg.siteid, conf.password);
+    fs.writeFileSync ("db", txt);
+    fs.chmodSync ("db", 0700);
+
+    txt = "#! /bin/bash\n";
+    txt += "# created by pwjs.js\n";
+    txt += "ctl=`mktemp`\n";
+    txt += "rm $ctl\n";
+    txt += sprintf ("trap \"ssh -q -S $ctl -O exit %s\" 0 1 2 3 15\n",
+		    cfg.external_name);
+    txt += sprintf ("ssh -M -S $ctl -N -f -L %d:%s:5432 %s\n",
+		    fwd_port, conf.host, cfg.external_name);
+    txt += sprintf ("PGHOST='127.0.0.1'" +
+		    " PGPORT='%d'" +
+		    " PGUSER='%s'" +
+		    " PGDATABASE='%s'" +
+		    " PGPASSWORD='%s'" +
+		    " \"$@\"\n",
+		    fwd_port, conf.user, cfg.siteid, conf.password);
+    fs.writeFileSync ("remdb", txt);
+    fs.chmodSync ("remdb", 0700);
+  }
+
+  let pool;
+
+  if (cfg.options.db == "postgres") {
+    pool = new pg.Pool (conf);
+  } else if (cfg.options.db = "mysql") {
+    pool = await mysql.createPool(conf);
+  }
+  
+  let [rows, fields ] = await pool.query ("select 0"
+					  +" from information_schema.schemata"
+					  +" where schema_name = ?",
+					  [ cfg.siteid ]);
+  if (rows.length == 0) {
+    printf ("creating database %s\n", cfg.siteid);
+    await pool.query (sprintf ("create database `%s`", cfg.siteid));
+    await pool.query (sprintf ("grant all privileges on `%s`.*"+
+			       " to 'www-data'@'localhost'",
+			       cfg.siteid));
+  }
+
+  pool.end();
+
+  knex_setup_mysql (cfg);
+}
+
 function make_crontab (cfg) {
   let txt = sprintf ("# created by pwjs.js\n" +
 		     "23 3 * * * cd %s && ./daily-backup\n",
@@ -505,7 +592,7 @@ function make_crontab (cfg) {
 }
 
 function knex_setup_postgres (cfg) {
-  let conf = get_pg_conf (cfg);
+  let conf = get_db_conf (cfg);
   let opts = {};
   opts.client ="pg";
   opts.connection = Object.assign ({}, conf);
@@ -515,6 +602,32 @@ function knex_setup_postgres (cfg) {
 		    "module.exports = " +
 		    JSON.stringify (opts , null, "\t") +
 		    "\n");
+   
+  if (! fs.existsSync ("migrations")) {
+    printf ("knex migrate:make start\n");
+  }
+}
+
+function knex_setup_mysql (cfg) {
+  let conf = get_db_conf (cfg);
+  let opts = {};
+  opts.client ="mysql2";
+  opts.connection = Object.assign ({}, conf);
+  opts.connection.database = cfg.siteid;
+    
+  let patch = "module.exports.connection.authSwitchHandler =\n"+
+      "  function (unused, cb) {\n"+
+      "    if (pluginName === 'auth_socket') {\n"+
+      "      cb(null, Buffer.alloc(0));\n"+
+      "    } else {\n"+
+      "      cb(new Error('Unsupported auth-plugin'));\n"+
+      "    }\n"+
+      "  }\n";
+
+  fs.writeFileSync ("knexfile.js",
+		    "module.exports = " +
+		    JSON.stringify (opts , null, "\t") + "\n" +
+		    patch);
    
   if (! fs.existsSync ("migrations")) {
     printf ("knex migrate:make start\n");

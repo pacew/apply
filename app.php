@@ -5,7 +5,7 @@ require_once ($_SERVER['APP_ROOT'] . "/JsonPatch.php");
 
 switch ($cfg['conf_key']) {
 case "pace":
-    $show_test_data = 0;
+    $show_test_data = 1;
     $first_prod_app_id = 105;
     break;
 case "aws":
