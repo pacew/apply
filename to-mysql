@@ -1,0 +1,15 @@
+#! /bin/sh
+
+./remdb pg_dump --section=data --inserts \
+	--no-owner -x \
+	--no-security-labels \
+	--table=email_history \
+	--table=evid_info \
+	--table=json \
+	--table=pcodes \
+	--table=seq \
+	--table=vars \
+    | sed -e '1,/^SET row_security/d' \
+	  -e 's/INTO public./INTO /' \
+	  -e 's/[.][0-9][0-9]*[+]00//' > final.sql
+
