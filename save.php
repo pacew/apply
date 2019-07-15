@@ -1,8 +1,6 @@
 <?php
 
 $anon_ok = 1;
-require_once ($_SERVER['APP_ROOT'] . "/app.php");
-require_once ($_SERVER['APP_ROOT'] . "/JsonPatch.php");
 
 $app_id = intval (@$_REQUEST['app_id']);
 

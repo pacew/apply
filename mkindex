@@ -81,8 +81,8 @@ function make_index ($db) {
 $db = get_db ("neffa_pdb", $dbparams);
 make_index ($db);
 
-$output = sprintf ("%s/%s", $cfg['auxdir'], "neffa_idx.json");
-$tname = tempnam ($cfg['auxdir'], "TMP.");
+$output = sprintf ("%s/%s", $cfg['aux_dir'], "neffa_idx.json");
+$tname = tempnam ($cfg['aux_dir'], "TMP.");
 file_put_contents ($tname, json_encode ($index, JSON_PRETTY_PRINT));
 chmod ($tname, 0664);
 rename ($tname, $output);

@@ -1,7 +1,6 @@
 <?php
 
 $anon_ok = 1;
-require_once ($_SERVER['APP_ROOT'] . "/app.php");
 
 $arg_app_id = intval (@$_REQUEST['app_id']);
 $arg_show_all = intval (@$_REQUEST['show_all']);

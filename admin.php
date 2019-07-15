@@ -1,7 +1,5 @@
 <?php
 
-require_once ($_SERVER['APP_ROOT'] . "/app.php");
-
 pstart ();
 
 $arg_refresh_idx = intval (@$_REQUEST['refresh_idx']);
@@ -60,7 +58,7 @@ if ($key != "") {
     $body .= "</div>\n";
 }
 
-$idx_name = sprintf ("%s/neffa_idx.json", $cfg['auxdir']);
+$idx_name = sprintf ("%s/neffa_idx.json", $cfg['aux_dir']);
 $mtime = filemtime ($idx_name);
 $body .= sprintf (
     "<div>neffa performer index last updated %s</div>\n",

@@ -1,6 +1,6 @@
 <?php
 
-require_once ($_SERVER['APP_ROOT'] . "/common.php");
+require_once ($_SERVER['PSITE_PHP']);
 require_once ($_SERVER['APP_ROOT'] . "/JsonPatch.php");
 
 switch ($cfg['conf_key']) {
@@ -19,13 +19,116 @@ default:
 }
 
 $title_html = "NEFFA Performer Application 2019";
+$username = "";
+
+function pstart () {
+    psite_session ();
+
+    ini_set ("display_errors", "1");
+
+    global $body;
+    $body = "";
+
+    global $username;
+    $username = getsess ("username2");
+    global $anon_ok;
+    if (! @$anon_ok && $username == "") {
+        redirect ("login.php");
+    }
+}
+
+function pfinish () {
+    $pg = "";
+
+    $pg .= "<!doctype html>\n"
+        ."<html lang='en'>\n"
+        ."<head>\n"
+        ."<meta charset='utf-8'>\n"
+        ."<meta name='viewport' content='width=device-width,initial-scale=1'>\n";
+    
+    global $title_html;
+    $pg .= "<title>";
+    $pg .= $title_html;
+    $pg .= "</title>\n";
+
+    $pg .= sprintf ("<link rel='stylesheet' href='reset.css?c=%s' />\n",
+                    get_cache_defeater ());
+    $pg .= sprintf ("<link rel='stylesheet' href='style.css?c=%s' />\n",
+                    get_cache_defeater ());
+
+    $pg .= "<script src='https://ajax.googleapis.com"
+        ."/ajax/libs/jquery/2.1.4/jquery.min.js'></script>\n";
+
+    $pg .= "<link rel='stylesheet'"
+        ." href='https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css'>\n";
+    $pg .= "<script src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js'></script>\n";
+    
+    $pg .= "<script type='text/javascript' src='https://www.neffa.org/wp-content/themes/NEFFA_2017/js/Iframe-Resize/iframeResizer.contentWindow.min.js'></script>\n";
+
+    global $cfg;
+    $pg .= "<script>\n";
+    $pg .= sprintf ("var cfg = %s;\n", json_encode ($cfg));
+    $pg .= "</script>\n";
+
+
+    $pg .= "<link rel='icon' href='https://www.neffa.org/wp-content/uploads/2017/12/cropped-favicon-32x32.png' sizes='32x32' />\n";
+    $pg .= "<link rel='icon' href='https://www.neffa.org/wp-content/uploads/2017/12/cropped-favicon-192x192.png' sizes='192x192' />\n";
+
+    $pg .= "</head>\n";
+    
+                    
+
+    $pg .= "<body>\n";
+
+    $pg .= "<div class='banner'>\n";
+    $pg .= "<div class='login_link'>";
+    $pg .= "<span class='nav'>\n";
+    global $username;
+    if (@$username == "") {
+        $pg .= "<a class='login_anchor' target='_blank' href='login.php'>[ admin login ]</a>";
+    } else {
+        $pg .= "[ ";
+        $pg .= "<a href='admin.php'>applications</a>";
+        $pg .= " | ";
+        $pg .= "<a href='logout.php'>logout</a>";
+        $pg .= " ]";
+    }
+    $pg .= "</span>\n";
+    $pg .= "</div>\n";
+    $pg .= "<div style='clear:both'></div>\n";
+    $pg .= "</div>\n";
+
+    $pg .= "<div class='content'>\n";
+
+    $pg .= "<h1 class='banner_title'>2019 Performer Application</h1>\n";
+
+    echo ($pg);
+    $pg = "";
+
+    global $body;
+    $pg .= $body;
+
+    $pg .= "</div>\n";
+
+    $pg .= sprintf ("<script src='scripts.js?c=%s.js'></script>\n",
+                    get_cache_defeater ());
+
+    $pg .= "</body>\n";
+    echo ($pg);
+
+
+    do_commits ();
+    exit (0);
+}
+
+
+
 
 $index = NULL;
-
 function get_neffa_index () {
     global $index, $cfg;
     if ($index == NULL) {
-        $filename = $cfg['auxdir'] . "/neffa_idx.json";
+        $filename = $cfg['aux_dir'] . "/neffa_idx.json";
         if (($val = file_get_contents ($filename)) == "") {
             echo ("neffa_idx not found\n");
             exit ();
@@ -232,3 +335,7 @@ function active_question ($question_id, $curvals) {
     
     return (TRUE);
 }
+
+require (router());
+/* NOTREACHED */
+

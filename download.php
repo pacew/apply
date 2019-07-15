@@ -2,8 +2,6 @@
 
 $anon_ok = 1;
 
-require_once ($_SERVER['APP_ROOT'] . "/app.php");
-
 pstart ();
 
 $arg_direct_download = trim (@$_REQUEST['direct_download']);

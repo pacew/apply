@@ -1,7 +1,5 @@
 <?php
 
-require_once ($_SERVER['APP_ROOT'] . "/app.php");
-
 pstart ();
 
 $arg_var = trim (@$_REQUEST['var']);
