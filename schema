@@ -1,0 +1,31 @@
+table email_history
+col email text
+col sent timestamp
+
+table evid_info
+col evid_key text
+col evid_core integer
+
+table json
+col app_id integer
+col ts timestamp
+col username text
+col val text
+col access_code text
+col attention integer
+
+table pcodes
+col id integer
+col pcode text
+
+table seq
+col lastval integer
+
+table sessions
+col session_id text
+col updated timestamp
+col session text
+
+table vars
+col var text
+col val text

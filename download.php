@@ -57,10 +57,10 @@ $max_evid_core = intval ($r->evid_core);
 if ($max_evid_core < 10)
     $max_evid_core = 10;
 
-function get_evid_info ($key, $evid_core) {
+function get_evid_info ($evid_key, $evid_core) {
     global $evid_info, $max_evid_core;
 
-    if (($ei = @$evid_info[$key]) != NULL)
+    if (($ei = @$evid_info[$evid_key]) != NULL)
         return ($ei);
     
     if ($evid_core == 0) {
@@ -68,39 +68,39 @@ function get_evid_info ($key, $evid_core) {
         $evid_core = $max_evid_core;
 
         query (
-            "insert into evid_info (key, evid_core) values (?,?)",
-            array ($key, $evid_core));
+            "insert into evid_info (evid_key, evid_core) values (?,?)",
+            array ($evid_key, $evid_core));
         do_commits ();
     }
 
     $ei = (object)NULL;
-    $ei->key = $key;
+    $ei->evid_key = $evid_key;
     $ei->evid_core = $evid_core;
     $ei->seq = 0;
-    $evid_info[$key] = $ei;
+    $evid_info[$evid_key] = $ei;
 
     return ($ei);
 }
 
-$q = query ("select key, evid_core from evid_info");
+$q = query ("select evid_key, evid_core from evid_info");
 while (($r = fetch ($q)) != NULL) {
-    $key = trim ($r->key);
+    $evid_key = trim ($r->evid_key);
     $evid_core = intval ($r->evid_core);
     if ($evid_core > $max_evid_core)
         $max_evid_core = $evid_core;
-    get_evid_info ($key, $evid_core);
+    get_evid_info ($evid_key, $evid_core);
 }
 
 foreach ($apps as $app) {
     if (($neffa_id = name_to_id ($app->curvals['name'])) != 0) {
-        $key = $neffa_id;
+        $evid_key = $neffa_id;
     } else if (($email = @$app->curvals['email']) != "") {
-        $key = $email;
+        $evid_key = $email;
     } else {
-        $key = sprintf ("oops%d", $app->app_id);
+        $evid_key = sprintf ("oops%d", $app->app_id);
     }
 
-    $ei = get_evid_info ($key, 0);
+    $ei = get_evid_info ($evid_key, 0);
     $ei->seq++;
 
     $app->ei = $ei;
