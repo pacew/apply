@@ -1,9 +1,3 @@
-apply-pace.crontab
-daily_backup
-do_restore
-email-test
-lookup
-mkbackup
 update_pcodes
 
 move neffadb_passwd to vars

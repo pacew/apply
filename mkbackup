@@ -1,9 +1,0 @@
-#! /bin/sh
-
-./dbdump --no-owner \
-    --table=email_history \
-    --table=evid_info \
-    --table=json \
-    --table=pcodes \
-    --table=seq \
-    --table=vars
