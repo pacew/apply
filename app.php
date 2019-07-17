@@ -336,6 +336,8 @@ function active_question ($question_id, $curvals) {
     return (TRUE);
 }
 
-require (router());
-/* NOTREACHED */
+if (! @$cli_mode) {
+    require (router());
+    /* NOTREACHED */
+}
 
