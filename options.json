@@ -4,11 +4,17 @@
   "aws_hostname": "apply.pacew.org",
 
   "x2015": {
+    "skip_apache": 1,
+    "aux_dir": "/home/pace/aux/apply-pace",
+    "external_name": "apply.pacew.org",
     "db_host": "127.0.0.1",
     "db_user": "neffaapply"
   },
 
   "apply-production": {
+    "skip_apache": 1,
+    "aux_dir": "/home/neffapace/aux",
+    "external_name": "apply.neffa.org",
     "db_host": "mysql.neffa.org",
     "db_user": "neffaapply",
     "db_dbname": "apply_neffa_org"
