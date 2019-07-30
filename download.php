@@ -2,6 +2,9 @@
 
 require_once("app.php");
 
+// prevent Warning: preg_match(): JIT compilation failed: no more memory in ...
+ini_set ("pcre.jit", 0); 
+
 $anon_ok = 1;
 
 pstart ();
