@@ -1,5 +1,8 @@
 <?php
 
+// prevent Warning: preg_match(): JIT compilation failed: no more memory in ...
+ini_set ("pcre.jit", 0); 
+
 require_once ($_SERVER['PSITE_PHP']);
 require_once ($_SERVER['APP_ROOT'] . "/JsonPatch.php");
 
