@@ -10,12 +10,14 @@
     "db_user": "neffaapply"
   },
 
-  "apply-production": {
-    "skip_apache": 1,
-    "aux_dir": "/home/neffapace/aux",
-    "external_name": "apply.neffa.org",
-    "db_host": "mysql.neffa.org",
-    "db_user": "neffaapply",
-    "db_dbname": "apply_neffa_org"
+  "fistfight": {
+      "apply-production": {
+	  "skip_apache": 1,
+	  "aux_dir": "/home/neffapace/aux",
+	  "external_name": "apply.neffa.org",
+	  "db_host": "mysql.neffa.org",
+	  "db_user": "neffaapply",
+	  "db_dbname": "apply_neffa_org"
+      }
   }
 }
