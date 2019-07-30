@@ -40,6 +40,15 @@ while (($r = fetch ($q)) != NULL) {
         $app = (object)NULL;
         $app->app_id = $app_id;
         $app->curvals = json_decode ($r->val, TRUE);
+        if ($app->curvals == NULL) {
+            $curvals = array();
+            $oops = sprintf ("oops%d", $app_id);
+            $curvals['name'] = $oops;
+            $curvals['email'] = $oops;
+            $curvals['app_category'] = $oops;
+            $curvals['dance_style'] = $oops;
+            $app->curvals = $curvals;
+        }
         $apps[$app_id] = $app;
     } else {
         $patch = json_decode ($r->val, TRUE);
