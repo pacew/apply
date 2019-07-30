@@ -214,7 +214,7 @@ $mail->SMTPAuth = true;
 $mail->SMTPSecure = 'tls';
 $mail->Port = 587;
 
-$mail->setFrom('pace@pacew.org', 'Pace Willisson');
+$mail->setFrom('applications@neffa.org', 'NEFFA Applications');
 $mail->addAddress($to_email);
 $mail->Subject = $subject;
 

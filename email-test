@@ -29,7 +29,7 @@ $mail->SMTPSecure = 'tls';
 $mail->Port = 587;
 
 
-$mail->setFrom('pace@pacew.org', 'Pace Willisson');
+$mail->setFrom('applications@neffa.org', 'NEFFA Applications');
 $mail->addAddress('pace.willisson@gmail.com', 'Pace Willisson');
 $mail->Subject = 'hello';
 
