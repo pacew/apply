@@ -3,7 +3,13 @@
 
 require_once ("cli.php");
 
-require_once ("libphp-phpmailer/autoload.php");
+// require_once ("libphp-phpmailer/autoload.php");
+
+$path = sprintf ("%s/PHPMailer/src", dirname($cfg['src_dir']));
+require_once($path . "/Exception.php");
+require_once($path . "/PHPMailer.php");
+require_once($path . "/SMTP.php");
+use PHPMailer\PHPMailer\PHPMailer;
 
 $q = query ("select val"
             ." from vars"
@@ -31,7 +37,7 @@ $mail->Port = 587;
 
 $mail->setFrom('applications@neffa.org', 'NEFFA Applications');
 $mail->addAddress('pace.willisson@gmail.com', 'Pace Willisson');
-$mail->Subject = 'hello';
+$mail->Subject = sprintf ("hello %s", strftime ("%Y-%m-%d %H:%M:%S"));
 
 // The HTML-formatted body of the email
 $mail->Body = '<h1>Email Test</h1>

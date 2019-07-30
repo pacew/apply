@@ -193,7 +193,13 @@ if (! $want_email) {
 }
     
 
-require_once ("libphp-phpmailer/autoload.php");
+// require_once ("libphp-phpmailer/autoload.php");
+
+$path = sprintf ("%s/PHPMailer/src", dirname($cfg['src_dir']));
+require_once($path . "/Exception.php");
+require_once($path . "/PHPMailer.php");
+require_once($path . "/SMTP.php");
+use PHPMailer\PHPMailer\PHPMailer;
 
 $q = query ("select val"
             ." from vars"
