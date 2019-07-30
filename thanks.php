@@ -1,5 +1,7 @@
 <?php
 
+require_once("app.php");
+
 $anon_ok = 1;
 
 $arg_access_code = trim (@$_REQUEST['a']);

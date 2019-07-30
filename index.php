@@ -1,5 +1,7 @@
 <?php
 
+require_once("app.php");
+
 $anon_ok = 1;
 
 $arg_app_id = intval (@$_REQUEST['app_id']);
@@ -25,7 +27,9 @@ if ($arg_app_id) {
 }
 
 $body .= sprintf ("<script>\n");
+$body .= "//<![CDATA[\n";
 $body .= sprintf ("var questions = %s;\n", json_encode ($questions));
+$body .= "//]]>\n";
 $body .= "</script>\n";
 
 function h24_to_12 ($hour) {

@@ -114,6 +114,7 @@ function pfinish () {
                     get_cache_defeater ());
 
     $pg .= "</body>\n";
+    $pg .= "</html>\n";
     echo ($pg);
 
 
@@ -336,7 +337,7 @@ function active_question ($question_id, $curvals) {
     return (TRUE);
 }
 
-if (! @$cli_mode) {
+if (! get_option ("flat") && ! @$cli_mode) {
     require (router());
     /* NOTREACHED */
 }

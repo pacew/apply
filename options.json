@@ -2,11 +2,10 @@
   "site_type": "php",
   "db": "mysql",
   "aws_hostname": "apply.pacew.org",
+  "flat": 1,
 
   "x2015": {
-    "skip_apache": 1,
     "aux_dir": "/home/pace/aux/apply-pace",
-    "external_name": "apply.pacew.org",
     "db_host": "127.0.0.1",
     "db_user": "neffaapply"
   },

@@ -1,5 +1,7 @@
 <?php
 
+require_once("app.php");
+
 pstart ();
 
 $arg_refresh_idx = intval (@$_REQUEST['refresh_idx']);

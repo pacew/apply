@@ -6,7 +6,9 @@ require_once ("cli.php");
 $dbparams['dbtype'] = "mysql";
 $dbparams['host'] = 'neffaprog.neffa.dreamhosters.com';
 $dbparams['user'] = 'pace_willisson';
-$dbparams['password'] = trim (file_get_contents (".neffadb_passwd"));
+
+$file = sprintf ("%s/neffadb_passwd", $cfg['aux_dir']);
+$dbparams['password'] = trim (file_get_contents ($file));
 
 $dup_names = array ();
 $names_seen = array ();
