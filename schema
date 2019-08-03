@@ -13,6 +13,8 @@ col username text
 col val text
 col access_code text
 col attention integer
+col fest_year integer
+col test_flag integer
 
 table pcodes
 col id integer

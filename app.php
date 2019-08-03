@@ -6,6 +6,12 @@ ini_set ("pcre.jit", 0);
 require_once ($_SERVER['PSITE_PHP']);
 require_once ($_SERVER['APP_ROOT'] . "/JsonPatch.php");
 
+$cur_year = intval(strftime("%Y"));
+if (strftime("%m") > 6) {
+    $cur_year++;
+}
+$last_year = $cur_year - 1;
+
 switch ($cfg['conf_key']) {
 case "pace":
     $show_test_data = 1;
@@ -28,6 +34,13 @@ function pstart () {
     psite_session ();
 
     ini_set ("display_errors", "1");
+
+    global $view_year, $cur_year;
+    $view_year = intval(getsess ("view_year"));
+    if ($view_year == 0) {
+        $view_year = $cur_year;
+        putsess ("view_year", $view_year);
+    }
 
     global $body;
     $body = "";

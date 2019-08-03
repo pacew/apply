@@ -6,6 +6,15 @@ pstart ();
 
 $arg_refresh_idx = intval (@$_REQUEST['refresh_idx']);
 $arg_just_new = intval (@$_REQUEST['just_new']);
+$arg_set_year = intval (@$_REQUEST['set_year']);
+$arg_desired_year = intval (@$_REQUEST['desired_year']);
+
+
+if ($arg_set_year == 1) {
+    $view_year = $arg_desired_year;
+    putsess ("view_year", $view_year);
+    redirect ("admin.php");
+}
 
 if ($arg_refresh_idx) {
     $cmd = sprintf ("sh -c 'cd %s; ./mkindex'", $cfg['srcdir']);
@@ -46,6 +55,19 @@ $body .= " | ";
 $body .= mklink ("test lookup", "lookup_individual.php?term=willisson");
 $body .= "</div>\n";
 
+$body .= "<div>\n";
+$body .= "<form action='admin.php'>\n";
+$body .= "<input type='hidden' name='set_year' value='1' />\n";
+$body .= "View for festival year ";
+$body .= "<select name='desired_year'>\n";
+$body .= "<option value=''>--select--</option>\n";
+make_option ($cur_year, $view_year, $cur_year);
+make_option ($last_year, $view_year, $last_year);
+$body .= "</select>\n";
+$body .= "<input type='submit' value='set' />\n";
+$body .= "</form>\n";
+$body .= "</div>\n";
+
 $key = getvar ("download_key");
 
 if ($key != "") {
@@ -82,9 +104,11 @@ if ($options['db'] == "postgres") {
 }
 
 $q = query ("select app_id, $ts_col,"
-            ."   username, val, attention"
+            ."   username, val, attention, fest_year, test_flag"
             ." from json"
-            ." order by app_id, ts");
+            ." where fest_year = ?"
+            ." order by app_id, ts",
+            $view_year);
 
 $rows = array ();
 while (($r = fetch ($q)) != NULL) {
@@ -105,6 +129,8 @@ while (($r = fetch ($q)) != NULL) {
         $css = "";
     }
     $cols = array ();
+    $cols[] = $r->fest_year;
+    $cols[] = $r->test_flag;
     $cols[] = mklink_span ($r->app_id, $target, $css);
     $cols[] = mklink_span ($r->ts, $target, $css);
 
@@ -122,7 +148,7 @@ while (($r = fetch ($q)) != NULL) {
 if (count ($rows) == 0) {
     $body .= "<p>no data to display</p>\n";
 } else {
-    $body .= mktable (array ("app_id", "ts", "name / title", ""),
+    $body .= mktable (array ("year", "test", "app_id", "ts", "name / title", ""),
     $rows);
 }
 
