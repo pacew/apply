@@ -34,6 +34,9 @@ $title_html = sprintf ("NEFFA Performer Application %d", $submit_year);
 $username = "";
 
 function pstart () {
+    global $pstart_timestamp;
+    $pstart_timestamp = microtime (TRUE);
+
     psite_session ();
 
     ini_set ("display_errors", "1");
@@ -137,6 +140,13 @@ function pfinish () {
 
     $pg .= sprintf ("<script src='scripts.js?c=%s.js'></script>\n",
                     get_cache_defeater ());
+
+    if ($username) {
+        global $pstart_timestamp;
+        $secs = microtime(TRUE) - $pstart_timestamp;
+        $pg .= sprintf ("<div id='generation_time'>%.0f msecs</div>\n",
+                        $secs * 1000);
+    }
 
     $pg .= "</body>\n";
     $pg .= "</html>\n";

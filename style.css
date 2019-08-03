@@ -165,6 +165,15 @@ p {
     padding: .5em;
 }
 
+#generation_time {
+    position:fixed;
+    top: 0;
+    left: 0;
+    background: #faa;
+    padding: 2px;
+    border: 2px solid #844;
+}
+
 .lookup_individual {
     margin-bottom: .5em;
 }
