@@ -8,11 +8,14 @@ $arg_refresh_idx = intval (@$_REQUEST['refresh_idx']);
 $arg_just_new = intval (@$_REQUEST['just_new']);
 $arg_set_year = intval (@$_REQUEST['set_year']);
 $arg_desired_year = intval (@$_REQUEST['desired_year']);
-
+$arg_desired_test_flag = intval (@$_REQUEST['desired_test_flag']);
 
 if ($arg_set_year == 1) {
     $view_year = $arg_desired_year;
     putsess ("view_year", $view_year);
+    $view_test_flag = $arg_desired_test_flag;
+    putsess ("view_test_flag", $view_test_flag);
+
     redirect ("admin.php");
 }
 
@@ -44,10 +47,6 @@ $body .= mklink ("new performers", "admin.php?just_new=1");
 $body .= " | ";
 $body .= mklink ("view data", "download.php?view_data=1");
 $body .= " | ";
-$body .= mklink ("view json", "download.php?view_json=1");
-$body .= " | ";
-$body .= mklink ("download json", "download.php?download_json=1");
-$body .= " | ";
 $body .= mklink ("view csv", "download.php?view_csv=1");
 $body .= " | ";
 $body .= mklink ("download csv", "download.php?download_csv=1");
@@ -63,6 +62,10 @@ $body .= "<select name='desired_year'>\n";
 $body .= "<option value=''>--select--</option>\n";
 make_option ($cur_year, $view_year, $cur_year);
 make_option ($last_year, $view_year, $last_year);
+$body .= "</select>\n";
+$body .= "<select name='desired_test_flag'>\n";
+make_option (0, $view_test_flag, "production data");
+make_option (1, $view_test_flag, "test data");
 $body .= "</select>\n";
 $body .= "<input type='submit' value='set' />\n";
 $body .= "</form>\n";
@@ -107,8 +110,9 @@ $q = query ("select app_id, $ts_col,"
             ."   username, val, attention, fest_year, test_flag"
             ." from json"
             ." where fest_year = ?"
+            ."   and test_flag = ?"
             ." order by app_id, ts",
-            $view_year);
+            array ($view_year, $view_test_flag));
 
 $rows = array ();
 while (($r = fetch ($q)) != NULL) {

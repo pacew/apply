@@ -19,8 +19,6 @@ if ($arg_direct_download != "") {
 }
 
 $arg_view_data = intval (@$_REQUEST['view_data']);
-$arg_view_json = intval (@$_REQUEST['view_json']);
-$arg_download_json = intval (@$_REQUEST['download_json']);
 $arg_view_csv = intval (@$_REQUEST['view_csv']);
 $arg_download_csv = intval (@$_REQUEST['download_csv']);
 $arg_app_id = intval (@$_REQUEST['app_id']);
@@ -29,7 +27,10 @@ $apps = array ();
 
 $q = query ("select app_id, val"
             ." from json"
-            ." order by app_id, ts");
+            ." where fest_year = ?"
+            ."   and test_flag = ?"
+            ." order by app_id, ts",
+            array ($view_year, $view_test_flag));
 while (($r = fetch ($q)) != NULL) {
     $app_id = intval ($r->app_id);
 
@@ -164,6 +165,9 @@ $body .= mklink ("[admin]", "admin.php");
 $body .= "</div>\n";
 
 if ($arg_view_data) {
+    $body .= sprintf ("<div>year %d test_flag %d</div>\n",
+                      $view_year, $view_test_flag);
+
     foreach ($apps as $app) {
         $curvals = $app->curvals;
         $body .= "<div class='display_data'>\n";
@@ -202,19 +206,6 @@ if ($arg_view_data) {
         $body .= "</div>\n";
     }
     pfinish ();
-}
-
-if ($arg_view_json) {
-    $body .= h(json_encode ($apps, JSON_PRETTY_PRINT));
-    pfinish ();
-}
-
-if ($arg_download_json) {
-    ob_end_clean ();
-    header ("Content-Type: application/json");
-    header ("Content-Disposition: attachment; filename=applications.json");
-    echo (json_encode ($apps));
-    exit ();
 }
 
 $q = query ("select id, pcode from pcodes");
@@ -480,6 +471,8 @@ if ($arg_direct_download) {
 
 
 if ($arg_view_csv) {
+    $body .= sprintf ("<div>year %d test_flag %d</div>\n",
+                      $view_year, $view_test_flag);
     $body .= "<pre>\n";
     $body .= h(fread ($outf, 100000));
     $body .= "</pre>\n";

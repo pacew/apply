@@ -77,12 +77,14 @@ function make_access_code () {
 if ($need_patch == 0) {
     $access_code = make_access_code ();
     
-    query ("insert into json (app_id, ts, username, val, access_code)"
-           ." values (?,current_timestamp,?,?,?)",
+    query ("insert into json (app_id, ts, username, val, access_code,"
+           ."   fest_year, test_flag)"
+           ." values (?,current_timestamp,?,?,?,?,?)",
            array ($app_id, 
                   $username, 
                   json_encode ($newvals),
-                  $access_code));
+                  $access_code,
+                  $submit_year, $submit_test_flag));
 } else {
     if (($application = get_application ($app_id)) == NULL)
         fatal ("can't find base application to update");
@@ -92,9 +94,11 @@ if ($need_patch == 0) {
     $diff = mikemccabe\JsonPatch\JsonPatch::diff($application->curvals, 
                                                  $newvals);
 
-    query ("insert into json (app_id, ts, username, val)"
-           ." values (?,current_timestamp,?,?)",
-           array ($app_id, $username, json_encode ($diff)));
+    query ("insert into json (app_id, ts, username, val, fest_year, test_flag)"
+           ." values (?,current_timestamp,?,?,?,?)",
+           array ($app_id, $username, json_encode ($diff),
+                  $application->fest_year,
+                  $application->test_flag));
 
 }
 

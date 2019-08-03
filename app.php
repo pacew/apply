@@ -12,6 +12,9 @@ if (strftime("%m") > 6) {
 }
 $last_year = $cur_year - 1;
 
+$submit_year = $cur_year;
+$submit_test_flag = 1;
+
 switch ($cfg['conf_key']) {
 case "pace":
     $show_test_data = 1;
@@ -41,6 +44,8 @@ function pstart () {
         $view_year = $cur_year;
         putsess ("view_year", $view_year);
     }
+    global $view_test_flag;
+    $view_test_flag = intval(getsess("view_test_flag"));
 
     global $body;
     $body = "";
@@ -263,7 +268,7 @@ function get_questions () {
 }
 
 function get_application ($app_id) {
-    $q = query ("select ts, username, val, access_code"
+    $q = query ("select ts, username, val, access_code, fest_year, test_flag"
                 ." from json"
                 ." where app_id = ?"
                 ." order by ts",
@@ -272,10 +277,14 @@ function get_application ($app_id) {
     $curvals = array ();
     $patches = array ();
     $access_code = NULL;
+    $fest_year = 0;
+    $test_flag = 0;
     while (($r = fetch ($q)) != NULL) {
         if (strncmp ($r->val, "{", 1) == 0) {
             $curvals = json_decode ($r->val, TRUE);
             $access_code = $r->access_code;
+            $fest_year = intval($r->fest_year);
+            $test_flag = intval($r->test_flag);
         } else {
             $p_arr = json_decode ($r->val, TRUE);
             $before_vals = array ();
@@ -303,6 +312,8 @@ function get_application ($app_id) {
     }
 
     $application = (object)NULL;
+    $application->fest_year = $fest_year;
+    $application->test_flag = $test_flag;
     $application->access_code = $access_code;
     $application->curvals = $curvals;
     $application->patches = $patches;

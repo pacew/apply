@@ -309,6 +309,10 @@ if ($username) {
           ." show all questions";
     $body .= "</div>\n";
 
+    $body .= sprintf ("<div>year %d test %d</div>\n",
+                      $application->fest_year,
+                      $application->test_flag);
+
     $body .= "</div>\n";
 }
 
@@ -402,8 +406,7 @@ foreach ($questions as $question) {
             if ($cur) {
                 if (name_to_id ($cur) == 0) {
                     $body .= "<span class='initial_attention attention'>"
-                        ."not found in NEFFA database</span>"
-                        ."</span>\n";
+                          ."not found in NEFFA database</span>";
                 } else {
                     $body .= "<span class='initial_attention attention_good'>matched in database!</span>";
                 }
