@@ -68,7 +68,7 @@ if ($arg_send_email) {
     
     $t = sprintf ("index.php?app_id=%d", $arg_app_id);
     $body .= mklink ("back to application", $t);
-    pfinsh ();
+    pfinish ();
 }
 
 $body .= "<form action='confirm.php'>\n";
