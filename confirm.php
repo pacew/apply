@@ -3,6 +3,7 @@
 require_once("app.php");
 
 $arg_app_id = trim (@$_REQUEST['app_id']);
+$arg_send_email = intval (@$_REQUEST['send_email']);
 
 pstart ();
 
@@ -53,22 +54,49 @@ for ($idx = 0; $idx < count ($placeholders); $idx++) {
     }
 }
 
-$text = strip_tags ($html);
 
-$to = $curvals['email'];
-$subject = "NEFFA access code";
+$args = (object)NULL;
+$args->to_email = trim (strtolower ($curvals['email']));
+$args->subject = "NEFFA access code";
+$args->body_html = $html;
+$args->body_text = strip_tags ($html);
 
+if ($arg_send_email) {
+    send_email ($args);
 
-$body .= sprintf ("<p>To: %s</p>\n", h($to));
-$body .= sprintf ("<p>Subject: %s</p>\n", h($subject));
-
-$body .= $html;
-
-if (0) {
-    $body .= "<pre>\n";
-    $body .= $text;
-    $body .= "</pre>\n";
+    $body .= "<p>Sent</p>\n";
+    
+    $t = sprintf ("index.php?app_id=%d", $arg_app_id);
+    $body .= mklink ("back to application", $t);
+    pfinsh ();
 }
+
+$body .= "<form action='confirm.php'>\n";
+$body .= "<input type='hidden' name='send_email' value='1' />\n";
+$body .= sprintf ("<input type='hidden' name='app_id' value='%d' />\n", 
+                  $arg_app_id);
+$body .= "<button type='submit' onclick='return false' style='display:none'>"
+      ."</button>\n";
+
+$body .= sprintf ("<input type='submit' value='Send this email to %s' />\n",
+                  h($args->to_email));
+
+$t = sprintf ("index.php?app_id=%d", $arg_app_id);
+$body .= mklink ("[cancel]", $t);
+
+$body .= "</form>\n";
+
+$body .= sprintf ("<p>To: %s</p>\n", h($args->to_email));
+$body .= sprintf ("<p>Subject: %s</p>\n", h($args->subject));
+
+$body .= $args->body_html;
+
+$body .= "<hr/>\n"; 
+
+$body .= "<pre>\n";
+$body .= h($args->body_text);
+$body .= "</pre>\n";
+
 
 
 

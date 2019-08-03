@@ -112,9 +112,8 @@ do_commits ();
 if (($application = get_application ($app_id)) == NULL)
     fatal ("can't re-read application");
 
-
-
 $to_email = trim (strtolower ($application->curvals['email']));
+
 if (! preg_match ("/\S+@\S+\.\S+/", $to_email)) {
     $body .= "<p>BAD EMAIL</p>\n";
     $want_email = 0;
@@ -178,10 +177,9 @@ $plain = $heading . "\n\n"
        .$msg3 . "\n";
 
 if (! $want_email) {
-    if ($email_count >= $email_limit) 
     $body .= "<p>[admin: saving without sending email ... here's what"
           ." would have been sent]</p>\n";
-
+    
     $body .= "<div class='html_email'>\n";
     $body .= sprintf ("<pre>To: %s\n"
                       ."Subject: %s</pre>\n", $to_email, $subject);
@@ -199,50 +197,13 @@ if (! $want_email) {
 }
     
 
-// require_once ("libphp-phpmailer/autoload.php");
+$args = (object)NULL;
+$args->to_email = $to_email;
+$args->subject = $subject;
+$args->body_html = $html;
+$args->body_text = $plain;
 
-$path = sprintf ("%s/PHPMailer/src", dirname($cfg['src_dir']));
-require_once($path . "/Exception.php");
-require_once($path . "/PHPMailer.php");
-require_once($path . "/SMTP.php");
-use PHPMailer\PHPMailer\PHPMailer;
-
-$q = query ("select val"
-            ." from vars"
-            ." where var = 'smtp_cred'");
-if (($r = fetch ($q)) == NULL)
-    fatal ("no smtp credentials");
-$smtp_cred = $r->val;
-$arr = preg_split ('/ /', $smtp_cred);
-$smtp_user = $arr[0];
-$smtp_password = $arr[1];
-    
-$mail = new PHPMailer;
-$mail->isSMTP();
-$mail->Host = 'email-smtp.us-east-1.amazonaws.com';
-    $mail->Username = $smtp_user;
-$mail->Password = $smtp_password;
-$mail->SMTPAuth = true;
-$mail->SMTPSecure = 'tls';
-$mail->Port = 587;
-
-$mail->setFrom('applications@neffa.org', 'NEFFA Applications');
-$mail->addAddress($to_email);
-$mail->Subject = $subject;
-
-$mail->Body = $html;
-$mail->isHTML(true);
-$mail->AltBody = preg_replace("/\\n/", "\r\n", $plain);
-
-query ("insert into email_history (email, sent) values (?, current_timestamp)",
-       $to_email);
-do_commits ();
-
-
-if(!$mail->send()) {
-    fatal ("Application submitted, but error sending confirmation email: "
-           . $mail->ErrorInfo);
-}
+send_email ($args);
 
 $t = sprintf ("thanks.php?a=%s", rawurlencode ($application->access_code));
 

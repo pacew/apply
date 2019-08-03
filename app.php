@@ -412,6 +412,54 @@ function active_question ($question_id, $curvals) {
     return (TRUE);
 }
 
+// require_once ("libphp-phpmailer/autoload.php");
+$path = sprintf ("%s/PHPMailer/src", dirname($cfg['src_dir']));
+require_once($path . "/Exception.php");
+require_once($path . "/PHPMailer.php");
+require_once($path . "/SMTP.php");
+use PHPMailer\PHPMailer\PHPMailer;
+
+function send_email ($args) {
+    if (($smtp_cred = getvar ("smtp_cred")) == "")
+        fatal ("no smtp credentials");
+        
+    $arr = preg_split ('/ /', $smtp_cred);
+    $smtp_user = $arr[0];
+    $smtp_password = $arr[1];
+    
+    $mail = new PHPMailer;
+    $mail->isSMTP();
+    $mail->Host = 'email-smtp.us-east-1.amazonaws.com';
+    $mail->Username = $smtp_user;
+    $mail->Password = $smtp_password;
+    $mail->SMTPAuth = true;
+    $mail->SMTPSecure = 'tls';
+    $mail->Port = 587;
+
+    $mail->setFrom('applications@neffa.org', 'NEFFA Applications');
+    $mail->addAddress($args->to_email);
+    $mail->Subject = $args->subject;
+
+    $mail->Body = $args->body_html;
+    $mail->isHTML(true);
+
+    $mail->AltBody = preg_replace("/\\n/", "\r\n", $args->body_text);
+
+    query ("insert into email_history (email, sent)"
+           ." values (?, current_timestamp)",
+           $args->to_email);
+    do_commits ();
+
+    if(!$mail->send()) {
+        fatal ("Application submitted, but error sending confirmation email: "
+               . $mail->ErrorInfo);
+    }
+
+    return (TRUE);
+}
+
+
+
 if (! get_option ("flat") && ! @$cli_mode) {
     require (router());
     /* NOTREACHED */
