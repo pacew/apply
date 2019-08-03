@@ -138,9 +138,11 @@ if ($email_count >= $email_limit) {
     redirect ($t);
 }
 
-$subject = "NEFFA 2019 Performer application confirmation";
+$subject = sprintf ("NEFFA %d Performer application confirmation",
+                    $submit_year);
 
-$heading = "Thanks for submitting your NEFFA 2019 Performer application";
+$heading = sprintf ("Thanks for submitting your NEFFA %d Performer application",
+                    $submit_year);
 
 $msg1 = "You can use the following link to review the data that you"
       ." submitted.  You can't change any of the answers until"

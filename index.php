@@ -24,6 +24,11 @@ if ($arg_app_id) {
           ."]"
           ."</div>\n";
     $application = get_application ($arg_app_id);
+    if ($application->fest_year != $submit_year) {
+        $title_html = sprintf ("Previous year app %d %s",
+                               $application->fest_year,
+                               $application->test_flag ? "(test)" : "");
+    }
 }
 
 $body .= sprintf ("<script>\n");
@@ -309,9 +314,11 @@ if ($username) {
           ." show all questions";
     $body .= "</div>\n";
 
-    $body .= sprintf ("<div>year %d test %d</div>\n",
-                      $application->fest_year,
-                      $application->test_flag);
+    if ($application) {
+        $body .= sprintf ("<div>year %d test %d</div>\n",
+                          $application->fest_year,
+                          $application->test_flag);
+    }
 
     $body .= "</div>\n";
 }

@@ -30,7 +30,7 @@ default:
     break;
 }
 
-$title_html = "NEFFA Performer Application 2019";
+$title_html = sprintf ("NEFFA Performer Application %d", $submit_year);
 $username = "";
 
 function pstart () {
@@ -124,7 +124,8 @@ function pfinish () {
 
     $pg .= "<div class='content'>\n";
 
-    $pg .= "<h1 class='banner_title'>2019 Performer Application</h1>\n";
+    $pg .= sprintf ("<h1 class='banner_title'>%s</h1>\n",
+                    $title_html);
 
     echo ($pg);
     $pg = "";
