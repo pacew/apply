@@ -292,10 +292,13 @@ if ($username) {
 
     if (isset ($application->access_code)) {
         $body .= " | ";
-        $t = sprintf (
-            "thanks.php?a=%s", 
-            rawurlencode ($application->access_code));
+        $t = sprintf ("thanks.php?a=%s", 
+                      rawurlencode ($application->access_code));
         $body .= mklink ("[view thanks page]", $t);
+
+        $body .= " | ";
+        $t = sprintf ("confirm.php?app_id=%d", $arg_app_id);
+        $body .= mklink ("[view confirm page]", $t);
     }    
 
     $body .= "<div>testing options</div>\n";
