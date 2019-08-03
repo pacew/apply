@@ -23,43 +23,7 @@ $arg_view_csv = intval (@$_REQUEST['view_csv']);
 $arg_download_csv = intval (@$_REQUEST['download_csv']);
 $arg_app_id = intval (@$_REQUEST['app_id']);
 
-$apps = array ();
-
-$q = query ("select app_id, val"
-            ." from json"
-            ." where fest_year = ?"
-            ."   and test_flag = ?"
-            ." order by app_id, ts",
-            array ($view_year, $view_test_flag));
-while (($r = fetch ($q)) != NULL) {
-    $app_id = intval ($r->app_id);
-
-    if (! $show_test_data && $app_id < $first_prod_app_id)
-        continue;
-
-    if (strncmp ($r->val, "{", 1) == 0) {
-        $app = (object)NULL;
-        $app->app_id = $app_id;
-        $app->curvals = json_decode ($r->val, TRUE);
-        if ($app->curvals == NULL) {
-            $curvals = array();
-            $oops = sprintf ("oops%d", $app_id);
-            $curvals['name'] = $oops;
-            $curvals['email'] = $oops;
-            $curvals['app_category'] = $oops;
-            $curvals['dance_style'] = $oops;
-            $app->curvals = $curvals;
-        }
-        $apps[$app_id] = $app;
-    } else {
-        $patch = json_decode ($r->val, TRUE);
-        if (($app = @$apps[$app_id]) != NULL) {
-            $app->curvals = mikemccabe\JsonPatch\JsonPatch::patch(
-                $app->curvals,
-                $patch);
-        }
-    }
-}
+$apps = get_applications ();
 
 $evid_info = array ();
 

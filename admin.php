@@ -107,32 +107,16 @@ $body .= "<button type='submit' onclick='return false' style='display:none'>"
 $body .= "<input type='submit' value='Refresh performer index' />\n";
 $body .= "</form>\n";
 
-if ($options['db'] == "postgres") {
-    $ts_col = "to_char (ts, 'YYYY-MM-DD HH24:MI:SS') as ts";
-} else {
-    $ts_col = "ts";
-}
+$apps = get_applications ();
 
-$q = query ("select app_id, $ts_col,"
-            ."   username, val, attention, fest_year, test_flag"
-            ." from json"
-            ." where fest_year = ?"
-            ."   and test_flag = ?"
-            ." order by app_id, ts",
-            array ($view_year, $view_test_flag));
+//$q = query ("select app_id, $ts_col,"
+//            ."   username, val, attention, fest_year, test_flag"
 
 $rows = array ();
-while (($r = fetch ($q)) != NULL) {
-    if (! $show_test_data && $r->app_id < $first_prod_app_id)
-        continue;
+foreach ($apps as $app) {
+    $target = sprintf ("index.php?app_id=%d", $app->app_id);
 
-    $target = sprintf ("index.php?app_id=%d", $r->app_id);
-
-    /* ignore patches */
-    if (strncmp ($r->val, "[", 1) == 0)
-        continue;
-
-    if ($r->attention) {
+    if ($app->attention) {
         $css = "attention";
     } else {
         if ($arg_just_new)
@@ -140,17 +124,28 @@ while (($r = fetch ($q)) != NULL) {
         $css = "";
     }
     $cols = array ();
-    $cols[] = $r->fest_year;
-    $cols[] = $r->test_flag;
-    $cols[] = mklink_span ($r->app_id, $target, $css);
-    $cols[] = mklink_span ($r->ts, $target, $css);
+    $cols[] = mklink_span ($app->app_id, $target, $css);
+    $cols[] = mklink_span ($app->ts, $target, $css);
 
     $txt = "";
-    $val = @json_decode ($r->val, TRUE);
-    $txt = sprintf ("%s / %s", h(@$val['name']), h(@$val['event_title']));
+    $curvals = $app->curvals;
+    $sep = "";
+    if (@$curvals['group_name']) {
+        $txt .= sprintf ("%sG: %s", $sep, h($curvals['group_name']));
+        $sep = "<br/>";
+    }
+    if (@$curvals['event_title']) {
+        $txt .= sprintf ("%sT: %s", $sep, h($curvals['event_title']));
+        $sep = "<br/>";
+    }
+    if (@$curvals['name']) {
+        $txt .= sprintf ("%sN: %s", $sep, h($curvals['name']));
+        $sep = "<br/>";
+    }
+    
     $cols[] = $txt;
 
-    $t = sprintf ("download.php?view_csv=1&app_id=%d", $r->app_id);
+    $t = sprintf ("download.php?view_csv=1&app_id=%d", $app->app_id);
     $cols[] = mklink ("raw data", $t);
 
     $rows[] = $cols;
@@ -159,7 +154,7 @@ while (($r = fetch ($q)) != NULL) {
 if (count ($rows) == 0) {
     $body .= "<p>no data to display</p>\n";
 } else {
-    $body .= mktable (array ("year", "test", "app_id", "ts", "name / title", ""),
+    $body .= mktable (array ("app_id", "ts", "group /title / name", ""),
     $rows);
 }
 

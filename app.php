@@ -15,21 +15,6 @@ $last_year = $cur_year - 1;
 $submit_year = $cur_year;
 $submit_test_flag = 1;
 
-switch ($cfg['conf_key']) {
-case "pace":
-    $show_test_data = 1;
-    $first_prod_app_id = 105;
-    break;
-case "aws":
-    $show_test_data = 0;
-    $first_prod_app_id = 116;
-    break;
-default:
-    $show_test_data = 1;
-    $first_prod_app_id = 0;
-    break;
-}
-
 $title_html = sprintf ("NEFFA Performer Application %d", $submit_year);
 $username = "";
 
@@ -279,6 +264,55 @@ function get_questions () {
         }
     }
     return ($questions);
+}
+
+function get_applications () {
+    global $view_year, $view_test_flag;
+    
+    $apps = array ();
+
+    if (get_option("db") == "postgres") {
+        $ts_col = "to_char (ts, 'YYYY-MM-DD HH24:MI:SS') as ts";
+    } else {
+        $ts_col = "ts";
+    }
+
+    $q = query ("select app_id, val, attention, $ts_col"
+                ." from json"
+                ." where fest_year = ?"
+                ."   and test_flag = ?"
+                ." order by app_id, ts",
+                array ($view_year, $view_test_flag));
+    while (($r = fetch ($q)) != NULL) {
+        $app_id = intval ($r->app_id);
+
+        if (strncmp ($r->val, "{", 1) == 0) {
+            $app = (object)NULL;
+            $app->app_id = $app_id;
+            $app->attention = intval($r->attention);
+            $app->ts = $r->ts;
+            $app->curvals = json_decode ($r->val, TRUE);
+            if ($app->curvals == NULL) {
+                $curvals = array();
+                $oops = sprintf ("oops%d", $app_id);
+                $curvals['name'] = $oops;
+                $curvals['email'] = $oops;
+                $curvals['app_category'] = $oops;
+                $curvals['dance_style'] = $oops;
+                $app->curvals = $curvals;
+            }
+            $apps[$app_id] = $app;
+        } else {
+            $patch = json_decode ($r->val, TRUE);
+            if (($app = @$apps[$app_id]) != NULL) {
+                $app->curvals = mikemccabe\JsonPatch\JsonPatch::patch(
+                    $app->curvals,
+                    $patch);
+            }
+        }
+    }
+
+    return ($apps);
 }
 
 function get_application ($app_id) {
