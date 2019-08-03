@@ -413,9 +413,14 @@ foreach ($questions as $question) {
             if ($cur) {
                 if (name_to_id ($cur) == 0) {
                     $body .= "<span class='initial_attention attention'>"
-                          ."not found in NEFFA database</span>";
+                          ."not found in NEFFA database</span>\n";
+                    $t = sprintf ("admin.php?refresh_idx=1&return_to_app=%d",
+                                  $arg_app_id);
+                    if ($username)
+                        $body .= mklink ("[refresh]", $t);
                 } else {
-                    $body .= "<span class='initial_attention attention_good'>matched in database!</span>";
+                    $body .= "<span class='initial_attention attention_good'>"
+                          ."matched in database!</span>";
                 }
             }
         }

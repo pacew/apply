@@ -9,6 +9,7 @@ $arg_just_new = intval (@$_REQUEST['just_new']);
 $arg_set_year = intval (@$_REQUEST['set_year']);
 $arg_desired_year = intval (@$_REQUEST['desired_year']);
 $arg_desired_test_flag = intval (@$_REQUEST['desired_test_flag']);
+$arg_return_to_app = intval (@$_REQUEST['return_to_app']);
 
 if ($arg_set_year == 1) {
     $view_year = $arg_desired_year;
@@ -20,7 +21,7 @@ if ($arg_set_year == 1) {
 }
 
 if ($arg_refresh_idx) {
-    $cmd = sprintf ("sh -c 'cd %s; ./mkindex'", $cfg['srcdir']);
+    $cmd = sprintf ("sh -c 'cd %s; ./mkindex 2>&1'", $cfg['src_dir']);
     $body .= sprintf ("<div>running %s</div>\n", h($cmd));
     $val = exec ($cmd, $output, $rc);
     if ($rc != 0) {
@@ -30,9 +31,15 @@ if ($arg_refresh_idx) {
     $body .= h(implode ("\n", $output));
     $body .= "</pre>\n";
 
-    $body .= sprintf (
-        "<div>%s</div>\n", 
-        mklink ("back to admin page", "admin.php"));
+    $body .= "<div>\n";
+    if ($arg_return_to_app) {
+        $text = sprintf ("back to application %d", $arg_return_to_app);
+        $t = sprintf ("index.php?app_id=%d", $arg_return_to_app);
+        $body .= mklink ($text, $t);
+    } else {
+        $body .= mklink ("back to admin page", "admin.php");
+    }
+    $body .= "</div>\n";
     pfinish ();
 }
 
