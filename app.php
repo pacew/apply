@@ -45,7 +45,10 @@ function pstart () {
         putsess ("view_year", $view_year);
     }
     global $view_test_flag;
-    $view_test_flag = intval(getsess("view_test_flag"));
+    $val = getsess("view_test_flag");
+    if ($val === NULL)
+        $val = 1;
+    $view_test_flag = intval($val);
 
     global $body;
     $body = "";
