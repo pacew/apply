@@ -6,6 +6,16 @@ ini_set ("pcre.jit", 0);
 require_once ($_SERVER['PSITE_PHP']);
 require_once ($_SERVER['APP_ROOT'] . "/JsonPatch.php");
 
+
+if (@$_SERVER['HTTPS'] == "" && @$cfg['ssl_url'] != "") {
+    $url = preg_replace ('|/$|', '', $cfg['ssl_url']);
+    $path = preg_replace ('|^/|', '', $_SERVER['REQUEST_URI']);
+    $t = sprintf ("%s/%s", $url, $path);
+    header ("Location: $t");
+    exit ();
+}
+
+
 $cur_year = intval(strftime("%Y"));
 if (strftime("%m") > 6) {
     $cur_year++;
