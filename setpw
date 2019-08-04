@@ -3,15 +3,12 @@
 
 require_once ("cli.php");
 
-$pw1 = trim (readline ("New admin password: "));
-$pw2 = trim (readline ("Again: "));
-
-if (strcmp ($pw1, $pw2) != 0) {
-    printf ("mismatch\n");
-    exit(1);
+if (($pw = @$argv[1]) == "") {
+    printf ("usage: setpw password\n");
+    exit (1);
 }
 
-setvar ("admin_passwd", password_hash ($pw1, PASSWORD_DEFAULT));
+setvar ("admin_passwd", password_hash ($pw, PASSWORD_DEFAULT));
 do_commits ();
 
 
