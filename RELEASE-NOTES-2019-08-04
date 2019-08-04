@@ -1,0 +1,92 @@
+All of the core items on the TODO list are finished.  During August,
+Pace will do some more QA testing and possibly minor tweaks to display
+formatting, but it should be ready to present a very similar
+experience to applicants as last year, and to give Jon all the new
+features he requested.  (The organization of the admin interface is
+almost identical to last year, which is to say, it has not evolved all
+that logically.  Making that better can be a project for next year!)
+
+Jon should do some basic testing, and optionally invite others to
+also.  Pace will be at Pinewoods Aug 10..17, but available before and
+after for tweaks.
+
+Pace will ask 3 or 4 people to make beta test applications during the
+week of Aug 25 for final testing, and the system will be ready for the
+application window to open any time from Sept 1.  To actually open the
+application window, Pace needs to throw a switch in the program to
+make applications start going into the production bucket.
+
+The url that should be used in all promotional materials is
+
+    https://apply.neffa.org
+
+Until Seth gets back and tweaks the dreamhost configuration, you'll
+see url's that look like https://www.apply.neffa.org/... (with www
+added).  These work, but we'll eventually suppress showing it that
+way.  This mainly means you need to be extra careful right now not to just
+copy a link out of your location bar if you're using it in an
+announcement message or something.
+
+Also, note that it will work if someone goes to http://apply.neffa.org
+(using http instead of https).  The system will automatically redirect
+to the secure https version, but again, let's not publish it the wrong
+way. 
+
+Jon should email Pace updated text where needed for:
+
+* the instructions at the top of the application
+
+* the thanks message (visible, for example, at
+https://apply.neffa.org/thanks.php?a=89yaq777 )
+
+* the confirm message (visible, for example, at
+https://www.apply.neffa.org/confirm.php?app_id=638 )
+  
+* the list of questions
+
+I'm append a summary of all the changes I made.  You don't need to
+read that stuff unless you're curious about the details - I'm just
+collecting them here to remember what was done.
+
+Pace
+
+
+================================================================
+
+Many changes to database interface and auxiliary programs to allow
+running on non-root dreamhost server.  Migrate 2019 data to mysql.
+
+Change "From" address for emails to applications@neffa.org
+
+Add facility to switch view between prior year and current year data,
+and between test and production data.  The current settings and a
+button for changing them are shown at the top of the page listing
+applications.  When you first login, it will show test data for the
+2020 festival.  Once the application window opens, I'll change the
+default to be production data.  I don't know if keeping last year's
+data available after new applications are coming in is a net plus - it
+may be useful to refer back, but it may cause confusion.  I can make
+it harder or impossible to access if desired.
+ 
+On the list of all applications, add Group Name when relevant and
+improve display.
+
+Add ability to email confirmation with pcode.  Accessed via a link
+called "view confirm page" in the pink box at the top of the admin
+view of an application.
+
+When the "not found in NEFFA database" message is shown next to a
+performer or group name, add a link "[refresh]" which fetches fresh
+data from the master neffa database.  You'll get used to the normal
+output when you do that.  If it gets you an error message, Pace can
+look into it.
+
+Added NEFFA branding
+
+Fix static references to 2019 festival (and make them use the current
+year, plus 1 if necessary, so there will be less to change in future years).
+
+Remove json download options
+
+Display the page generation time in the upper left corner (only when
+logged in) so Pace can monitor performance ... you can ignore it.
