@@ -92,6 +92,14 @@ function pfinish () {
 
     $pg .= "<body>\n";
 
+    $pg .= "<header id='masthead'>\n";
+    $pg .= "<div class='site-branding'>\n";
+    $pg .= "<a href='https://www.neffa.org/'>";
+    $pg .= "<img src='https://www.neffa.org/wp-content/uploads/2017/11/logo-neffa-white.svg' alt='NEFFA' />\n";
+    $pg .= "</a>\n";
+    $pg .= "</div>\n"; /* site-branding */
+    $pg .= "</header>\n";
+
     $pg .= "<div class='banner'>\n";
     $pg .= "<div class='login_link'>";
     $pg .= "<span class='nav'>\n";

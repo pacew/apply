@@ -154,7 +154,7 @@ foreach ($apps as $app) {
 if (count ($rows) == 0) {
     $body .= "<p>no data to display</p>\n";
 } else {
-    $body .= mktable (array ("app_id", "ts", "group /title / name", ""),
+    $body .= mktable (array ("app_id", "ts", "group / title / name", ""),
     $rows);
 }
 
