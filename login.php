@@ -10,7 +10,7 @@ $arg_username = trim (@$_REQUEST['username']);
 $arg_password = trim (@$_REQUEST['password']);
 
 if ($arg_username) {
-    if ($arg_password == "streamlined") {
+    if (password_verify ($arg_password, getvar ("admin_passwd"))) {
         putsess ("username2", $arg_username);
         putsess ("admin", 1);
         redirect ("admin.php");

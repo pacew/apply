@@ -7,7 +7,9 @@ require_once ($_SERVER['PSITE_PHP']);
 require_once ($_SERVER['APP_ROOT'] . "/JsonPatch.php");
 
 
-if (@$_SERVER['HTTPS'] == "" && @$cfg['ssl_url'] != "") {
+if (! @$cli_mode 
+    && @$_SERVER['HTTPS'] == "" 
+    && @$cfg['ssl_url'] != "") {
     $url = preg_replace ('|/$|', '', $cfg['ssl_url']);
     $path = preg_replace ('|^/|', '', $_SERVER['REQUEST_URI']);
     $t = sprintf ("%s/%s", $url, $path);
