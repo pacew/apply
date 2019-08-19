@@ -9,8 +9,31 @@ $arg_show_all = intval (@$_REQUEST['show_all']);
 
 pstart ();
 
-if (0) {
-    $body .= "<div id='more_below'>More below (click to scroll)...</div>\n";
+
+$system_mode = getvar ("system_mode");
+
+$system_open = 0;
+if ($username)
+    $system_open = 1;
+
+if (getsess ("beta_tester"))
+    $system_open = 1;
+
+if (! $system_open) {
+    $body .= "<p>The application period for the"
+          ." 2020 New England Folk Festival has not yet opened.</p>\n";
+    $body .= "<p>Please watch ";
+    $t="https://www.neffa.org/folk-festival/new-england-folk-festival-2020/";
+    $body .= mklink ($t, $t);
+    $body .= " for announcements.</p>\n";
+    
+    $body .= "<div>If you are a beta tester,"
+          ." enter your access code here:</div>\n";
+    $body .= "<form action='beta.php'>\n";
+    $body .= "<input type='password' name='access_code' />\n";
+    $body .= "<input type='submit' value='login' />\n";
+    $body .= "</form>\n";
+    pfinish ();
 }
 
 $questions = get_questions ();

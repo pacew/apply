@@ -30,6 +30,23 @@
     line-height: 1.2;
 }
 
+.flash {
+    background: #fcc;
+    margin: 1em 2em;
+    padding: .5em;
+    border: 2px solid #a33;
+    color: #a33;
+}
+
+.beta_banner {
+    background: #fcc;
+    color: #a33;
+    padding: .5em;
+    font-weight: bold;
+    font-size: 120%;
+    border: 2px solid #a33;
+}
+
 a {
     text-decoration: none;
 }
@@ -280,3 +297,4 @@ p {
 .site-branding {
     width: 220px;
 }
+

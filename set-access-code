@@ -1,0 +1,14 @@
+#! /usr/bin/php
+<?php
+
+require_once ("cli.php");
+
+if (($pw = @$argv[1]) == "") {
+    printf ("usage: set-access-code password\n");
+    exit (1);
+}
+
+setvar ("access_code", password_hash ($pw, PASSWORD_DEFAULT));
+do_commits ();
+
+

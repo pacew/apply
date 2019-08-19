@@ -59,6 +59,14 @@ function pstart () {
     if (! @$anon_ok && $username == "") {
         redirect ("login.php");
     }
+
+    $flash = trim (@$_SESSION['flash']);
+    @$_SESSION['flash'] = "";
+    if ($flash) {
+		$body .= "<div class='flash'>";
+		$body .= $flash;
+		$body .= "</div>\n";
+	}
 }
 
 function pfinish () {
@@ -87,8 +95,6 @@ function pfinish () {
         ." href='https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css'>\n";
     $pg .= "<script src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js'></script>\n";
     
-    $pg .= "<script type='text/javascript' src='https://www.neffa.org/wp-content/themes/NEFFA_2017/js/Iframe-Resize/iframeResizer.contentWindow.min.js'></script>\n";
-
     global $cfg;
     $pg .= "<script>\n";
     $pg .= sprintf ("var cfg = %s;\n", json_encode ($cfg));
@@ -115,20 +121,35 @@ function pfinish () {
     $pg .= "<div class='banner'>\n";
     $pg .= "<div class='login_link'>";
     $pg .= "<span class='nav'>\n";
+
+    $pg .= "[";
+
     global $username;
     if (@$username == "") {
-        $pg .= "<a class='login_anchor' target='_blank' href='login.php'>[ admin login ]</a>";
+        $pg .= "<a class='login_anchor' target='_blank' href='login.php'>"
+            ."admin login</a>";
     } else {
-        $pg .= "[ ";
         $pg .= "<a href='admin.php'>applications</a>";
+    }
+
+    if (@$username || getsess ("beta_tester")) {
         $pg .= " | ";
         $pg .= "<a href='logout.php'>logout</a>";
-        $pg .= " ]";
     }
+    $pg .= "]";
+    
     $pg .= "</span>\n";
     $pg .= "</div>\n";
     $pg .= "<div style='clear:both'></div>\n";
     $pg .= "</div>\n";
+
+    global $submit_test_flag;
+
+    if ($submit_test_flag) {
+        $pg .= "<div class='beta_banner'>\n";
+        $pg .= "TESTING MODE ... SUBMITTED DATA WILL NOT BE PROCESSED";
+        $pg .= "</div>\n";
+    }
 
     $pg .= "<div class='content'>\n";
 
