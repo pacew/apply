@@ -9,32 +9,68 @@ $arg_show_all = intval (@$_REQUEST['show_all']);
 
 pstart ();
 
-
 $system_mode = getvar ("system_mode");
 
-$system_open = 0;
-if ($username)
-    $system_open = 1;
+$body .= "<p>Welcome NEFFA Applicant!</p>\n";
 
-if (getsess ("beta_tester"))
-    $system_open = 1;
-
-if (! $system_open) {
-    $body .= "<p>The application period for the"
-          ." 2020 New England Folk Festival has not yet opened.</p>\n";
-    $body .= "<p>Please watch ";
-    $t="https://www.neffa.org/folk-festival/new-england-folk-festival-2020/";
-    $body .= mklink ($t, $t);
-    $body .= " for announcements.</p>\n";
-    
-    $body .= "<div>If you are a beta tester,"
-          ." enter your access code here:</div>\n";
-    $body .= "<form action='beta.php'>\n";
-    $body .= "<input type='password' name='access_code' />\n";
-    $body .= "<input type='submit' value='login' />\n";
-    $body .= "</form>\n";
-    pfinish ();
+if ($cfg['conf_key'] != "production") {
+    $body .= sprintf ("<p>effective time %s</p>\n", 
+                      strftime ("%Y-%m-%d %H:%M:%S", $effective_time));
 }
+
+$body .= "<p>Information about the festival is available at ";
+$t="https://www.neffa.org/folk-festival/new-england-folk-festival-2020/";
+$body .= mklink ($t, $t);
+$body .= "</p>\n";
+    
+if ($deadline_status == 0) {
+    $body .= sprintf ("<p><strong>"
+                      ."Applications may be submitted starting %s"
+                      ."</strong></p>\n",
+                      strftime ("%B %e", $app_window_start));
+
+    if (! $username && ! getsess ("beta_tester")) {
+        $body .= "<div>If you are a beta tester,"
+              ." enter your access code here:</div>\n";
+        $body .= "<form action='beta.php'>\n";
+        $body .= "<input type='password' name='access_code' />\n";
+        $body .= "<input type='submit' value='login' />\n";
+        $body .= "</form>\n";
+        pfinish ();
+    }
+}
+
+
+function deadline_msg ($end) {
+    global $effective_time;
+
+    $msg = strftime ("%B %e", $end);
+    if ($effective_time > $end)
+        $msg .= " <span class='attention'>(past)</span>";
+
+    return ($msg);
+}
+
+$body .= "<h2>Timeline</h2>\n";
+
+$rows = array ();
+
+$cols = array ();
+$cols[] = "<strong>General</strong>";
+$cols[] = deadline_msg ($general_app_close);
+$rows[] = $cols;
+
+$cols = array ();
+$cols[] = "<strong>Dance performances</strong>";
+$cols[] = deadline_msg ($dance_app_close);
+$rows[] = $cols;
+
+$cols = array ();
+$cols[] = "<strong>Ritual/Morris dance</strong>";
+$cols[] = deadline_msg ($ritual_app_close);
+$rows[] = $cols;
+
+$body .= mktable (array ("Type", "Applications accepted until"), $rows);
 
 $questions = get_questions ();
 
@@ -418,6 +454,11 @@ foreach ($questions as $question) {
 
             $body .= sprintf (" <span class='debug'>%s</span>\n",
                               h($choice['val']));
+
+            if (@$choice['deadline'] && $choice['deadline'] < $deadline_status) {
+                $body .= " <span class='attention'>(deadline passed)</span>";
+            }
+
             $body .= "</div>\n";
         }
 

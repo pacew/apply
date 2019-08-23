@@ -25,7 +25,57 @@ if (strftime("%m") > 6) {
 $last_year = $cur_year - 1;
 
 $submit_year = $cur_year;
-$submit_test_flag = 1;
+
+
+function mmdd_to_timestamp ($mmdd, $start_flag) {
+    global $last_year, $cur_year;
+    
+    if (sscanf ($mmdd, "%d/%d", $month, $mday) != 2)
+        fatal (sprintf ("can't parse mmdd %s", $mmdd));
+
+    if ($month > 5)
+        $year = $last_year;
+    else
+        $year = $cur_year;
+    
+    if ($start_flag)
+        $hms = "00:00:00";
+    else
+        $hms = "23:59:59";
+
+    $t = sprintf ("%d-%02d-%02d %s", $year, $month, $mday, $hms);
+    return (strtotime ($t));
+}    
+
+$app_window_start = mmdd_to_timestamp ("9/1", 1);
+$general_app_close = mmdd_to_timestamp ("10/3", 0);
+$dance_app_close = mmdd_to_timestamp ("12/1", 0);
+$ritual_app_close = mmdd_to_timestamp ("1/15", 0);
+
+$effective_time = time ();
+if ($cfg['conf_key'] != "production") {
+    $effective_time = strtotime ("2/10/2020");
+}
+
+
+if ($effective_time < $app_window_start) {
+    $deadline_status = 0;
+} else if ($effective_time < $general_app_close) {
+    $deadline_status = 1;
+} else if ($effective_time < $dance_app_close) {
+    $deadline_status = 2;
+} else if ($effective_time < $ritual_app_close) {
+    $deadline_status = 3;
+} else {
+    $deadline_status = 4;
+}
+
+if ($deadline_status == 0) {
+    $submit_test_flag = 1;
+} else {
+    $submit_test_flag = 0;
+}
+
 
 $title_html = sprintf ("NEFFA Performer Application %d", $submit_year);
 $username = "";
