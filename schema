@@ -15,6 +15,7 @@ col access_code text
 col attention integer
 col fest_year integer
 col test_flag integer
+col confirmed timestamp
 
 table pcodes
 col id integer

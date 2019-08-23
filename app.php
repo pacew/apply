@@ -364,11 +364,13 @@ function get_applications () {
 
     if (get_option("db") == "postgres") {
         $ts_col = "to_char (ts, 'YYYY-MM-DD HH24:MI:SS') as ts";
+        $confirmed_col = "to_char (ts, 'YYYY-MM-DD HH24:MI:SS') as confirmed";
     } else {
         $ts_col = "ts";
+        $confirmed_col = "confirmed";
     }
 
-    $q = query ("select app_id, val, attention, $ts_col"
+    $q = query ("select app_id, val, attention, $ts_col, $confirmed_col"
                 ." from json"
                 ." where fest_year = ?"
                 ."   and test_flag = ?"
@@ -382,6 +384,7 @@ function get_applications () {
             $app->app_id = $app_id;
             $app->attention = intval($r->attention);
             $app->ts = $r->ts;
+            $app->confirmed = $r->confirmed;
             $app->curvals = json_decode ($r->val, TRUE);
             if ($app->curvals == NULL) {
                 $curvals = array();
@@ -407,7 +410,8 @@ function get_applications () {
 }
 
 function get_application ($app_id) {
-    $q = query ("select ts, username, val, access_code, fest_year, test_flag"
+    $q = query ("select ts, username, val, access_code, fest_year, test_flag,"
+                ."   confirmed"
                 ." from json"
                 ." where app_id = ?"
                 ." order by ts",
@@ -418,12 +422,14 @@ function get_application ($app_id) {
     $access_code = NULL;
     $fest_year = 0;
     $test_flag = 0;
+    $confirmed = "";
     while (($r = fetch ($q)) != NULL) {
         if (strncmp ($r->val, "{", 1) == 0) {
             $curvals = json_decode ($r->val, TRUE);
             $access_code = $r->access_code;
             $fest_year = intval($r->fest_year);
             $test_flag = intval($r->test_flag);
+            $confirmed = trim($r->confirmed);
         } else {
             $p_arr = json_decode ($r->val, TRUE);
             $before_vals = array ();
@@ -456,6 +462,7 @@ function get_application ($app_id) {
     $application->access_code = $access_code;
     $application->curvals = $curvals;
     $application->patches = $patches;
+    $application->confirmed = $confirmed;
     return ($application);
 }
 
@@ -511,6 +518,11 @@ require_once($path . "/SMTP.php");
 use PHPMailer\PHPMailer\PHPMailer;
 
 function send_email ($args) {
+    if (preg_match ('/@example.com/', $args->to_email)) {
+        /* skip mail to example.com */
+        return;
+    }
+
     if (($smtp_cred = getvar ("smtp_cred")) == "")
         fatal ("no smtp credentials");
         

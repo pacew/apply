@@ -140,41 +140,38 @@ if ($email_count >= $email_limit) {
 $subject = sprintf ("NEFFA %d Performer application confirmation",
                     $submit_year);
 
-$heading = sprintf ("Thanks for submitting your NEFFA %d Performer application",
-                    $submit_year);
+$msg = sprintf ("<h1>Thanks for submitting your"
+                ." NEFFA %d Performer application</h1>\n",
+                $submit_year);
 
-$msg1 = "You can use the following link to review the data that you"
-      ." submitted.  You can't change any of the answers until"
-      ." we notify you that we've completed the initial processing"
-      ." of your application.  After that, you can use this"
-      ." link to keep your contact information up to date.";
+$msg .= "<p>Your contact point for any questions about this application is ";
+$info_email = "applications@neffa.org";
+$msg .= sprintf ("<a href='mailto:%s'>%s</a>", $info_email, $info_email);
+$msg .= "</p>\n";
+
+$msg .= "<p>You can use the following link to review the data"
+     ." that you submitted:</p>\n";
 
 $target = sprintf ("https://%s/thanks.php?a=%s", 
                    $_SERVER['HTTP_HOST'],
                    rawurlencode ($application->access_code));
 
-$info_email = "applications@neffa.org";
-$msg2_html = sprintf ("If you have any questions, please write "
-                      ."<a href='mailto:%s'>%s</a>",
-                      fix_target ($info_email), h($info_email));
-$msg2_text = sprintf ("If you have any questions, please write %s",
-                      $info_email);
+$msg .= sprintf ("<p><a href='%s'>%s</a></p>", $target, $target);
 
-$msg3 = "If you did not recently submit a NEFFA application,"
+
+$msg .= "<p>Within a few days, you should receive an access code for"
+     ." maintaining your contact information."
+     ." If you do not receive it within a week, please email us.</p>";
+
+
+$msg .= "<p>If you did not recently submit a NEFFA application,"
       ." someone else must have entered your email address"
-      ." into our form.  You can ignore this message.";
+      ." into our form.  You can ignore this message.</p>";
 
-$html = "<h1>" . $heading . "</h1>\n"
-      ."<p>" . $msg1 . "</p>\n"
-      .mklink ($target, $target)
-      ."<p>" . $msg2_html . "</p>\n"
-      ."<p>" . $msg3 . "</p>\n";
-
-$plain = $heading . "\n\n"
-       .$msg1 . "\n\n"
-       .$target . "\n\n"
-       .$msg2_text . "\n\n"
-       .$msg3 . "\n";
+$html = $msg;
+$plain = strip_tags ($html, "<p>");
+$plain = preg_replace (":<p>:", "\n", $plain);
+$plain = preg_replace (":</p>:", "\n", $plain);
 
 if (! $want_email) {
     $body .= "<p>[admin: saving without sending email ... here's what"

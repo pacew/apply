@@ -145,6 +145,8 @@ foreach ($apps as $app) {
     
     $cols[] = $txt;
 
+    $cols[] = h($app->confirmed);
+
     $t = sprintf ("download.php?view_csv=1&app_id=%d", $app->app_id);
     $cols[] = mklink ("raw data", $t);
 
@@ -154,7 +156,7 @@ foreach ($apps as $app) {
 if (count ($rows) == 0) {
     $body .= "<p>no data to display</p>\n";
 } else {
-    $body .= mktable (array ("app_id", "ts", "group / title / name", ""),
+    $body .= mktable (array ("app_id", "ts", "group / title / name", "confirmation", ""),
     $rows);
 }
 

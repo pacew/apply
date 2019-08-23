@@ -29,6 +29,7 @@ if (($r = fetch ($q)) == NULL) {
 }
 
 $curvals['pcode'] = $r->pcode;
+$curvals['festival_year'] = $cur_year;
 
 $html = file_get_contents ("confirm.html");
 
@@ -66,6 +67,10 @@ if ($arg_send_email) {
 
     $body .= "<p>Sent</p>\n";
     
+    query ("update json set confirmed = ? where app_id = ?", 
+           array (strftime ("%Y-%m-%d %H:%M:%S", time()),
+                  $arg_app_id));
+
     $t = sprintf ("index.php?app_id=%d", $arg_app_id);
     $body .= mklink ("back to application", $t);
     pfinish ();

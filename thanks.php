@@ -38,32 +38,50 @@ if (getsess ("admin")) {
 
 
 $body .= "<p>Thank you for applying.  You can review your responses"
-      ." below.  After NEFFA has completed the initial processing"
-      ." of your application, you will be able to use this page to keep your"
-      ." contact information up to date.  You can bookmark this"
-      ." page or save this link:</p>\n";
+    ." below.  If you see any problems, please email ";
+$applications_email = "applications@neffa.org";
+$applications_mailto = sprintf ("mailto:%s", $applications_email);
+$body .= mklink ($applications_email, $applications_mailto);
+$body .= "</p>\n";
 
 $target = sprintf ("https://%s/thanks.php?a=%s", 
                    $_SERVER['HTTP_HOST'],
                    rawurlencode ($application->access_code));
-$body .= sprintf ("<p>%s</p>\n", mklink ($target, $target));
 
-if ($arg_email_suppressed) {
+$body .= "<p>You can bookmark this page and refer to it in the future,"
+      ." in case you need to remember your answers.</p>\n";
+
+if ($arg_email_suppressed == 0) {
+    $body .= "<p>We'll also email you a link to it.</p>\n";
+} else {
     $body .= "<p style='color:red'>"
-          ." Normally, we'd send you email with a copy of this link"
+          ." Normally, we'd send you email with a copy of the link"
+          ." to this page"
           ." but this email address has already been used a number"
-          ." of times.  We are not allowed to send an unlimiited"
+          ." of times.  We are not allowed to send an unlimited"
           ." number of emails to the same address, so you will"
-          ." not receive a message for this particular application."
-          ." So, please be sure to save the access link given above."
+          ." not receive an automatic confirmation"
+          ." for this particular application."
+          ." Please be sure to bookmark this page in case you need it."
           ."</p>\n";
 }
 
-$body .= "<p>If you want to submit an application for another event,"
-      ." please follow this link:</p>\n";
-$target = "https://apply.neffa.org/";
-$body .= sprintf ("<p>%s</p>\n", mklink ($target, $target));
 
+$body .= "<p>Within a few days, the Program Committee will"
+                          ." begin processing of your application and will"
+                          ." send you an email message with"
+                          ." further instructions."
+                          ." If you don't hear anything in a week,"
+                          ." please write to ";
+$body .= mklink ($applications_email, $applications_mailto);
+$body .= "</p>\n";
+    
+
+$body .= "<p>If you want to submit an application for another event,"
+      ." please follow this link:\n";
+$target = "https://apply.neffa.org/";
+$body .= mklink ($target, $target);
+$body .= "</p>\n";
 
 $body .= "<p>Here are the responses you provided:</p>";
 

@@ -360,6 +360,13 @@ if ($username) {
         $body .= mklink ("[view confirm page]", $t);
     }    
 
+    if ($application->confirmed) {
+        $body .= sprintf ("<div>confirmation sent %s</div>\n",
+                          $application->confirmed);
+    } else {
+        $body .= "<div>confirmation not yet sent</div>\n";
+    }
+
     $body .= "<div>testing options</div>\n";
     $body .= "<div>\n";
     $c = "";
