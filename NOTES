@@ -1,3 +1,5 @@
+mysql --login-path=apply-production apply_neffa_org
+
 psite install
 
 ssh neffa (neffapace@ssh.neffa.org)
