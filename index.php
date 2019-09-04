@@ -360,7 +360,7 @@ if ($username) {
         $body .= mklink ("[view confirm page]", $t);
     }    
 
-    if ($application->confirmed) {
+    if (@$application->confirmed) {
         $body .= sprintf ("<div>confirmation sent %s</div>\n",
                           $application->confirmed);
     } else {
