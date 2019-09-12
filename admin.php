@@ -109,7 +109,8 @@ $body .= "</form>\n";
 
 $apps = get_applications ();
 
-$body .= sprintf ("<h2>%d applications</h2>\n", count($apps));
+$body .= sprintf ("<h2>%d applications [%s]</h2>\n", 
+                  count($apps), mklink ("graph", "graph.php"));
 
 //$q = query ("select app_id, $ts_col,"
 //            ."   username, val, attention, fest_year, test_flag"

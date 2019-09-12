@@ -2,10 +2,98 @@
 
 import os
 import sys
+import re
 
-sys.path.append("{}/psite".format(os.environ['HOME']))
+if 'PSITE_DIR' in os.environ:
+    psite_dir = os.environ['PSITE_DIR']
+else:
+    psite_dir = "{}/psite".format(os.environ['HOME'])
+
+sys.path.append(psite_dir)
 
 import psite
+import db
 
+db = db.get_db()
+cur = db['cursor']
 
+data = {}
 
+cur.execute ("select ts, fest_year, val from json where test_flag = 0")
+while True:
+    row = cur.fetchone()
+    if row is None:
+        break
+    (ts, fest_year, val) = row
+    if val[0] != "{":
+        continue
+    pattern = "{}-09-.*".format(fest_year - 1)
+
+    if fest_year not in data:
+        data[fest_year] = {}
+    
+    if ts.year == fest_year - 1 and ts.month == 9:
+        day = ts.day
+        if day not in data[fest_year]:
+            data[fest_year][day] = 0
+        data[fest_year][day] = data[fest_year][day] + 1
+
+cfg = psite.get_cfg()
+
+def data_filename(fest_year):
+    return "{}/TMP.{}.dat".format(cfg['aux_dir'], fest_year)
+
+for fest_year in data.keys():
+    acc = 0
+    filename = data_filename(fest_year)
+    try:
+        os.remove(filename)
+    except:
+        pass
+    with open(filename, "w") as outf:
+        for day in range(1,31):
+            count = 0
+            if day in data[fest_year]:
+                count = data[fest_year][day]
+                acc = acc + count
+                outf.write("{} {}\n".format(day, acc))
+
+gprc = "{}/TMP.gprc".format(cfg['aux_dir'])
+output = "{}/rate.png".format(cfg['aux_dir'])
+
+try:
+    os.remove(gprc)
+except:
+    pass
+
+try:
+    os.remove(output)
+except:
+    pass
+
+with open(gprc, "w") as outf:
+    outf.write("set terminal png\n")
+    outf.write("set output \"{}\"\n".format(output));
+    outf.write ("set term png size 1024, 768\n");
+    
+    outf.write("set style data lines\n")
+    outf.write("set xrange [1:30]\n")
+    outf.write("set xlabel \"date in September\"\n")
+    outf.write("set ylabel \"number of applications\n")
+
+    cmd = "plot "
+    need_comma = False
+    for fest_year in data.keys():
+        if need_comma == True:
+            cmd += ","
+        need_comma = True
+        filename = data_filename(fest_year)
+        cmd += "\"{}\" title '{}'".format(filename, fest_year)
+    cmd += "\n"
+    outf.write(cmd)
+
+cmd = "gnuplot {}".format(gprc)
+print(cmd)
+os.system(cmd)
+
+print(output)
