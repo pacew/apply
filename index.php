@@ -341,6 +341,8 @@ $body .= "<button type='submit' onclick='return false' style='display:none'>"
 if ($username) {
     $body .= "<div class='debug_box'>\n";
 
+    $cfg['all_optional'] = 1; /* will be sent to javascript */
+
     $body .= "<input name='submit' type='submit' value='Save-no-email' />\n";
 
     $body .= mklink ("[admin]", "admin.php");
@@ -368,13 +370,7 @@ if ($username) {
     }
 
     $body .= "<div>testing options</div>\n";
-    $body .= "<div>\n";
-    $c = "";
-    if (getsess ("all_optional"))
-        $c = "checked='checked'";
-    $body .= "<input type='checkbox' $c id='all_optional' />"
-          ." allow submissions with missing required fields";
-    $body .= "</div>\n";
+
     $body .= "<div>\n";
     $c = "";
     if (getsess ("show_all"))
@@ -578,8 +574,5 @@ $body .= "<p><strong>ERROR:</strong> You application can't be"
 $body .= "</div>\n";
 
 $body .= "</form>\n";
-
-
-
 
 pfinish ();

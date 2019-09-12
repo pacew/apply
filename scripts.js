@@ -106,7 +106,7 @@ function is_email_valid (q) {
 }
 
 function valid_response (q) {
-  if ($("#all_optional").is(":checked"))
+  if (cfg['all_optional'])
     return (true);
 
   if (q.show_if) {
