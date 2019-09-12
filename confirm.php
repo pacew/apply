@@ -31,6 +31,8 @@ if (($r = fetch ($q)) == NULL) {
 $curvals['pcode'] = $r->pcode;
 $curvals['festival_year'] = $cur_year;
 
+$curvals['first_name'] = preg_replace ('/^[^,]*,/', "", $curvals['name']);
+
 $html = file_get_contents ("confirm.html");
 
 preg_match_all ('/\[\[\[([-_A-Za-z0-9 ]+)\]\]\]/', 

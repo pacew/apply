@@ -18,6 +18,8 @@ if ($arg_png) {
 $cmd = sprintf ("PSITE_DIR='%s' ./mkgraph", $cfg['psite_dir']);
 exec ($cmd, $output, $rc);
 
+$body .= "<h2 style='text-align:center'>"
+      ." Cummulative applications during September</h2>\n";
 $body .= "<img style='width=100%' src='graph.php?png=1' alt='' />\n";
 
 pfinish ();
