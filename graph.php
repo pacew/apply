@@ -15,7 +15,7 @@ if ($arg_png) {
 }    
 
 
-$cmd = sprintf ("PSITE_DIR='%s' ./mkgraph", $_SERVER['PSITE_DIR']);
+$cmd = sprintf ("PSITE_DIR='%s' ./mkgraph", $cfg['psite_dir']);
 exec ($cmd, $output, $rc);
 
 $body .= "<img style='width=100%' src='graph.php?png=1' alt='' />\n";
