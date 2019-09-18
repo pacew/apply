@@ -357,9 +357,14 @@ function get_questions () {
     return ($questions);
 }
 
-function get_applications () {
+function get_applications ($year = 0, $test_flag = 0) {
     global $view_year, $view_test_flag;
     
+    if ($year == 0)
+        $year = $view_year;
+    if ($test_flag == 0)
+        $test_flag = $view_test_flag;
+
     $apps = array ();
 
     if (get_option("db") == "postgres") {
@@ -375,7 +380,7 @@ function get_applications () {
                 ." where fest_year = ?"
                 ."   and test_flag = ?"
                 ." order by app_id, ts",
-                array ($view_year, $view_test_flag));
+                array ($year, $test_flag));
     while (($r = fetch ($q)) != NULL) {
         $app_id = intval ($r->app_id);
 

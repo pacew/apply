@@ -8,6 +8,7 @@ pstart ();
 
 $arg_direct_download = trim (@$_REQUEST['direct_download']);
 if ($arg_direct_download != "") {
+
     $key = getvar ("download_key");
     if (strcmp ($arg_direct_download, $key) != 0) {
         echo ("invalid");
@@ -22,8 +23,9 @@ $arg_view_data = intval (@$_REQUEST['view_data']);
 $arg_view_csv = intval (@$_REQUEST['view_csv']);
 $arg_download_csv = intval (@$_REQUEST['download_csv']);
 $arg_app_id = intval (@$_REQUEST['app_id']);
+$arg_year = intval (@$_REQUEST['year']);
 
-$apps = get_applications ();
+$apps = get_applications ($arg_year);
 
 $evid_info = array ();
 

@@ -84,11 +84,20 @@ if ($key != "") {
     $body .= "<div class='direct_download'>\n";
     $body .= "<p>Direct csv download link.  Includes secret access key."
         ." Protect like a password.</p>\n";
-    $t = sprintf ("/download.php?direct_download=%s", rawurlencode ($key));
-    $url = make_absolute ($t);
-    $body .= sprintf ("<input type='text' readonly='readonly' "
-        ." size='%d' value='%s'/>\n", strlen($url) + 10, h($url));
+
+    foreach (array ($cur_year, $last_year) as $year) {
+        $t = sprintf ("/download.php?direct_download=%s&year=%d", 
+                      rawurlencode ($key), $year);
+        $url = make_absolute ($t);
+        $body .= "<div>\n";
+        $body .= sprintf ("fest year %d: ", $year);
+        $body .= sprintf ("<input type='text' readonly='readonly' "
+                          ." size='%d' value='%s'/>\n", 
+                          strlen($url) + 10, h($url));
+        $body .= "</div>\n";
+    }
     
+
     $body .= "</div>\n";
 }
 
