@@ -212,6 +212,7 @@ $output_order = array (
     "name",
 	"main_performer",
 	"group_name",
+    "performer2",
 	"busy",
 	"app_category",
 	"dance_style",
