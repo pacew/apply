@@ -164,7 +164,9 @@
 
   { "id": "num_dancers",
     "show_if": [ "app_category", "Performance" ],
-    "q": "How many dancers?" },
+    "q": "How many dancers?",
+    "desc": "[Note to admins: we are no longer asking for dance performance stage directions in the public application.  These fields are still visible to admins.]"
+  },
 
   { "id": "how_long",
     "show_if": [ "app_category", "Performance" ],

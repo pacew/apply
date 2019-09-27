@@ -9,6 +9,12 @@ function show_if_test (condition) {
     var val = $(elts)
       .filter ("input:checked")
       .val();
+
+    if (condition[0] == "app_category"
+	&& val == "Performance"
+	&& window.admin_mode == false) {
+      return false;
+    }
     return (condition.includes (val));
   case "text":
     return ($(elts).val() != "");

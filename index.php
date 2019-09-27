@@ -93,6 +93,12 @@ if ($arg_app_id) {
 $body .= sprintf ("<script>\n");
 $body .= "//<![CDATA[\n";
 $body .= sprintf ("var questions = %s;\n", json_encode ($questions));
+
+if ($username)
+    $val = "true";
+else
+    $val = "false";
+$body .= sprintf ("var admin_mode = %s;\n", $val);
 $body .= "//]]>\n";
 $body .= "</script>\n";
 

@@ -85,6 +85,12 @@ $body .= "</p>\n";
 
 $body .= "<p>Here are the responses you provided:</p>";
 
+if ($application->curvals['app_category'] == "Performance") {
+    $body .= "<p>Note: we are no longer asking for dance performance stage"
+          ." directions at this point in the application process.</p>\n";
+}
+
+
 $sound = array ();
 $sound['stage_with'] = "Stage with sound system";
 $sound['stage_without'] = "Stage without sound system";
