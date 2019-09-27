@@ -2,7 +2,7 @@
   { "id": "name",
     "q": "Your name",
     "class": "lookup_individual",
-    "desc": "<p>If this application is for an individual or duo, this should be the main performer name.  If for a group, this should be the name of the group leader.</p><p>Our standard for recording names is LAST, then a comma, then FIRST</p>" },
+    "desc": "<p>If this application is for an individual or duo, this should be the main performer name.  If for a group, this should be the name of the group leader.</p><p>Our standard for recording names is LAST, then a comma, then FIRST, and we don't put a space after the comma.</p>" },
 
   { "id": "email",
     "q": "Your email address", 
