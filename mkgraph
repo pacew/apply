@@ -27,13 +27,17 @@ while True:
     (ts, fest_year, val) = row
     if val[0] != "{":
         continue
-    pattern = "{}-09-.*".format(fest_year - 1)
 
     if fest_year not in data:
         data[fest_year] = {}
     
     if ts.year == fest_year - 1 and ts.month == 9:
         day = ts.day
+        if day not in data[fest_year]:
+            data[fest_year][day] = 0
+        data[fest_year][day] = data[fest_year][day] + 1
+    elif ts.year == fest_year - 1 and ts.month == 10:
+        day = ts.day + 30
         if day not in data[fest_year]:
             data[fest_year][day] = 0
         data[fest_year][day] = data[fest_year][day] + 1
@@ -51,7 +55,8 @@ for fest_year in data.keys():
     except:
         pass
     with open(filename, "w") as outf:
-        for day in range(1,31):
+        maxday = max(data[fest_year].keys())
+        for day in range(1,maxday):
             count = 0
             if day in data[fest_year]:
                 count = data[fest_year][day]
