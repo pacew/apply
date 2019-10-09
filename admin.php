@@ -10,6 +10,8 @@ $arg_set_year = intval (@$_REQUEST['set_year']);
 $arg_desired_year = intval (@$_REQUEST['desired_year']);
 $arg_desired_test_flag = intval (@$_REQUEST['desired_test_flag']);
 $arg_return_to_app = intval (@$_REQUEST['return_to_app']);
+$arg_set_filter = intval (@$_REQUEST['set_filter']);
+$arg_filter = trim (@$_REQUEST['filter']);
 
 if ($arg_set_year == 1) {
     $view_year = $arg_desired_year;
@@ -17,6 +19,11 @@ if ($arg_set_year == 1) {
     $view_test_flag = $arg_desired_test_flag;
     putsess ("view_test_flag", $view_test_flag);
 
+    redirect ("admin.php");
+}
+
+if ($arg_set_filter == 1) {
+    putsess ("filter", $arg_filter);
     redirect ("admin.php");
 }
 
@@ -121,8 +128,26 @@ $apps = get_applications ();
 $body .= sprintf ("<h2>%d applications [%s]</h2>\n", 
                   count($apps), mklink ("graph", "graph.php"));
 
-//$q = query ("select app_id, $ts_col,"
-//            ."   username, val, attention, fest_year, test_flag"
+$filters = array ("all", "unconfirmed");
+$cur_filter = getsess ("filter");
+if (array_search ($cur_filter, $filters) === FALSE)
+    $cur_filter = "all";
+
+$body .= "<form action='admin.php'>\n";
+$body .= "<input type='hidden' name='set_filter' value='1' />\n";
+$body .= "Show: ";
+foreach ($filters as $filter) {
+    $body .= " &nbsp;&nbsp;&nbsp; ";
+    $c = "";
+    if ($cur_filter == $filter)
+        $c = "checked='checked'";
+    $body .= sprintf ("<input type='radio' name='filter' value='%s' %s />\n",
+                      $filter, $c);
+    $body .= $filter;
+}
+$body .= " &nbsp;&nbsp;&nbsp; ";
+$body .= "<input type='submit' value='change filter' />\n";
+$body .= "</form>\n";
 
 $rows = array ();
 foreach ($apps as $app) {
@@ -162,7 +187,14 @@ foreach ($apps as $app) {
     $t = sprintf ("download.php?view_csv=1&app_id=%d", $app->app_id);
     $cols[] = mklink ("raw data", $t);
 
-    $rows[] = $cols;
+    $show = 1;
+    
+    if ($cur_filter == "unconfirmed" && $app->confirmed != "") {
+        $show = 0;
+    }
+
+    if ($show)
+        $rows[] = $cols;
 }
 
 if (count ($rows) == 0) {
