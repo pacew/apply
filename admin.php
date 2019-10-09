@@ -164,8 +164,11 @@ foreach ($apps as $app) {
     $cols[] = mklink_span ($app->app_id, $target, $css);
     $cols[] = mklink_span ($app->ts, $target, $css);
 
-    $txt = "";
     $curvals = $app->curvals;
+
+    $cols[] = $curvals['app_category'];
+
+    $txt = "";
     $sep = "";
     if (@$curvals['group_name']) {
         $txt .= sprintf ("%sG: %s", $sep, h($curvals['group_name']));
@@ -200,7 +203,9 @@ foreach ($apps as $app) {
 if (count ($rows) == 0) {
     $body .= "<p>no data to display</p>\n";
 } else {
-    $body .= mktable (array ("app_id", "ts", "group / title / name", "confirmation", ""),
+    $body .= mktable (array ("app_id", "ts",
+                             "category",
+                             "group / title / name", "confirmation", ""),
     $rows);
 }
 
