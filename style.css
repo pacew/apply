@@ -298,3 +298,32 @@ p {
     width: 220px;
 }
 
+.app_category {
+    font-weight: bold;
+}
+
+.cat_band_solo {
+    color: #3369c0;
+}
+
+.cat_band {
+    color: #ea4335;
+}
+
+.cat_caller {
+    color: #ad8208;
+}
+
+.cat_ritual {
+    color: #34a853;
+}
+
+.cat_performance {
+    color: #893d0e;
+}
+
+.cat_other {
+    color: black;
+}
+
+

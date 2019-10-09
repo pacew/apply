@@ -166,7 +166,9 @@ foreach ($apps as $app) {
 
     $curvals = $app->curvals;
 
-    $cols[] = $curvals['app_category'];
+    $cols[] = sprintf ("<span class='app_category cat_%s'>%s</span>\n",
+                       strtolower ($curvals['app_category']),
+                       $curvals['app_category']);
 
     $txt = "";
     $sep = "";
