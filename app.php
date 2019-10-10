@@ -53,7 +53,7 @@ $dance_app_close = mmdd_to_timestamp ("12/1", 0);
 $ritual_app_close = mmdd_to_timestamp ("1/15", 0);
 
 $effective_time = time ();
-if ($cfg['conf_key'] != "production") {
+if (0 && $cfg['conf_key'] != "production") {
     $effective_time = strtotime ("2/10/2020");
 }
 

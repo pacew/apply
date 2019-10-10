@@ -45,11 +45,11 @@
     "choices": [ 
       { "val": "Band_Solo", 
 	"desc": "Dance band proposing a session requiring no additional caller or teacher",
-	"deadline": 1 
+	"deadline": 2 
       },
       { "val": "Band", 
 	"desc": "Dance band proposing to play for a session led by a caller or teacher (who is not a member of the band)",
-        "deadline": 1
+        "deadline": 2
       },
       { "val": "Caller", 
 	"desc": "Dance caller or teacher",

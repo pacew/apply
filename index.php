@@ -447,14 +447,22 @@ foreach ($questions as $question) {
         $body .= make_room_sound ($application, $question_id);
     } else if (@$question['choices']) {
         foreach ($question['choices'] as $choice) {
+            $passed = 0;
+            if (@$choice['deadline'] && $choice['deadline'] < $deadline_status) 
+                $passed = 1;
+
             $body .= "<div>\n";
             $c = "";
             if ($choice['val'] == @$application->curvals[$question_id])
                 $c = "checked='checked'";
-            $body.=sprintf("<input type='radio' name='%s' value='%s' %s />\n",
+            $d = "";
+            if ($username == "" && $passed)
+                $d = "disabled='disabled'";
+            $body.=sprintf("<input type='radio' name='%s' value='%s'"
+                           ." %s %s />\n",
                            $input_id,
                            h($choice['val']),
-                           $c);
+                           $c, $d);
             if (@$choice['desc']) {
                 $body .= h($choice['desc']);
             } else {
@@ -464,8 +472,9 @@ foreach ($questions as $question) {
             $body .= sprintf (" <span class='debug'>%s</span>\n",
                               h($choice['val']));
 
-            if (@$choice['deadline'] && $choice['deadline'] < $deadline_status) {
-                $body .= " <span class='attention'>(deadline passed)</span>";
+            if ($passed) {
+                $body .= " <span class='attention'>"
+                      ." (selection disabled: deadline passed)</span>";
             }
 
             $body .= "</div>\n";
