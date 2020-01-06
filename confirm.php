@@ -32,6 +32,8 @@ $curvals['pcode'] = $r->pcode;
 $curvals['festival_year'] = $cur_year;
 
 $curvals['first_name'] = preg_replace ('/^[^,]*,/', "", $curvals['name']);
+$curvals['title_for_confirm'] = convert_event_title($curvals);
+
 
 $html = file_get_contents ("confirm.html");
 

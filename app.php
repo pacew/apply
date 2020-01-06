@@ -566,6 +566,23 @@ function send_email ($args) {
     return (TRUE);
 }
 
+function convert_event_title($curvals) {
+    switch (@$curvals['app_category']) {
+    case "Band":
+        return ("playing for a dance");
+        break;
+    case "Ritual":
+        return ("ritual dance");
+        break;
+    case "Performance":
+        return ("dance performance");
+        break;
+    default:
+        return ($curvals['event_title']);
+        break;
+    }
+}
+
 
 
 if (! get_option ("flat") && ! @$cli_mode) {

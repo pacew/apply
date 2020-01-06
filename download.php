@@ -370,21 +370,7 @@ foreach ($apps as $app) {
                 $cols[] = @$val[$choice];
             }
         } else if ($question_id == "event_title") {
-            switch (@$curvals['app_category']) {
-            case "Band":
-                $title = "playing for a dance";
-                break;
-            case "Ritual":
-                $title = "ritual dance";
-                break;
-            case "Performance":
-                $title = "dance performance";
-                break;
-            default:
-                $title = $val;
-                break;
-            }
-            $cols[] = $title;
+            $cols[] = convert_event_title ($curvals);
         } else {
             $cols[] = $val;
         }
