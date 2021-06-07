@@ -1,0 +1,3 @@
+#! /bin/sh
+
+exec mysql --login-path=apply -A --database=apply_neffa_org "$@"

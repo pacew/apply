@@ -35,6 +35,8 @@ mysql_config_editor set --login-path=neffa --host=neffaprog.neffa.dreamhosters.c
 then use
 mysql --login-path=neffa
 
+mysql_config_editor set --login-path=apply --host=mysql.neffa.org --user=neffaapply --password 
+
 
 psql --host main.czuqd0u2qqew.us-east-1.rds.amazonaws.com --user=master --dbname=template1
 
@@ -105,3 +107,12 @@ sed -e "s/\s\s*/\t/" -e "s/ //" -e "s/\r//" < /home/pace/Downloads/pcodes.txt > 
 
 psql
 \copy pcodes from '/home/pace/p'
+================================================================
+
+scratch mysql setup
+
+create user 'pace'@'localhost' identified with auth_socket;
+grant all privileges on *.* to 'pace'@'localhost' with grant option;
+
+create user 'www-data'@'localhost' identified with auth_socket;
+grant all privileges on *.* to 'www-data'@'localhost' with grant option;

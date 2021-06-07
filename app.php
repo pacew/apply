@@ -19,24 +19,29 @@ if (! @$cli_mode
 
 
 $cur_year = intval(strftime("%Y"));
-if (strftime("%m") > 6) {
-    $cur_year++;
+if ($cur_year <= 2021) {
+    $last_year = 2020;
+    $cur_year = 2022;
+} else {
+    if (strftime("%m") > 6) {
+        $cur_year++;
+    }
+    $last_year = $cur_year - 1;
 }
-$last_year = $cur_year - 1;
 
 $submit_year = $cur_year;
 
 
 function mmdd_to_timestamp ($mmdd, $start_flag) {
-    global $last_year, $cur_year;
+    global $last_year, $cur_year, $submit_year;
     
     if (sscanf ($mmdd, "%d/%d", $month, $mday) != 2)
         fatal (sprintf ("can't parse mmdd %s", $mmdd));
 
     if ($month > 5)
-        $year = $last_year;
+        $year = $submit_year;
     else
-        $year = $cur_year;
+        $year = $submit_year + 1;
     
     if ($start_flag)
         $hms = "00:00:00";
@@ -97,7 +102,7 @@ function pstart () {
     global $view_test_flag;
     $val = getsess("view_test_flag");
     if ($val === NULL)
-        $val = 0;
+        $val = 1;
     $view_test_flag = intval($val);
 
     global $body;
