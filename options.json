@@ -4,10 +4,8 @@
   "aws_hostname": "apply.pacew.org",
   "flat": 1,
 
-  "x2015": {
-    "aux_dir": "/home/pace/aux/apply-pace",
-    "db_host": "127.0.0.1",
-    "db_user": "neffaapply"
+  "lap20": {
+    "aux_dir": "/home/pace/aux/apply-pace"
   },
 
   "fistfight": {
