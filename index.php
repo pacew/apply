@@ -14,12 +14,12 @@ $system_mode = getvar ("system_mode");
 $body .= "<p>Welcome NEFFA Applicant!</p>\n";
 
 if ($cfg['conf_key'] != "production") {
-    $body .= sprintf ("<p>effective time %s</p>\n", 
+    $body .= sprintf ("<p class='debug_box'>effective time %s</p>\n", 
                       strftime ("%Y-%m-%d %H:%M:%S", $effective_time));
 }
 
 $body .= "<p>Information about the festival is available at ";
-$t="https://www.neffa.org/folk-festival/new-england-folk-festival-2020/";
+$t="https://www.neffa.org/";
 $body .= mklink ($t, $t);
 $body .= "</p>\n";
     
@@ -58,11 +58,6 @@ $rows = array ();
 $cols = array ();
 $cols[] = "<strong>General</strong>";
 $cols[] = deadline_msg ($general_app_close);
-$rows[] = $cols;
-
-$cols = array ();
-$cols[] = "<strong>Dance performances</strong>";
-$cols[] = deadline_msg ($dance_app_close);
 $rows[] = $cols;
 
 $cols = array ();

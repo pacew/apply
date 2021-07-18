@@ -59,6 +59,10 @@
 	"desc": "Ritual dance (morris, rapper, etc)",
         "deadline": 3
       },
+      { "val": "Performance", 
+	"desc": "Other dance performance",
+        "deadline": 2 
+      },
       { "val": "Other", 
 	"desc": "Everything else",
 	"deadline": 1
@@ -120,6 +124,17 @@
     "desc": "If you have a preference, please specify what callers or dance leaders you would prefer to work with. We may not be able to pair you with your preferred callers or dance leaders. Note that the caller must submit a separate application, even if they are part of your group."
   },
 
+  { "id": "indoor_ritual",
+    "show_if": [ "app_category", "Ritual" ],
+    "q": "Indoor Performances",
+    "desc": "Is your team interested in an indoor performing slot (usually less than 10 minutes)? This would be a part of the Dance Performances. If so, check the time of performance. This performance would be in addition to a performance in the Courtyard.",
+    "choices": [
+      { "val": "No", "desc": "No, not interested in indoor slot" },
+      { "val": "Sat", "desc": "Saturday afternoon" },
+      { "val": "Sun", "desc": "Sunday afternoon" }
+    ]
+  },
+  
   { "id": "conflicts",
     "show_if": [ "app_category", "Ritual" ],
     "q": "Conflicts and Preferences",
@@ -147,6 +162,87 @@
   },
 
 
+  { "id": "num_dancers",
+    "show_if": [ "app_category", "Performance" ],
+    "q": "How many dancers?",
+    "desc": "[Note to admins: we are no longer asking for dance performance stage directions in the public application.  These fields are still visible to admins.]"
+  },
+
+  { "id": "how_long",
+    "show_if": [ "app_category", "Performance" ],
+    "q": "How long?" },
+
+  { "id": "showcased",
+    "show_if": [ "app_category", "Performance" ],
+    "q": "Country or region being showcased?" },
+
+  { "id": "music_begins",
+    "show_if": [ "app_category", "Performance" ],
+    "q": "Music begins ...",
+    "choices": [
+      { "val": "before", "desc": "before dancers enter." },
+      { "val": "during", "desc": "as dancers enter." },
+      { "val": "after", "desc": "after dancers are in position." }
+    ]
+  },
+
+  { "id": "lights_on",
+    "show_if": [ "app_category", "Performance" ],
+    "q": "Lights go ...",
+    "choices": [
+      { "val": "with_music", "desc": "on with music." },
+      { "val": "with_dancers", "desc": "up as dancers enter." },
+      { "val": "before_music", "desc": "up before the music starts." },
+      { "val": "before_dancers", "desc": "on before the dancers enter." },
+      { "val": "other", "desc": "it's complicated." }
+    ]
+  },
+
+  { "id": "lights_on_other",
+    "show_if": [ "lights_on", "other" ],
+    "q": "Ok, how do the lights go on?"
+  },
+
+  { "id": "lights_off",
+    "show_if": [ "app_category", "Performance" ],
+    "q": "Lights go ...",
+    "choices": [
+      { "val": "as_exit", "desc": "down as dancers exit." },
+      { "val": "after_exit", "desc": "off after the dancers exit." },
+      { "val": "after_freeze", "desc": "off after the dancers freeze." },
+      { "val": "during_bow", "desc": "down as the dancers bow." },
+      { "val": "other", "desc": "it's complicated." }
+    ]
+  },
+
+  { "id": "lights_off_other",
+    "show_if": [ "lights_off", "other" ],
+    "q": "Ok, how do the lights go off?"
+  },
+
+  { "id": "lighting_mood",
+    "show_if": [ "app_category", "Performance" ],
+    "q": "Describe the mood of the lighting." },
+
+  { "id": "costume_colors",
+    "show_if": [ "app_category", "Performance" ],
+    "q": "Describe colors of costume." },
+
+  { "id": "props",
+    "show_if": [ "app_category", "Performance" ],
+    "optional": 1,
+    "q": "What props, if any?" },
+
+  { "id": "enter_from",
+    "show_if": [ "app_category", "Performance" ],
+    "q": "Dancers enter from...",
+    "choices": [
+      { "val": "Right" },
+      { "val": "Left" },
+      { "val": "Both" }
+    ]
+  },
+      
   { "id": "event_type",
     "show_if": [ "app_category", "Band_Solo", "Caller", "Other" ],
     "q": "Event Type",
