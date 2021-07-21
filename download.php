@@ -221,9 +221,22 @@ $output_order = array (
 	"preferred_band",
 	"recorded_type",
 	"preferred_caller",
+	"indoor_ritual",
 	"conflicts",
     "availability",
 	"event_desc",
+	"num_dancers",
+	"how_long",
+	"showcased",
+	"music_begins",
+	"lights_on",
+	"lights_on_other",
+	"lights_off",
+	"lights_off_other",
+	"lighting_mood",
+	"costume_colors",
+	"props",
+	"enter_from",
 	"event_type",
 	"level",
     "room_sound",
@@ -245,10 +258,7 @@ foreach ($output_order as $question_id) {
         continue;
     }
 
-    if (($question = @$questions_by_id[$question_id]) == NULL) {
-        fatal ("bad question_id " . $question_id);
-    }
-
+    $question = @$questions_by_id[$question_id];
     $class = @$question['class'];
 
     if ($class == "lookup_individual") {
@@ -303,10 +313,8 @@ foreach ($apps as $app) {
             $cols[] = $app->app_id;
             continue;
         }
-        if (($question = @$questions_by_id[$question_id]) == NULL) {
-            fatal ("bad question_id 2 " . $question_id);
-        }
-
+        
+        $question = @$questions_by_id[$question_id];
         $class = @$question['class'];
         $val = @$curvals[$question_id];
 
