@@ -71,7 +71,7 @@ $body .= "</div>\n";
 $body .= "<div>\n";
 $body .= "<form action='admin.php'>\n";
 $body .= "<input type='hidden' name='set_year' value='1' />\n";
-$body .= "View for festival year ";
+$body .= "View for Festival year ";
 $body .= "<select name='desired_year'>\n";
 $body .= "<option value=''>--select--</option>\n";
 make_option ($cur_year, $view_year, $cur_year);
