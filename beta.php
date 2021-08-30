@@ -8,7 +8,7 @@ pstart ();
 
 $arg_access_code = trim (@$_REQUEST['access_code']);
 
-if (password_verify ($arg_access_code, getvar ("access_code"))) {
+if (strcmp ($arg_access_code, getvar ("access_code")) == 0) {
     putsess ("beta_tester", 1);
     redirect ("/");
 }

@@ -9,8 +9,6 @@ $arg_show_all = intval (@$_REQUEST['show_all']);
 
 pstart ();
 
-$system_mode = getvar ("system_mode");
-
 $body .= "<p>Welcome NEFFA Applicant!</p>\n";
 
 if ($cfg['conf_key'] != "production") {
@@ -18,7 +16,7 @@ if ($cfg['conf_key'] != "production") {
                       strftime ("%Y-%m-%d %H:%M:%S", $effective_time));
 }
 
-$body .= "<p>Information about the festival is available at ";
+$body .= "<p>Information about the Festival is available at ";
 $t="https://www.neffa.org/";
 $body .= mklink ($t, $t);
 $body .= "</p>\n";
@@ -134,7 +132,7 @@ function make_schedule ($application, $question_id) {
     $ret = "<div class='schedule'>\n";
 
     $ret .= "<p><input type='checkbox' id='sched_any'>"
-         ." Any time during the festival is OK</p>\n";
+         ." Any time during the Festival is OK</p>\n";
 
     $hdr1 = "";
     $hdr2 = "";
