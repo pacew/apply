@@ -22,11 +22,12 @@ $body .= mklink ($t, $t);
 $body .= "</p>\n";
     
 if ($deadline_status == 0) {
-    $body .= sprintf ("<p><strong>"
-                      ."Applications may be submitted starting %s"
-                      ."</strong></p>\n",
-                      strftime ("%B %e", $app_window_start));
-
+    if (0) {
+        $body .= sprintf ("<p><strong>"
+            ."Applications may be submitted starting %s"
+            ."</strong></p>\n",
+            strftime ("%B %e", $app_window_start));
+    }
     if (! $username && ! getsess ("beta_tester")) {
         $body .= "<div>If you are a beta tester,"
               ." enter your access code here:</div>\n";
