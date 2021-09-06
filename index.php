@@ -9,7 +9,9 @@ $arg_show_all = intval (@$_REQUEST['show_all']);
 
 pstart ();
 
-$body .= "<p>Welcome NEFFA Applicant!</p>\n";
+if (0) {
+    $body .= "<p>Welcome NEFFA Applicant!</p>\n";
+}
 
 if ($cfg['conf_key'] != "production") {
     $body .= sprintf ("<p class='debug_box'>effective time %s</p>\n", 
@@ -21,6 +23,9 @@ $t="https://www.neffa.org/";
 $body .= mklink ($t, $t);
 $body .= "</p>\n";
     
+$body .= file_get_contents("postpone.html");
+
+
 if ($deadline_status == 0) {
     if (0) {
         $body .= sprintf ("<p><strong>"
