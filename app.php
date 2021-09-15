@@ -38,9 +38,9 @@ function mmdd_to_timestamp ($mmdd, $start_flag) {
         fatal (sprintf ("can't parse mmdd %s", $mmdd));
 
     if ($month > 5)
-        $year = $submit_year;
+        $year = $submit_year - 1;
     else
-        $year = $submit_year + 1;
+        $year = $submit_year;
     
     if ($start_flag)
         $hms = "00:00:00";
@@ -553,7 +553,7 @@ function send_email ($args) {
     $mail->SMTPSecure = 'tls';
     $mail->Port = 587;
 
-    $mail->setFrom('applications@neffa.org', 'NEFFA Applications');
+    $mail->setFrom('program@neffa.org', 'NEFFA Applications');
     $mail->addAddress($args->to_email);
     $mail->Subject = $args->subject;
 

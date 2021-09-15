@@ -39,7 +39,7 @@ if (getsess ("admin")) {
 
 $body .= "<p>Thank you for applying.  You can review your responses"
     ." below.  If you see any problems, please email ";
-$applications_email = "applications@neffa.org";
+$applications_email = "program@neffa.org";
 $applications_mailto = sprintf ("mailto:%s", $applications_email);
 $body .= mklink ($applications_email, $applications_mailto);
 $body .= "</p>\n";
@@ -71,9 +71,11 @@ $body .= "<p>Within a few days, the Program Committee will"
                           ." begin processing of your application and will"
                           ." send you an email message with"
                           ." further instructions."
-                          ." If you don't hear anything in a week,"
+                          ." If you don't receive this by the end of October,"
                           ." please write to ";
 $body .= mklink ($applications_email, $applications_mailto);
+$body .= " You should receive formal notice of whether your application"
+      ." was accepted on December 15.";
 $body .= "</p>\n";
     
 
@@ -107,7 +109,7 @@ foreach ($questions as $question) {
         continue;
     
     $q_text = $question['q'];
-    $answer = $application->curvals[$question_id];
+    $answer = @$application->curvals[$question_id];
   
     if ($question_id == "availability") {
         $dnames = array ("", "Fri", "Sat", "Sun");
@@ -158,6 +160,13 @@ foreach ($questions as $question) {
                     h($answer[$key]));
             }
         }
+    } else if ($question_id == "event_type" || $question_id == "level") {
+        $txt = $answer;
+        foreach ($question['choices'] as $val) {
+            if ($answer == $val['val'])
+                $txt = $val['desc'];
+        }
+        $val = h($txt);
     } else {
         $val = h($answer);
     }

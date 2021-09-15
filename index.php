@@ -19,8 +19,8 @@ if ($cfg['conf_key'] != "production") {
 }
 
 $body .= "<p>Information about the Festival is available at ";
-$t="https://www.neffa.org/";
-$body .= mklink ($t, $t);
+$t="https://neffa.org/";
+$body .= mklink_nw ($t, $t);
 $body .= "</p>\n";
     
 $body .= file_get_contents("postpone.html");
@@ -48,7 +48,7 @@ if ($deadline_status == 0) {
 function deadline_msg ($end) {
     global $effective_time;
 
-    $msg = strftime ("%B %e", $end);
+    $msg = strftime ("%B %e, %Y", $end);
     if ($effective_time > $end)
         $msg .= " <span class='attention'>(past)</span>";
 
@@ -69,7 +69,13 @@ $cols[] = "<strong>Ritual/Morris dance</strong>";
 $cols[] = deadline_msg ($ritual_app_close);
 $rows[] = $cols;
 
+$cols = array ();
+$cols[] = "<strong>Indoor dance performance</strong>";
+$cols[] = "Sadly, not this year";
+$rows[] = $cols;
+
 $body .= mktable (array ("Type", "Applications accepted until"), $rows);
+
 
 $questions = get_questions ();
 
@@ -431,7 +437,7 @@ foreach ($questions as $question) {
     $body .= "</h3>\n";
 
     if ($class == "lookup_individual") {
-        $body .= "<p><em>For our convenience, please enter names in the format Lastname COMMA Firstname (as in Cannon,Jon).</em></p>\n";
+        $body .= "<p><em>For our convenience, please use the format Lastname COMMA Firstname (as in Cannon,Jon with no embedded space).</em></p>\n";
     } else if ($class == "lookup_group") {
         $body .= "<p><em>For our convenience, please write group names that start with &quot;The&quot; in the format Beatles,The or Talking Heads,The.</em></p>\n";
     }
