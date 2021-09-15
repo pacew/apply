@@ -246,7 +246,8 @@ $output_order = array (
 	"email",
 	"phone",
 	"url",
-	"notes"
+	"notes",
+    "format"
 );
 
 $csvhdr = array ();

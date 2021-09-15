@@ -396,6 +396,12 @@ if ($username) {
 $body .= sprintf ("<input type='hidden' name='app_id' value='%d' />\n",
                   $arg_app_id);
 
+function autoquote($x) {
+    if (preg_match('/</', $x))
+        return ($x);
+    return (h ($x));
+}
+
 foreach ($questions as $question) {
     $question_id = $question['id'];
     $class = @$question['class'];
@@ -463,7 +469,7 @@ foreach ($questions as $question) {
                            h($choice['val']),
                            $c, $d);
             if (@$choice['desc']) {
-                $body .= h($choice['desc']);
+                $body .= autoquote($choice['desc']);
             } else {
                 $body .= h($choice['val']);
             }

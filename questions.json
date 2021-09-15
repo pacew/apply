@@ -11,6 +11,16 @@
   { "id": "phone",
     "q": "What is the best phone number at which to reach you?" },
 
+  { "id": "format",
+    "q": "What Festival format are you applying for?",
+    "desc_pre": "<p>We have not yet decided whether the Festival will be in-person or online, but we have no plans to attempt a hybrid Festival.</p><p>You can apply for one or both formats.</p><p>If the Festival goes forward in person, online-only applicants would not be on the program. If the Festival goes forward online, in-person-only applicants would not be on the program.</p><p>Vaccination and safety measures will be in place if there is an in-person Festival; policies will be announced with acceptances.</p>",
+    "choices": [
+      { "val": "both", "desc": "I am applying for and would like to perform <strong>either</strong> in-person in Marlborough or online" },
+      { "val": "inperson", "desc": "I am applying <strong>only</strong> for an <strong>in-person</strong> Festival and do not wish to be considered for an online performance." },
+      { "val": "online", "desc": "I am applying <strong>only</strong> for an <strong>online</strong> Festival on Zoom and do not wish to be considered for an in-person performance." }
+    ]
+  },
+
   { "id": "main_performer",
     "q": "Should the performer for this event be listed as an individual, a duo, or a named group?",
     "desc": "The Duo category is new this year for use when two performers are getting together for a special event at NEFFA, but don't want to bother with choosing a group name.  Duos are free to use the Group category, if desired.",
