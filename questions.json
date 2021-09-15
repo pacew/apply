@@ -11,9 +11,19 @@
   { "id": "phone",
     "q": "What is the best phone number at which to reach you?" },
 
+  { "id": "format",
+    "q": "What Festival format are you applying for?",
+    "desc_pre": "<p>We have not yet decided whether the Festival will be in-person or online, but we have no plans to attempt a hybrid Festival.</p><p>You can apply for one or both formats.</p><p>If the Festival goes forward in person, online-only applicants would not be on the program. If the Festival goes forward online, in-person-only applicants would not be on the program.</p><p>Vaccination and safety measures will be in place if there is an in-person Festival; policies will be announced with acceptances.</p>",
+    "choices": [
+      { "val": "both", "desc": "I am applying for and would like to perform <strong>either</strong> in-person in Marlborough or online" },
+      { "val": "inperson", "desc": "I am applying <strong>only</strong> for an <strong>in-person</strong> Festival and do not wish to be considered for an online performance." },
+      { "val": "online", "desc": "I am applying <strong>only</strong> for an <strong>online</strong> Festival on Zoom and do not wish to be considered for an in-person performance." }
+    ]
+  },
+
   { "id": "main_performer",
     "q": "Should the performer for this event be listed as an individual, a duo, or a named group?",
-    "desc": "The Duo category is new this year for use when two performers are getting together for a special event at NEFFA, but don't want to bother with choosing a group name.  Duos are free to use the Group category, if desired.",
+    "desc": "The Duo category is for use when two performers are getting together for a special event at NEFFA, but don't want to bother with choosing a group name.  Duos are free to use the Group category, if desired.",
     "choices": [
       { "val": "Individual", "desc": "The individual applying" },
       { "val": "Duo", "desc": "A an-hoc duo consisting of the individual applying and another performer" },
@@ -60,7 +70,7 @@
         "deadline": 3
       },
       { "val": "Other", 
-	"desc": "Everything else",
+	"desc": "Everything else (folk music, song, storytelling, lectures, discussions, etc)",
 	"deadline": 1
       }
     ],
@@ -73,8 +83,8 @@
     "desc": "Bands may wish to play for more than one type of dance event, but for this application, you have to choose JUST one.  If you would like to be considered for more than one type of dancing, PLEASE fill out another application!",
     "choices": [
       { "val": "American", "desc": "American Dance (contra, square, etc.)" },
-      { "val": "Int_Line", "desc": "International and Line Dance (Balkan, Israeli, Breton, etc.)" },
-      { "val": "English_Couples", "desc": "English, Couples, and Other Dance (English, Scottish, Irish, Scandi, waltz, swing, tango, rapper, other)" }
+      { "val": "Int_Line", "desc": "International Line Dance (Balkan, Israeli, Breton, etc.)" },
+      { "val": "English_Couples", "desc": "English, Couples, and Other Dance (e.g. English, Scottish, Irish, Scandi, Polish, waltz, swing, blues, step dance, other)" }
     ]
   },
 
@@ -195,7 +205,8 @@
   { "id": "sound_needs",
     "show_if": [ "app_category", "Band", "Band_Solo", "Other" ],
     "textarea": 1,
-    "q": "If you are booked for a room with a full sound system, what is your preferred sound setup? (How many inputs, and for what instruments?) Write 'N/A' if you would not use a sound system even if one was available."
+    "q": "Sound system requirements.  (Write 'N/A' if you would not use a sound system even if one was available)",
+    "desc": "If you are booked for a room with a full sound system, how many inputs do you expect to need, and for what instruments? Please provide as much information as you have at this time. You will not be held to this, but it will help us with our planning."
   },
 
   { "id": "shared",
@@ -212,7 +223,7 @@
   { "id": "url",
     "q": "Video URL",
     "optional": 1,
-    "desc": "If you would like to share a video of you/your group performing, please give us the url here." },
+    "desc": "If you would like to share a video of you/your group performing, please give us the url here.  This is very helpful for us if you've not performed at NEFFA before or not in a while." },
 
   { "id": "notes",
     "textarea": 1,
