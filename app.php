@@ -106,7 +106,7 @@ function pstart () {
     global $view_test_flag;
     $val = getsess("view_test_flag");
     if ($val === NULL)
-        $val = 1;
+        $val = 0;
     $view_test_flag = intval($val);
 
     global $body;
