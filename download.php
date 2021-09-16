@@ -247,7 +247,10 @@ $output_order = array (
 	"phone",
 	"url",
 	"notes",
-    "format"
+    "format",
+    "inperson",
+    "online",
+    "room_size"
 );
 
 $csvhdr = array ();
