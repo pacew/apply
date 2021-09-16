@@ -12,21 +12,21 @@
     "q": "What is the best phone number at which to reach you?" },
 
   { "id": "inperson",
-    "q": "Applying to the IN-PERSON Festival?",
-    "desc_pre": "<p>We have not yet decided whether the Festival will be in-person or online, but we have no plans to attempt a hybrid Festival.</p><p>You can apply for <strong>one or both</strong> formats.</p><p>Vaccination and safety measures will be in place if there is an in-person Festival; policies will be announced with acceptances.</p>",
+    "q": "IN-PERSON?",
+    "desc_pre": "<p>We will determine no later than January 1 whether the Festival will be in-person or online. We have no plans to attempt a hybrid Festival.</p><p>You can apply for <strong>one or both</strong> formats. Only submit different events for in-person and online if your title and description will vary significantly based on the format.</p><p>Vaccination and safety measures will be in place if there is an in-person Festival; policies will be announced with acceptances.</p>",
     "choices": [
-      { "val": "yes", "desc": "Yes: I want to perform at the Festival if it is <strong>in-person</strong>." },
-      { "val": "no", "desc": "No: I do <strong>not</strong> wish to apply for the in-person Festival." }
+      { "val": "yes", "desc": "Yes: This event is suitable for an <strong>in-person</strong> Festival." },
+      { "val": "no", "desc": "No: This event is <strong>not</strong> suitable for an in-person Festival." }
     ]
   },
 
   { "id": "online",
-    "q": "Applying to the ONLINE Festival?",
+    "q": "ONLINE?",
     "choices": [
-      { "val": "yes", "desc": "Yes: I want to perform at the Festival if it is <strong>online</strong>." },
-      { "val": "no", "desc": "No: I do <strong>not</strong> wish to apply for the online Festival." }
+      { "val": "yes", "desc": "Yes: This event is suitable for an <strong>online</strong> Festival." },
+      { "val": "no", "desc": "No: This event is <strong>not</strong> suitable for an online Festival." }
     ],
-    "desc": "Remember, NEFFA will be either in-person or online, but not hybrid.  You should apply for both formats if you are willing to perform at either."
+    "desc": "Remember, NEFFA will be either in-person or online, but not hybrid.  You should select YES for both both formats if you are willing to offser this event in either format."
   },
 
   { "id": "main_performer",
@@ -204,13 +204,20 @@
   },
 
   { "id": "room_sound",
-    "show_if": [ "app_category", "Other" ],
+    "show_if": [ "app_category", "Band", "Band_Solo", "Other" ],
     "q": "Do you need a sound system?",
     "choices": [
       { "val": "none", "desc": "No amplification needed" },
       { "val": "self", "desc": "Self-service performer operated mic" },
-      { "val": "full", "desc": "Full sound system (please describe your needs in the Notes section at the end)" }
+      { "val": "full", "desc": "Full sound system" }
     ]
+  },
+
+  { "id": "sound_needs",
+    "show_if": [ "app_category", "Band", "Band_Solo", "Other" ],
+    "textarea": 1,
+    "q": "Sound system requirements.  (Write 'N/A' if you would not use a sound system even if one was available)",
+    "desc": "If you are booked for a room with a full sound system, how many inputs do you expect to need, and for what instruments? Please provide as much information as you have at this time. You will not be held to this, but it will help us with our planning."
   },
 
   { "id": "piano",
@@ -220,13 +227,6 @@
       { "val": "Yes" },
       { "val": "No" }
     ]
-  },
-
-  { "id": "sound_needs",
-    "show_if": [ "app_category", "Band", "Band_Solo" ],
-    "textarea": 1,
-    "q": "Sound system requirements.  (Write 'N/A' if you would not use a sound system even if one was available)",
-    "desc": "If you are booked for a room with a full sound system, how many inputs do you expect to need, and for what instruments? Please provide as much information as you have at this time. You will not be held to this, but it will help us with our planning."
   },
 
   { "id": "shared",
