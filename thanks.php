@@ -71,11 +71,12 @@ $body .= "<p>Within a few days, the Program Committee will"
                           ." begin processing of your application and will"
                           ." send you an email message with"
                           ." further instructions."
-                          ." If you don't receive this by the end of October,"
+                          ." If you don't receive a confirmation message by"
+                          ." October 30,"
                           ." please write to ";
 $body .= mklink ($applications_email, $applications_mailto);
 $body .= " You should receive formal notice of whether your application"
-      ." was accepted on December 15.";
+      ." was accepted on January 15.";
 $body .= "</p>\n";
     
 
@@ -175,7 +176,7 @@ foreach ($questions as $question) {
         continue;
 
     $cols = array ();
-    $cols[] = h($q_text);
+    $cols[] = autoquote($q_text);
 
     $cols[] = $val;
 

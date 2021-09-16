@@ -58,7 +58,7 @@ $ritual_app_close = mmdd_to_timestamp ("1/15", 0);
 
 if ($cur_year == 2022) {
     $app_window_start = mmdd_to_timestamp ("10/1", 1);
-    $general_app_close = mmdd_to_timestamp ("10/30", 0);
+    $general_app_close = mmdd_to_timestamp ("10/17", 0);
 }
 
 $effective_time = time ();
@@ -592,6 +592,11 @@ function convert_event_title($curvals) {
     }
 }
 
+function autoquote($x) {
+    if (preg_match('/</', $x))
+        return ($x);
+    return (h ($x));
+}
 
 
 if (! get_option ("flat") && ! @$cli_mode) {
