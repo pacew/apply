@@ -279,52 +279,6 @@ function make_schedule ($application, $question_id) {
     return ($ret);
 }
 
-function make_room_sound ($application, $question_id) {
-    $curval = @$application->curvals[$question_id];
-
-    $input_id = sprintf ("i_%s", $question_id);
-
-    $ret = "<div class='room_sound'>\n";
-
-    $kinds = array (
-        array ("stage_with", "An auditorium stage with amplification" ),
-        array ("stage_without", "An auditorium stage with NO amplification"),
-        array ("double_with", "A double classroom with amplification" ),
-        array ("double_without", "A double classroom with NO amplification" ),
-        array ("single_mic", 
-               "A single classroom with a single performer-operated mic"),
-        array ("single_without", 
-               "A single classroom with NO sound equipment")
-    );
-
-    $rows = array ();
-    foreach ($kinds as $kind) {
-        $id = $kind[0];
-        $val = $kind[1];
-        
-        $cols = array ();
-        $cols[] = h($val);
-
-        $choices = array ("yes", "if_necessary", "no");
-        foreach ($choices as $choice) {
-            $c = "";
-            if (strcmp (@$curval[$id], $choice) == 0)
-                $c = "checked='checked'";
-            $cols[] = sprintf ("<input type='radio' $c"
-                               ." name='%s[%s]'"
-                               ." value='%s' />",
-                               $input_id, h($id),
-                               h($choice));
-        }
-        $rows[] = $cols;
-    }
-    $ret .= mktable (array ("Room type", "Yes", "If necessary", "No"), $rows);
-    
-    $ret .= "</div>\n";
-
-    return ($ret);
-}
-
 $body .= "<div class='preface'>\n";
 $body .= file_get_contents ($_SERVER['APP_ROOT'] . "/preface.html");
 $body .= "</div>\n";
@@ -402,12 +356,6 @@ if ($username) {
 $body .= sprintf ("<input type='hidden' name='app_id' value='%d' />\n",
                   $arg_app_id);
 
-function autoquote($x) {
-    if (preg_match('/</', $x))
-        return ($x);
-    return (h ($x));
-}
-
 foreach ($questions as $question) {
     $question_id = $question['id'];
     $class = @$question['class'];
@@ -426,7 +374,7 @@ foreach ($questions as $question) {
               
 
     $body .= "<h3>";
-    $body .= h($question['q']);
+    $body .= autoquote($question['q']);
 
     if (! @$question['optional']) {
         $body .= sprintf (" <span class='required_marker'>*</span>");
@@ -443,7 +391,7 @@ foreach ($questions as $question) {
     }
 
     if (($desc = @$question['desc_pre']) != "") {
-        if (strncmp ($desc, "<", 1) == 0)
+        if (preg_match ("/</", $desc))
             $body .= $desc;
         else
             $body .= sprintf ("<div>%s</div>\n", h($desc));
@@ -454,8 +402,6 @@ foreach ($questions as $question) {
     
     if ($question_id == "availability") {
         $body .= make_schedule ($application, $question_id);
-    } else if ($question_id == "room_sound") {
-        $body .= make_room_sound ($application, $question_id);
     } else if (@$question['choices']) {
         foreach ($question['choices'] as $choice) {
             $passed = 0;
