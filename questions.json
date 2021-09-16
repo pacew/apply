@@ -26,7 +26,7 @@
       { "val": "yes", "desc": "Yes: This event is suitable for an <strong>online</strong> Festival." },
       { "val": "no", "desc": "No: This event is <strong>not</strong> suitable for an online Festival." }
     ],
-    "desc": "Remember, NEFFA will be either in-person or online, but not hybrid.  You should select YES for both both formats if you are willing to offser this event in either format."
+    "desc": "Remember, NEFFA will be either in-person or online, but not hybrid.  You should select YES for both both formats if you are willing to offer this event in either format."
   },
 
   { "id": "main_performer",
