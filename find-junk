@@ -1,0 +1,67 @@
+#! /usr/bin/env python3
+
+import os
+import sys
+import re
+import datetime
+import json
+
+if 'PSITE_DIR' in os.environ:
+    psite_dir = os.environ['PSITE_DIR']
+else:
+    psite_dir = "{}/psite".format(os.environ['HOME'])
+
+sys.path.append(psite_dir)
+
+import psite
+import db
+
+db = db.get_db()
+cur = db['cursor']
+
+data = {}
+
+cur.execute ("select ts, fest_year, val from json"
+             "  where test_flag = 0")
+def bad_name(name):
+    if name is None:
+        return False
+    
+    if re.search('[a-z][A-Z][A-Z]', name):
+        return True
+    
+    return False
+
+junkf = open('TMP.junk', 'w')
+
+while True:
+    row = cur.fetchone()
+    if row is None:
+        break
+    (ts, fest_year, val) = row
+    if val[0] != "{":
+        continue
+
+
+    try:
+        app = json.loads(val)
+        name = app['name']
+        performer2 = app['performer2']
+        event_title = app['event_title']
+
+        bad_flag = False
+        if bad_name(name) or bad_name(performer2) or bad_name(event_title):
+            bad_flag = True
+
+        if bad_flag:
+            app_id = app['app_id']
+            print(app_id, name, performer2, event_title)
+            print(f'delete from json where app_id = {app_id};', file=junkf)
+
+    except json.decoder.JSONDecodeError:
+        pass
+
+    except TypeError:
+        print(name)
+        sys.exit(1)
+                 
