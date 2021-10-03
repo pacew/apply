@@ -327,3 +327,11 @@ p {
 }
 
 
+#checkarea {
+    margin-top: 20ex;
+}
+
+#checkfield {
+    border: 2px solid #f8f8f8;
+}
+

@@ -545,6 +545,12 @@ $body .= "<p><strong>ERROR:</strong> You application can't be"
     ." the <strong>Submit</strong> button again.</p>";
 $body .= "</div>\n";
 
+$body .= "<div id='checkarea'>Do not write below here</div>";
+$body .= "<hr/>";
+$body .= "<div>";
+$body .= "<input type='text' id='checkfield' name='checkfield' size='40' />";
+$body .= "</div>\n";
+
 $body .= "</form>\n";
 
 pfinish ();

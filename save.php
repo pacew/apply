@@ -8,6 +8,10 @@ $app_id = intval (@$_REQUEST['app_id']);
 
 pstart ();
 
+if (@$_REQUEST['checkfield'] != "") {
+    redirect ("/");
+}
+
 if ($app_id == 0) {
     $need_patch = 0;
     $app_id = get_seq ();
