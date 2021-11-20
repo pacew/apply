@@ -71,8 +71,8 @@ $body .= "<p>Within a few days, the Program Committee will"
                           ." begin processing of your application and will"
                           ." send you an email message with"
                           ." further instructions."
-                          ." If you don't receive a confirmation message by"
-                          ." October 30,"
+                          ." If you don't receive a confirmation message"
+                          ." within a few weeks,"
                           ." please write to ";
 $body .= mklink ($applications_email, $applications_mailto);
 $body .= " You should receive formal notice of whether your application"

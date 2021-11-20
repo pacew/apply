@@ -1,4 +1,6 @@
 function show_if_test (condition) {
+  if (condition == "false")
+    return false;
   var target_id = "i_" + condition[0];
   var elts = $(document.getElementsByName (target_id))
   if (elts.length == 0)

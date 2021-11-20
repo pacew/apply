@@ -12,6 +12,7 @@
     "q": "What is the best phone number at which to reach you?" },
 
   { "id": "inperson",
+    "show_if": ["false"],
     "q": "IN-PERSON?",
     "desc_pre": "<p>We will determine no later than January 1 whether the Festival will be in-person or online. We have no plans to attempt a hybrid Festival.</p><p>You can apply for <strong>one or both</strong> formats. Only submit different events for in-person and online if your title and description will vary significantly based on the format.</p><p>Vaccination and safety measures will be in place if there is an in-person Festival; policies will be announced with acceptances.</p>",
     "choices": [
@@ -26,7 +27,7 @@
       { "val": "yes", "desc": "Yes: This event is suitable for an <strong>online</strong> Festival." },
       { "val": "no", "desc": "No: This event is <strong>not</strong> suitable for an online Festival." }
     ],
-    "desc": "Remember, NEFFA will be either in-person or online, but not hybrid.  You should select YES for both both formats if you are willing to offer this event in either format."
+    "desc": "Only online applications are being considered."
   },
 
   { "id": "main_performer",
