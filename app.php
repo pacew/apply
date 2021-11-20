@@ -58,7 +58,7 @@ $ritual_app_close = mmdd_to_timestamp ("1/15", 0);
 
 if ($cur_year == 2022) {
     $app_window_start = mmdd_to_timestamp ("9/14", 1);
-    $general_app_close = mmdd_to_timestamp ("10/17", 0);
+    $general_app_close = mmdd_to_timestamp ("11/30", 0);
 }
 
 $effective_time = time ();
@@ -496,6 +496,9 @@ function show_if_test ($condition, $curvals) {
     global $questions_by_id;
     
     $target_id = $condition[0];
+    if ($target_id == "false")
+        return 0;
+    
     $target_question = $questions_by_id[$target_id];
     
     $val = $curvals[$target_id];

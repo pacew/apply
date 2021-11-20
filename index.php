@@ -64,15 +64,17 @@ $cols[] = "<strong>General</strong>";
 $cols[] = deadline_msg ($general_app_close);
 $rows[] = $cols;
 
-$cols = array ();
-$cols[] = "<strong>Ritual/Morris dance</strong>";
-$cols[] = deadline_msg ($ritual_app_close);
-$rows[] = $cols;
+if (0) {
+    $cols = array ();
+    $cols[] = "<strong>Ritual/Morris dance</strong>";
+    $cols[] = deadline_msg ($ritual_app_close);
+    $rows[] = $cols;
 
-$cols = array ();
-$cols[] = "<strong>Indoor dance performance</strong>";
-$cols[] = "Sadly, not this year";
-$rows[] = $cols;
+    $cols = array ();
+    $cols[] = "<strong>Indoor dance performance</strong>";
+    $cols[] = "Sadly, not this year";
+    $rows[] = $cols;
+}
 
 $body .= mktable (array ("Type", "Applications accepted until"), $rows);
 
