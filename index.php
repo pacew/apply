@@ -9,9 +9,6 @@ $arg_show_all = intval (@$_REQUEST['show_all']);
 
 pstart ();
 
-if (0) {
-    $body .= "<p>Welcome NEFFA Applicant!</p>\n";
-}
 
 if ($cfg['conf_key'] != "production") {
     $body .= sprintf ("<p class='debug_box'>effective time %s</p>\n", 
@@ -23,16 +20,12 @@ $t="https://neffa.org/";
 $body .= mklink_nw ($t, $t);
 $body .= "</p>\n";
     
-$body .= file_get_contents("postpone.html");
-
-
 if ($deadline_status == 0) {
-    if (0) {
-        $body .= sprintf ("<p><strong>"
-            ."Applications may be submitted starting %s"
-            ."</strong></p>\n",
-            strftime ("%B %e", $app_window_start));
-    }
+    $body .= sprintf ("<p><strong>"
+                      ."Applications may be submitted starting %s"
+                      ."</strong></p>\n",
+                      strftime ("%B %e", $app_window_start));
+
     if (! $username && ! getsess ("beta_tester")) {
         $body .= "<div>If you are a beta tester,"
               ." enter your access code here:</div>\n";
@@ -64,20 +57,17 @@ $cols[] = "<strong>General</strong>";
 $cols[] = deadline_msg ($general_app_close);
 $rows[] = $cols;
 
-if (0) {
-    $cols = array ();
-    $cols[] = "<strong>Ritual/Morris dance</strong>";
-    $cols[] = deadline_msg ($ritual_app_close);
-    $rows[] = $cols;
+$cols = array ();
+$cols[] = "<strong>Dance performances</strong>";
+$cols[] = deadline_msg ($dance_app_close);
+$rows[] = $cols;
 
-    $cols = array ();
-    $cols[] = "<strong>Indoor dance performance</strong>";
-    $cols[] = "Sadly, not this year";
-    $rows[] = $cols;
-}
+$cols = array ();
+$cols[] = "<strong>Ritual/Morris dance</strong>";
+$cols[] = deadline_msg ($ritual_app_close);
+$rows[] = $cols;
 
 $body .= mktable (array ("Type", "Applications accepted until"), $rows);
-
 
 $questions = get_questions ();
 
