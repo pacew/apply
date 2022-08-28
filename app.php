@@ -24,10 +24,6 @@ if (strftime("%m") > 6) {
 }
 $last_year = $cur_year - 1;
 
-if ($cur_year == 2022)
-    $last_year = 2020;
-
-
 $submit_year = $cur_year;
 
 
@@ -51,15 +47,10 @@ function mmdd_to_timestamp ($mmdd, $start_flag) {
     return (strtotime ($t));
 }    
 
-$app_window_start = mmdd_to_timestamp ("9/1", 1);
-$general_app_close = mmdd_to_timestamp ("10/3", 0);
+$app_window_start = mmdd_to_timestamp ("9/15", 1);
+$general_app_close = mmdd_to_timestamp ("11/30", 0);
 $dance_app_close = mmdd_to_timestamp ("12/1", 0);
 $ritual_app_close = mmdd_to_timestamp ("1/15", 0);
-
-if ($cur_year == 2022) {
-    $app_window_start = mmdd_to_timestamp ("9/14", 1);
-    $general_app_close = mmdd_to_timestamp ("11/30", 0);
-}
 
 $effective_time = time ();
 if (0 && $cfg['conf_key'] != "production") {
@@ -78,8 +69,6 @@ if ($effective_time < $app_window_start) {
 } else {
     $deadline_status = 4;
 }
-
-$deadline_status = 1;
 
 if ($deadline_status == 0) {
     $submit_test_flag = 1;

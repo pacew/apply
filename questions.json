@@ -11,25 +11,6 @@
   { "id": "phone",
     "q": "What is the best phone number at which to reach you?" },
 
-  { "id": "inperson",
-    "show_if": ["false"],
-    "q": "IN-PERSON?",
-    "desc_pre": "<p>We will determine no later than January 1 whether the Festival will be in-person or online. We have no plans to attempt a hybrid Festival.</p><p>You can apply for <strong>one or both</strong> formats. Only submit different events for in-person and online if your title and description will vary significantly based on the format.</p><p>Vaccination and safety measures will be in place if there is an in-person Festival; policies will be announced with acceptances.</p>",
-    "choices": [
-      { "val": "yes", "desc": "Yes: This event is suitable for an <strong>in-person</strong> Festival." },
-      { "val": "no", "desc": "No: This event is <strong>not</strong> suitable for an in-person Festival." }
-    ]
-  },
-
-  { "id": "online",
-    "q": "ONLINE?",
-    "choices": [
-      { "val": "yes", "desc": "Yes: This event is suitable for an <strong>online</strong> Festival." },
-      { "val": "no", "desc": "No: This event is <strong>not</strong> suitable for an online Festival." }
-    ],
-    "desc": "Only online applications are being considered."
-  },
-
   { "id": "main_performer",
     "q": "Should the performer for this event be listed as an individual, a duo, or a named group?",
     "desc": "The Duo category is for use when two performers are getting together for a special event at NEFFA, but don't want to bother with choosing a group name.  Duos are free to use the Group category, if desired.",
