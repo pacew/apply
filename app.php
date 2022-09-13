@@ -48,7 +48,7 @@ function mmdd_to_timestamp ($mmdd, $start_flag) {
 }    
 
 $app_window_start = mmdd_to_timestamp ("9/15", 1);
-$general_app_close = mmdd_to_timestamp ("11/30", 0);
+$general_app_close = mmdd_to_timestamp ("10/31", 0);
 $dance_app_close = mmdd_to_timestamp ("12/1", 0);
 $ritual_app_close = mmdd_to_timestamp ("1/15", 0);
 
@@ -398,6 +398,7 @@ function get_applications ($year = 0, $test_flag = 0) {
                 $curvals['email'] = $oops;
                 $curvals['app_category'] = $oops;
                 $curvals['dance_style'] = $oops;
+                $curvals['fms_category'] = $oops;
                 $app->curvals = $curvals;
             }
             $apps[$app_id] = $app;

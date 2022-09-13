@@ -250,7 +250,8 @@ $output_order = array (
     "format",
     "inperson",
     "online",
-    "room_size"
+    "room_size",
+	"fms_category"
 );
 
 $csvhdr = array ();
