@@ -134,7 +134,7 @@ $q = query ("select count(*) as count"
             $to_email);
 $r = fetch ($q);
 $email_count = intval ($r->count);
-$email_limit = 5;
+$email_limit = 8;
 if ($email_count >= $email_limit) {
     $t = sprintf ("thanks.php?a=%s&email_suppressed=1", 
                   rawurlencode ($application->access_code));

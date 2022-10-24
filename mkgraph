@@ -82,7 +82,7 @@ with open(gprc, "w") as outf:
     
     outf.write("set xdata time\n")
     outf.write("set timefmt \"%Y-%m-%d\"\n")
-    outf.write(f'set xrange ["{x_year}-09-01":"{x_year}-10-20"]\n')
+    outf.write(f'set xrange ["{x_year}-09-01":"{x_year}-10-31"]\n')
     outf.write("set format x \"%m/%d\"\n")
     outf.write("set style data lines\n")
     outf.write("set xlabel \"date\"\n")
