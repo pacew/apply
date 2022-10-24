@@ -1,3 +1,5 @@
 #! /bin/sh
 
-exec mysql --login-path=neffa -A --database=neffa_pdb "$@"
+# exec mysql --login-path=neffa -A --database=neffa_pdb "$@"
+
+exec mysql --login-path=apply -A --database=apply_neffa_org "$@"
