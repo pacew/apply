@@ -1,3 +1,7 @@
+dance performance: flag in scripts.js to only display stage direction
+in admin mode
+
+
 scratch mysql setup
 
 create user 'pace'@'localhost' identified with auth_socket;

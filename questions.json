@@ -59,8 +59,8 @@
 	"desc": "Outdoor dance performance (including ritual, morris, rapper, etc and DP groups willing to perform outdoors on asphalt)",
         "deadline": 3
       },
-      { "val": "Dance Performance (indoors)", 
-	"desc": "Other dance performance",
+      { "val": "Performance", 
+	"desc": "Dance performance (indoors)",
         "deadline": 2 
       },
       { "val": "Other", 
@@ -187,48 +187,6 @@
       { "val": "after", "desc": "after dancers are in position." }
     ]
   },
-
-  { "id": "lights_on",
-    "show_if": [ "app_category", "Performance" ],
-    "q": "Lights go ...",
-    "choices": [
-      { "val": "with_music", "desc": "on with music." },
-      { "val": "with_dancers", "desc": "up as dancers enter." },
-      { "val": "before_music", "desc": "up before the music starts." },
-      { "val": "before_dancers", "desc": "on before the dancers enter." },
-      { "val": "other", "desc": "it's complicated." }
-    ]
-  },
-
-  { "id": "lights_on_other",
-    "show_if": [ "lights_on", "other" ],
-    "q": "Ok, how do the lights go on?"
-  },
-
-  { "id": "lights_off",
-    "show_if": [ "app_category", "Performance" ],
-    "q": "Lights go ...",
-    "choices": [
-      { "val": "as_exit", "desc": "down as dancers exit." },
-      { "val": "after_exit", "desc": "off after the dancers exit." },
-      { "val": "after_freeze", "desc": "off after the dancers freeze." },
-      { "val": "during_bow", "desc": "down as the dancers bow." },
-      { "val": "other", "desc": "it's complicated." }
-    ]
-  },
-
-  { "id": "lights_off_other",
-    "show_if": [ "lights_off", "other" ],
-    "q": "Ok, how do the lights go off?"
-  },
-
-  { "id": "lighting_mood",
-    "show_if": [ "app_category", "Performance" ],
-    "q": "Describe the mood of the lighting." },
-
-  { "id": "costume_colors",
-    "show_if": [ "app_category", "Performance" ],
-    "q": "Describe colors of costume." },
 
   { "id": "props",
     "show_if": [ "app_category", "Performance" ],
