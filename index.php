@@ -57,9 +57,9 @@ $cols[] = "<strong>General</strong>";
 $cols[] = deadline_msg ($general_app_close);
 $rows[] = $cols;
 
-if (0) {
+if (1) {
 	$cols = array ();
-	$cols[] = "<strong>Dance performances</strong>";
+	$cols[] = "<strong>Dance performance</strong>";
 	$cols[] = deadline_msg ($dance_app_close);
 	$rows[] = $cols;
 }
