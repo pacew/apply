@@ -70,8 +70,6 @@ if ($effective_time < $app_window_start) {
     $deadline_status = 4;
 }
 
-/* OVERRIDE */
-$deadline_status = 1;
 
 
 if ($deadline_status == 0) {
