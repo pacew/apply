@@ -216,13 +216,17 @@ function make_schedule ($application, $question_id) {
         $from = h24_to_12 ($hour);
         $to = h24_to_12 ($hour + 1);
         
-        $class = "";
+        $classes = [];
         if ($core_min_from_hour <= $hour && $hour <= $core_max_to_hour) {
-            $class = "sched_core";
+            $classes[] = "sched_core";
         } else {
-            $class = "sched_ext";
+            $classes[] = "sched_ext";
         }
-        $ret .= sprintf ("<tr class='%s'>\n", $class);
+
+		if ($hour < 12 || $hour > 15)
+				$classes[] = "sched_exclude_performance";
+
+        $ret .= sprintf ("<tr class='%s'>\n", join(' ', $classes));
         $ret .= sprintf ("<td>%s to %s</td>\n", $from, $to);
         for ($day = $full_from_day; $day <= $full_to_day; $day++) {
             $classes = array ();

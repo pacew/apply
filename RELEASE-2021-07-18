@@ -1,0 +1,14 @@
+Removed questions related to dance performances
+
+Removed the following columns from the csv output file:
+  indoor_ritual, num_dancers, how_long, showcased, music_begins,
+  lights_on, lights_on_other, lights_off, lights_off_other, lighting_mood,
+  costume_colors, props, enter_from
+
+In intro text, changed link for more information from the 2020
+festival specific page to just plain neffa.org
+
+In intro text, removed deadline information for dance performances
+
+Change signature of confirm message from Jon to Lynn Noel <lynnoel@lynnoel.com>
+

@@ -27,7 +27,7 @@ $last_year = $cur_year - 1;
 $submit_year = $cur_year;
 
 
-function mmdd_to_timestamp ($mmdd, $start_flag) {
+function mmdd_to_timestamp ($mmdd, $start_of_day_flag) {
     global $last_year, $cur_year, $submit_year;
     
     if (sscanf ($mmdd, "%d/%d", $month, $mday) != 2)
@@ -38,7 +38,7 @@ function mmdd_to_timestamp ($mmdd, $start_flag) {
     else
         $year = $submit_year;
     
-    if ($start_flag)
+    if ($start_of_day_flag)
         $hms = "00:00:00";
     else
         $hms = "23:59:59";
@@ -48,7 +48,7 @@ function mmdd_to_timestamp ($mmdd, $start_flag) {
 }    
 
 $app_window_start = mmdd_to_timestamp ("9/15", 1);
-$general_app_close = mmdd_to_timestamp ("10/31", 0);
+$general_app_close = mmdd_to_timestamp ("10/15", 0);
 $dance_app_close = mmdd_to_timestamp ("1/5", 0);
 $ritual_app_close = mmdd_to_timestamp ("1/15", 0);
 

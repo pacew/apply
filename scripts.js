@@ -30,6 +30,7 @@ function update_sched_hides () {
   if (val == "Performance") {
     $(".sched_ext").hide();
     $(".sched_fri").hide();
+    $(".sched_exclude_performance").hide();
   } else if (val == "Ritual") {
     $(".sched_ext").show();
     $(".sched_fri").hide();

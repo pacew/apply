@@ -71,18 +71,6 @@
     "desc": "The answer to this question may be different on other applications; please choose the option that best fits with this application only.  Please note that dance bands and callers/dance leaders MUST SUBMIT SEPARATE APPLICATIONS unless the caller is in the band. If a caller wants to work with a specific band, they can specify that below."
   },
 
-  { "id": "fms_category",
-    "show_if": [ "app_category", "Other" ],
-    "q": "Which Folk Music and Song committee would be best to evaluate your application?",
-    "desc": "Applicants may wish to present more than one type of event, but for this application, you have to choose JUST one. If you would like to be considered for more than one type of event, PLEASE fill out another application!",
-    "choices": [
-      { "val": "jam", "desc": "Participatory Jam (primarily instrumental)" },
-      { "val": "song", "desc": "Participatory Song (primarily vocal, with or without accompaniment)" },
-      { "val": "concert", "desc": "Concert (focus on the applicant’s group)" },
-      { "val": "spoken_word", "desc": "Spoken Word (storytelling, presentation, discussion)" }
-    ]
-  },
-
   { "id": "dance_style",
     "show_if": [ "app_category", "Band", "Band_Solo", "Caller" ],
     "q": "Which dance committee would be best to evaluate your application?",
