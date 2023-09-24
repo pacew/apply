@@ -5,7 +5,7 @@ require_once("app.php");
 $anon_ok = 1;
 
 $arg_access_code = trim (@$_REQUEST['a']);
-$arg_email_suppressed = trim (@$_REQUEST['email_suppressed']);
+$arg_email_suppressed = intval (@$_REQUEST['email_suppressed']);
 
 pstart ();
 
