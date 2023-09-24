@@ -130,7 +130,8 @@ if (preg_match ("/@example.com/", $to_email)) {
 
 $q = query ("select count(*) as count"
             ." from email_history"
-            ." where email = ?",
+            ." where email = ?"
+	    ." and year(sent) = year(curdate()) ",
             $to_email);
 $r = fetch ($q);
 $email_count = intval ($r->count);

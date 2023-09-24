@@ -70,7 +70,9 @@ if ($effective_time < $app_window_start) {
     $deadline_status = 4;
 }
 
-
+/* don't really stop accepting applications */
+if ($deadline_status >= 1 $deadline_status < 4)
+	$deadline_status = 1;
 
 if ($deadline_status == 0) {
     $submit_test_flag = 1;
