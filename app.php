@@ -50,7 +50,7 @@ function mmdd_to_timestamp ($mmdd, $start_of_day_flag) {
 $app_window_start = mmdd_to_timestamp ("9/15", 1);
 $general_app_close = mmdd_to_timestamp ("10/15", 0);
 $dance_app_close = mmdd_to_timestamp ("1/5", 0);
-$ritual_app_close = mmdd_to_timestamp ("1/15", 0);
+$ritual_app_close = mmdd_to_timestamp ("5/15", 0);
 
 $effective_time = time ();
 if (0 && $cfg['conf_key'] != "production") {

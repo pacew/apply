@@ -4,6 +4,8 @@ in admin mode
 
 scratch mysql setup
 
+sudo apt install mysql-server php-mysql
+
 create user 'pace'@'localhost' identified with auth_socket;
 grant all privileges on *.* to 'pace'@'localhost' with grant option;
 
