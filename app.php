@@ -419,6 +419,110 @@ function get_applications ($year = 0, $test_flag = 0) {
     return ($apps);
 }
 
+/* === evid === */
+function get_evid_info ($evid_key, $evid_core) {
+    global $evid_info, $max_evid_core;
+
+    if (($ei = @$evid_info[$evid_key]) != NULL)
+        return ($ei);
+    
+    if ($evid_core == 0) {
+        $max_evid_core++;
+        $evid_core = $max_evid_core;
+
+        query (
+            "insert into evid_info (evid_key, evid_core) values (?,?)",
+            array ($evid_key, $evid_core));
+        do_commits ();
+    }
+
+    $ei = (object)NULL;
+    $ei->evid_key = $evid_key;
+    $ei->evid_core = $evid_core;
+    $ei->seq = 0;
+    $evid_info[$evid_key] = $ei;
+
+    return ($ei);
+}
+
+function add_evids($apps) {
+    global $evid_info, $max_evid_code;
+
+    $evid_info = array ();
+
+    $q = query ("select max(evid_core) as evid_core from evid_info");
+    $r = fetch ($q);
+    $max_evid_core = intval ($r->evid_core);
+    if ($max_evid_core < 10)
+        $max_evid_core = 10;
+
+    $q = query ("select evid_key, evid_core from evid_info");
+    while (($r = fetch ($q)) != NULL) {
+        $evid_key = trim ($r->evid_key);
+        $evid_core = intval ($r->evid_core);
+        if ($evid_core > $max_evid_core)
+            $max_evid_core = $evid_core;
+        get_evid_info ($evid_key, $evid_core);
+    }
+
+    foreach ($apps as $app) {
+        if (($neffa_id = name_to_id ($app->curvals['name'])) != 0) {
+            $evid_key = $neffa_id;
+        } else if (($email = @$app->curvals['email']) != "") {
+            $evid_key = $email;
+        } else {
+            $evid_key = sprintf ("oops%d", $app->app_id);
+        }
+
+        $ei = get_evid_info ($evid_key, 0);
+        $ei->seq++;
+
+        $app->ei = $ei;
+        $app->evid_seq = $ei->seq;
+    }
+
+    foreach ($apps as $app) {
+        $curvals = $app->curvals;
+        if (
+            $curvals['app_category'] == "Band" 
+            || $curvals['app_category'] == "Band_Solo" 
+            || $curvals['app_category'] == "Caller") {
+            switch (@$curvals['dance_style']) {
+            case "American": $prefix = "T"; break;
+            case "English": $prefix = "P"; break;
+            case "Couples": $prefix = "P"; break;
+            case "English_Couples": $prefix = "P"; break;
+            case "Int_Line": $prefix = "R"; break;
+            default: $prefix = "oops"; break;
+            }
+        } else if ($curvals['app_category'] == "Performance") {
+            $prefix = "F";
+        } else if ($curvals['app_category'] == "Ritual") {
+            $prefix = "J";
+        } else {
+            $prefix = "M";
+        }
+
+        if (($ei = @$app->ei) == NULL) {
+            $evid_core = 0;
+            $suffix = "";
+        } else {
+            $evid_core = $ei->evid_core;
+            if ($ei->seq == 1) {
+                $suffix = "";
+            } else if ($app->evid_seq <= 26) {
+                $suffix = chr (ord ("a") - 1 + $app->evid_seq);
+            } else {
+                $suffix = sprintf ("-%d", $app->evid_seq);
+            }
+        }
+
+        $app->evid = $prefix . $evid_core . $suffix;
+    }    
+}
+
+/* === evid === */
+
 function get_application ($app_id) {
     $q = query ("select ts, username, val, access_code, fest_year, test_flag,"
                 ."   confirmed"

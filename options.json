@@ -12,6 +12,10 @@
     "aux_dir": "/home/pace/aux/apply-pace"
   },
 
+  "pp": {
+    "aux_dir": "/home/pace/aux/apply-pace"
+  },
+
   "iad1-shared-b8-41": {
     "apply-production": {
       "skip_apache": 1,
