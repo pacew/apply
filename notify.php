@@ -4,7 +4,7 @@ require_once("app.php");
 
 $arg_import = intval(@$_REQUEST['import']);
 $arg_year = intval (@$_REQUEST['year']);
-
+$arg_notify_id = intval(@$_REQUEST['notify_id']);
 
 $webgrid = array ();
 $webgrid[] = array("M74a", array(2661, 1466));
@@ -41,6 +41,7 @@ if (($year = $arg_year) == 0)
 
 $notify = array();
 $nofify_by_name_id = array();
+$notify_by_notify_id = array();
 $q = query ("select notify_id, name_id, email, sent_dttm, responded_dttm"
     ." from notify"
     ." where fest_year = ?"
@@ -55,7 +56,8 @@ while (($r = fetch ($q)) != NULL) {
     $elt->responded_dttm = $r->responded_dttm;
 
     $notify[] = $elt;
-    $notify_by_name_id[intval($r->name_id)] = $elt;
+    $notify_by_notify_id[$elt->notify_id] = $elt;
+    $notify_by_name_id[$elt->name_id] = $elt;
 }
 
 $errs = array();
@@ -74,6 +76,7 @@ function notify_name_id ($name_id) {
             ." values(?, ?, ?, ?)",
             array($elt->notify_id, $year, $elt->name_id, $elt->email));
         $notify[] = $elt;
+        $notify_by_notify_id[$elt->notify_id] = $elt;
         $notify_by_name_id[$elt->name_id] = $elt;
     }
 }
@@ -105,6 +108,54 @@ function notify_event($evid) {
     }
 }
 
+if ($arg_notify_id != 0) {
+    $body .= sprintf ("<div>details for %d</div>\n", $arg_notify_id);
+    if (($elt = @$notify_by_notify_id[$arg_notify_id]) == NULL) {
+        $body .= "<div>not found</div>\n";
+        pfinish();
+    }
+    $body .= sprintf ("<div>%s</div>\n", mklink("[back]", "notify.php"));
+
+    $body .= "<table class='twocol'>\n";
+    $body .= "<tr><th>notify_id</th><td>";
+    $body .= sprintf ("%d", $elt->notify_id);
+    $body .= "</td></tr>\n";
+    $body .= "<tr><th>name_id</th><td>";
+    $body .= sprintf ("%d", $elt->name_id);
+    $body .= "</td></tr>\n";
+    $body .= "<tr><th>email</th><td>";
+    $body .= h($elt->email);
+    $body .= "</td></tr>\n";
+    $body .= "<tr><th>sent_dttm</th><td>";
+    $body .= h($elt->sent_dttm);
+    $body .= "</td></tr>\n";
+    $body .= "<tr><th>repsonded_dttm</th><td>";
+    $body .= h($elt->responded_dttm);
+    $body .= "</td></tr>\n";
+    $body .= "</table>\n";
+
+    $body .= sprintf ("<div>%s</div>\n", mklink("[back]", "notify.php"));
+
+    $rows = array();
+    foreach ($apps as $app) {
+        if ($app->ei->evid_core == $elt->name_id) {
+            $cols = array();
+            $t = sprintf("index.php?app_id=%d", $app->app_id);
+            $cols[] = mklink($app->app_id, $t);
+            $cols[] = h($app->curvals['name']);
+            $cols[] = h($app->curvals['email']);
+
+            $rows[] = $cols;
+        }
+    }
+
+    $body .= "<h3>apps</h3>\n";
+    $body .= mktable(array("app_id", "name", "email"), $rows);
+    
+    pfinish ();
+}
+
+
 if ($arg_import == 1) {
     $f = fopen("webgrid.tsv", "r");
     while (($row = fgets ($f)) != NULL) {
@@ -128,7 +179,8 @@ if ($arg_import == 1) {
 $rows = array();
 foreach ($notify as $elt) {
     $cols = array();
-    $cols[] = h($elt->notify_id);
+    $t = sprintf("notify.php?notify_id=%d", $elt->notify_id);
+    $cols[] = mklink($elt->notify_id, $t);
     $cols[] = h($elt->name_id);
     $cols[] = h($elt->email);
     $cols[] = h($elt->sent_dttm);
