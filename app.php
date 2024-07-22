@@ -19,7 +19,7 @@ if (! @$cli_mode
 
 
 $cur_year = intval(strftime("%Y"));
-if (strftime("%m") > 6) {
+if (strftime("%m") >= 9) {
     $cur_year++;
 }
 $last_year = $cur_year - 1;

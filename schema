@@ -32,3 +32,11 @@ col session text
 table vars
 col var text
 col val text
+
+table notify
+col notify_id integer
+col fest_year integer
+col name_id integer
+col email text
+col sent_dttm timestamp
+col responded_dttm timestamp

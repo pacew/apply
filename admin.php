@@ -67,7 +67,7 @@ $body .= mklink ("download csv", "download.php?download_csv=1");
 $body .= " | ";
 $body .= mklink ("test lookup", "lookup_individual.php?term=willisson");
 $body .= " | ";
-$body .= mklink ("import webgrid", "webgrid.php");
+$body .= mklink ("webgrid notify", "notify.php");
 $body .= "</div>\n";
 
 $body .= "<div>\n";
