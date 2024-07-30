@@ -6,6 +6,14 @@ ini_set ("pcre.jit", 0);
 require_once ($_SERVER['PSITE_PHP']);
 require_once ($_SERVER['APP_ROOT'] . "/JsonPatch.php");
 
+// access to neffa_pdb database (the "performer" database)
+$pdb_params['dbtype'] = "mysql";
+$pdb_params['host'] = 'neffaprog.neffa.dreamhosters.com';
+$pdb_params['user'] = 'pace_willisson';
+
+$file = sprintf ("%s/neffadb_passwd", $cfg['aux_dir']);
+$pdb_params['password'] = trim (file_get_contents ($file));
+
 
 if (! @$cli_mode 
     && @$_SERVER['HTTPS'] == "" 

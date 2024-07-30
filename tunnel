@@ -1,0 +1,6 @@
+#! /bin/bash
+
+echo "setting up tunnel so this will work"
+echo "mysql --protocol=TCP --port=63306 -u neffa_pc -p -h localhost neffa_pdb"
+ssh -N -L 63306:neffaprog.neffa.dreamhosters.com:3306 apply.neffa.org
+

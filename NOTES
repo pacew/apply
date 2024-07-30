@@ -1,3 +1,7 @@
+mysql -u neffa_pc -p -h neffaprog.neffa.dreamhosters.com neffa_pdb
+mysql --port=63306 -u neffa_pc -p -h localhost neffa_pdb
+
+
 dance performance: flag in scripts.js to only display stage direction
 in admin mode
 

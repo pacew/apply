@@ -20,6 +20,17 @@ $body .= mklink ("import webgrid", "notify.php?import=1");
 $body .= " | ";
 $body .= "</div>\n";
 
+$body .= "<div>for debugging, don't forget ./tunnel</div>";
+
+$pdb = get_db ("neffa_pdb", $pdb_params);
+
+var_dump($pdb);
+
+$q = query_db($pdb, "select * from performers limit 1");
+$r = fetch ($q);
+var_dump ($r);
+
+
 $apps = get_applications($arg_year);
 add_evids($apps);
 
