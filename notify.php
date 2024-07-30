@@ -24,12 +24,17 @@ $body .= "<div>for debugging, don't forget ./tunnel</div>";
 
 $pdb = get_db ("neffa_pdb", $pdb_params);
 
-var_dump($pdb);
-
-$q = query_db($pdb, "select * from performers limit 1");
-$r = fetch ($q);
-var_dump ($r);
-
+$q = query_db ($pdb,
+    "select groupNumber, memberNumber"
+    ." from annotated_members"
+    ." where type = 'C'"
+    ." order by groupNumber");
+$contacts = [];
+while (($r = fetch ($q)) != NULL) {
+    $group_number = intval($r->groupNumber);
+    $contact_number = intval($r->memberNumber);
+    $contacts[$group_number] = $contact_number;
+}
 
 $apps = get_applications($arg_year);
 add_evids($apps);
