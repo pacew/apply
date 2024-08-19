@@ -62,6 +62,8 @@ mysql --login-path=neffa
 
 mysql_config_editor set --login-path=apply --host=mysql.neffa.org --user=neffaapply --password 
 
+mysql_config_editor set --login-path=pdb --host=neffaprog.neffa.dreamhosters.com --user=pace_willisson --password 
+
 
 psql --host main.czuqd0u2qqew.us-east-1.rds.amazonaws.com --user=master --dbname=template1
 

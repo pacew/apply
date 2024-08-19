@@ -1,1 +1,6 @@
-mysql -u pace_willisson -p -h neffaprog.neffa.dreamhosters.com neffa_pdb
+#! /bin/bash
+
+# mysql_config_editor print --all
+# mysql_config_editor set --login-path=NAME --host=HOST --user=USER --password
+
+mysql --login-path=pdb "$@" neffa_pdb

@@ -10,9 +10,6 @@ $webgrid = array ();
 $webgrid[] = array("M74a", array(2661, 1466));
 $webgrid[] = array("F1344", array(12852));
 
-$group_to_group_leader = array ();
-$group_to_group_leader[7824] = 2661;
-
 pstart ();
 
 $body .= "<div>\n";
@@ -20,7 +17,7 @@ $body .= mklink ("import webgrid", "notify.php?import=1");
 $body .= " | ";
 $body .= "</div>\n";
 
-$body .= "<div>for debugging, don't forget ./tunnel</div>";
+$body .= "<div>west gallery 3976</div>";
 
 $pdb = get_db ("neffa_pdb", $pdb_params);
 
@@ -29,11 +26,29 @@ $q = query_db ($pdb,
     ." from annotated_members"
     ." where type = 'C'"
     ." order by groupNumber");
-$contacts = [];
+$group_to_group_leader = [];
+$group_leader_to_groups = [];
 while (($r = fetch ($q)) != NULL) {
     $group_number = intval($r->groupNumber);
-    $contact_number = intval($r->memberNumber);
-    $contacts[$group_number] = $contact_number;
+    $leader_number = intval($r->memberNumber);
+    $group_to_group_leader[$group_number] = $leader_number;
+    if (! isset ($group_leader_to_groups[$leader_number]))
+        $group_leader_to_groups[$leader_number] = [];
+    $group_leader_to_groups[$leader_number][] = $group_number;
+}
+
+$performers = array();
+
+$q = query_db ($pdb,
+    "select number, performerName, email"
+    ." from performers");
+
+while (($r = fetch($q)) != NULL) {
+    $perf = (object)NULL;
+    $perf->number = intval($r->number);
+    $perf->name = trim($r->performerName);
+    $perf->email = trim($r->email);
+    $performers[$perf->number] = $perf;
 }
 
 $apps = get_applications($arg_year);
@@ -70,6 +85,7 @@ while (($r = fetch ($q)) != NULL) {
     $elt->email = trim($r->email);
     $elt->sent_dttm = $r->sent_dttm;
     $elt->responded_dttm = $r->responded_dttm;
+    $elt->group_contact_id = intval(@$group_to_group_leader[$elt->name_id]);
 
     $notify[] = $elt;
     $notify_by_notify_id[$elt->notify_id] = $elt;
@@ -78,7 +94,7 @@ while (($r = fetch ($q)) != NULL) {
 
 $errs = array();
 
-function notify_name_id ($name_id) {
+function we_need_to_notify ($name_id) {
     global $notify, $notify_by_name_id, $year;
     global $name_id_to_email;
     
@@ -100,27 +116,27 @@ function notify_name_id ($name_id) {
 function notify_event($evid) {
     global $errs;
     if (($app = @$evid_map[$evid]) == NULL) {
-        $errs[] = sprintf ("%s: can't find app", $evid);
+        $errs[] = sprintf ("can't find application for evid %s", $evid);
         return;
     }
 
     if (($group_name = $app->curvals['group_name']) != "") {
         $group_name_id = name_to_id ($group_name);
         if ($group_name_id == 0) {
-            $errs[] = sprintf("%s: can't find group_id for %s",
-                              $app->evid, $group_name);
+            $errs[] = sprintf("can't find group_id for %s in evid %s",
+                $group_name, $app->evid);
             return;
         }
 
         global $group_to_group_leader;
         $leader_name_id = intval($group_to_group_leader[$group_name_id]);
         if ($leader_name_id == 0) {
-            $errs[] = sprintf("%s: can't find group leader for %s",
-                              $app->evid, $group_name);
+            $errs[] = sprintf("can't find group leader for %s for evid %s",
+                $group_name, $app->evid);
             return;
         }
 
-        notify_name_id($leader_id);
+        we_need_to_notify($leader_id);
     }
 }
 
@@ -168,6 +184,22 @@ if ($arg_notify_id != 0) {
     $body .= "<h3>apps</h3>\n";
     $body .= mktable(array("app_id", "name", "email"), $rows);
     
+    $rows = array();
+    if (isset ($group_leader_to_groups[$elt->name_id])) {
+        foreach ($group_leader_to_groups[$elt->name_id] as $group_id) {
+            $group = @$performers[$group_id];
+
+            $cols = [];
+            $cols[] = $group_id;
+            $cols[] = @$group->name;
+            $rows[] = $cols;
+        }
+    }
+    if ($rows) {
+        $body .= "<h3>groups</h3>\n";
+        $body .= mktable(array("group_id", "group_name"), $rows);
+    }
+
     pfinish ();
 }
 
@@ -177,11 +209,18 @@ if ($arg_import == 1) {
     while (($row = fgets ($f)) != NULL) {
         $cols = explode("\t", $row);
         $evid = $cols[0];
-        notify_event($evid);
-        for ($idx = 6; $idx <= 9; $idx++) {
+
+        // notify_event($evid);
+
+        for ($idx = 7; $idx <= 10; $idx++) {
             $name_id = intval($cols[$idx]);
             if ($name_id) {
-                notify_name_id($name_id);
+                $leader_id = @$group_to_group_leader[$name_id];
+                if ($leader_id) {
+                    we_need_to_notify($leader_id);
+                } else {
+                    we_need_to_notify($name_id);
+                }
             }
         }
     }
@@ -194,11 +233,14 @@ if ($arg_import == 1) {
 
 $rows = array();
 foreach ($notify as $elt) {
+    $perf = @$performers[$elt->name_id];
     $cols = array();
     $t = sprintf("notify.php?notify_id=%d", $elt->notify_id);
     $cols[] = mklink($elt->notify_id, $t);
     $cols[] = h($elt->name_id);
+    $cols[] = h(@$perf->name);
     $cols[] = h($elt->email);
+    $cols[] = h($elt->group_contact_id);
     $cols[] = h($elt->sent_dttm);
     $cols[] = h($elt->responded_dttm);
     $rows[] = $cols;
@@ -207,7 +249,8 @@ foreach ($notify as $elt) {
             
 $body .= sprintf("<div>%d rows</div>\n", count($notify));
 $body .= mktable(array(
-    "notify_id", "name_id", "email", "sent_dttm", "responded_dttm"),
+    "notify_id", "name_id", "name", "email", 
+    "contact", "sent_dttm", "responded_dttm"),
     $rows);
 
 pfinish();
