@@ -17,7 +17,7 @@ $body .= mklink ("import webgrid", "notify.php?import=1");
 $body .= " | ";
 $body .= "</div>\n";
 
-$body .= "<div>west gallery 3976</div>";
+$body .= "<div>west gallery 3976 ; bruce 1642</div>";
 
 $pdb = get_db ("neffa_pdb", $pdb_params);
 
@@ -62,7 +62,7 @@ foreach ($apps as $app) {
 $name_id_to_email = array();
 
 foreach ($apps as $app) {
-    $app_name_id = $app->ei->evid_core;
+    $app_name_id = intval($app->ei->evid_key);
     $email = $app->curvals['email'];
     $name_id_to_email[$app_name_id] = $email;
 }
@@ -137,6 +137,9 @@ function notify_event($evid) {
         }
 
         we_need_to_notify($leader_id);
+    } else {
+        var_dump($app);
+        exit();
     }
 }
 
