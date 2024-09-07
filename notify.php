@@ -2,7 +2,6 @@
 
 require_once("app.php");
 
-$arg_import = intval(@$_REQUEST['import']);
 $arg_year = intval (@$_REQUEST['year']);
 $arg_notify_id = intval(@$_REQUEST['notify_id']);
 
@@ -12,12 +11,11 @@ $webgrid[] = array("F1344", array(12852));
 
 pstart ();
 
-$body .= "<div>\n";
-$body .= mklink ("import webgrid", "notify.php?import=1");
-$body .= " | ";
-$body .= "</div>\n";
-
 $body .= "<div>west gallery 3976 ; bruce 1642</div>";
+
+$errs = [];
+$info = [];
+$stray_secondaries = [];
 
 $pdb = get_db ("neffa_pdb", $pdb_params);
 
@@ -31,40 +29,135 @@ $group_leader_to_groups = [];
 while (($r = fetch ($q)) != NULL) {
     $group_number = intval($r->groupNumber);
     $leader_number = intval($r->memberNumber);
-    $group_to_group_leader[$group_number] = $leader_number;
-    if (! isset ($group_leader_to_groups[$leader_number]))
-        $group_leader_to_groups[$leader_number] = [];
-    $group_leader_to_groups[$leader_number][] = $group_number;
+    if (intval(@$group_to_group_leader[$group_number]) > 0) {
+        $errs[] = sprintf ("group %d has more than one leader", $group_number);
+    } else {
+        $group_to_group_leader[$group_number] = $leader_number;
+        if (! isset ($group_leader_to_groups[$leader_number]))
+            $group_leader_to_groups[$leader_number] = [];
+        $group_leader_to_groups[$leader_number][] = $group_number;
+    }
+}
+
+// columns
+// 1 evid
+// 2 title
+// 3 description
+// 4 codes like D S, G S, T B N S
+// 5 F, U, or S
+// 6 room
+// 7 time HHMM
+// 8 to end: performer id's
+$f = fopen("webgrid.tsv", "r");
+$webgrid = [];
+while (($row = fgets ($f)) != NULL) {
+    $cols = explode("\t", $row);
+    $elt = (object)NULL;
+    $elt->evid = trim($cols[0]);
+    $elt->title = trim($cols[1]);
+    $elt->desc = trim($cols[2]);
+    $elt->codes = trim($cols[3]);
+    $elt->day = trim($cols[4]); // F U S for fri sat sun
+    $elt->room = trim($cols[5]);
+    $elt->time = trim($cols[6]); // HHMM
+    $elt->name_ids = [];
+    for ($idx = 7; $idx < count($cols); $idx++) {
+        $name_id = intval(@$cols[$idx]);
+        if ($name_id)
+            $elt->name_ids[] = intval($cols[$idx]);
+    }
+    $webgrid[] = $elt;
 }
 
 $performers = array();
-
 $q = query_db ($pdb,
     "select number, performerName, email"
     ." from performers");
 
 while (($r = fetch($q)) != NULL) {
     $perf = (object)NULL;
-    $perf->number = intval($r->number);
+    $perf->number = intval($r->number); // known in apply as name_id 
     $perf->name = trim($r->performerName);
-    $perf->email = trim($r->email);
+    $perf->pdb_email = trim($r->email);
+    $perf->apps = [];
     $performers[$perf->number] = $perf;
 }
+
+$name_id_to_pcode = [];
+$q = query ("select id, pcode from pcodes");
+while (($r = fetch ($q)) != NULL) {
+    $name_id = intval($r->id);
+    $pcode = trim($r->pcode);
+    $name_id_to_pcode[$name_id] = $pcode;
+}
+
 
 $apps = get_applications($arg_year);
 add_evids($apps);
 
-$evid_map = array();
-foreach ($apps as $app) {
-    $evid_map[$app->evid] = $app;
+function canonical_evid($evid) {
+    $key = strtolower($evid);
+    if (! preg_match('/[a-z]$/', $key))
+        $key .= "a";
+    return($key);
 }
 
-$name_id_to_email = array();
+$evid_map = array();
+foreach ($apps as $app) {
+    $evid_map[canonical_evid($app->evid)] = $app;
+}
+
+function evid_to_app($evid) {
+    global $evid_map;
+    return ($evid_map[canonical_evid($evid)]);
+}
 
 foreach ($apps as $app) {
-    $app_name_id = intval($app->ei->evid_key);
-    $email = $app->curvals['email'];
-    $name_id_to_email[$app_name_id] = $email;
+    $name_id = name_to_id($app->curvals['name']);
+    if (($perf = @$performers[$name_id]) != NULL) {
+        $perf->apps[] = $app;
+    }
+}
+
+// might return empty string
+function get_email($perf) {
+    if (@$perf->best_email)
+        return ($perf->best_email);
+
+    $app_email = trim(@$apps[0]->curvals['email']);
+    if ($app_email != "") {
+        $perf->best_email = $app_email;
+    } else {
+        $perf->best_email = $perf->pdb_email;
+    }
+
+    $emails = [];
+    $emails[strtolower($perf->pdb_email)] = 1;
+    foreach ($perf->apps as $app) {
+        $emails[strtolower(trim($app->curvals['email']))] = 1;
+    }
+    if (count($emails) > 1) {
+        $msg = "<div>\n";
+        $msg .= sprintf ("<div>performer %d has multiple emails</div>\n",
+            $perf->number);
+        if ($perf->pdb_email) {
+            $msg .= sprintf ("<div>from performer db: %s</div>\n",
+                h($perf->pdb_email));
+        } else {
+            $msg .= sprintf("<div>not set in perforer db</div>\n");
+        }
+        foreach ($perf->apps as $app) {
+            $msg .= sprintf ("<div>%s in %s</div>\n",
+                h($app->curvals['email']),
+                h($app->curvals['event_title']));
+        }
+
+        $msg .= sprintf ("<div>used: %s</div>\n", h($perf->best_email));
+        $msg .= "</div>\n";
+        $info[] = $msg;
+    }
+
+    return ($perf->best_email);
 }
 
 if (($year = $arg_year) == 0)
@@ -73,7 +166,7 @@ if (($year = $arg_year) == 0)
 $notify = array();
 $nofify_by_name_id = array();
 $notify_by_notify_id = array();
-$q = query ("select notify_id, name_id, email, sent_dttm, responded_dttm"
+$q = query ("select notify_id, name_id, email"
     ." from notify"
     ." where fest_year = ?"
     ." order by notify_id",
@@ -83,64 +176,38 @@ while (($r = fetch ($q)) != NULL) {
     $elt->notify_id = intval($r->notify_id);
     $elt->name_id = intval($r->name_id);
     $elt->email = trim($r->email);
-    $elt->sent_dttm = $r->sent_dttm;
-    $elt->responded_dttm = $r->responded_dttm;
-    $elt->group_contact_id = intval(@$group_to_group_leader[$elt->name_id]);
 
     $notify[] = $elt;
     $notify_by_notify_id[$elt->notify_id] = $elt;
     $notify_by_name_id[$elt->name_id] = $elt;
 }
 
-$errs = array();
-
-function we_need_to_notify ($name_id) {
+function we_need_to_notify ($kind, $name_id) {
     global $notify, $notify_by_name_id, $year;
-    global $name_id_to_email;
     
-    if (! isset ($notify_by_name_id[$name_id])) {
-        $elt = (object)NULL;
-        $elt->notify_id = get_seq();
-        $elt->name_id = $name_id;
-        $elt->email = @$name_id_to_email[$name_id];
-        $elt->fest_year = $year;
-        query("insert into notify(notify_id, fest_year, name_id, email)"
-            ." values(?, ?, ?, ?)",
-            array($elt->notify_id, $year, $elt->name_id, $elt->email));
-        $notify[] = $elt;
-        $notify_by_notify_id[$elt->notify_id] = $elt;
-        $notify_by_name_id[$elt->name_id] = $elt;
-    }
-}
-
-function notify_event($evid) {
-    global $errs;
-    if (($app = @$evid_map[$evid]) == NULL) {
-        $errs[] = sprintf ("can't find application for evid %s", $evid);
+    if (isset ($notify_by_name_id[$name_id]))
         return;
-    }
+    
+    global $errs, $performers;
+    if (($perf = @$performers[$name_id]) == NULL)
+        return (-1);
 
-    if (($group_name = $app->curvals['group_name']) != "") {
-        $group_name_id = name_to_id ($group_name);
-        if ($group_name_id == 0) {
-            $errs[] = sprintf("can't find group_id for %s in evid %s",
-                $group_name, $app->evid);
-            return;
-        }
+    if (($email = get_email($perf)) == "")
+        return (-1);
 
-        global $group_to_group_leader;
-        $leader_name_id = intval($group_to_group_leader[$group_name_id]);
-        if ($leader_name_id == 0) {
-            $errs[] = sprintf("can't find group leader for %s for evid %s",
-                $group_name, $app->evid);
-            return;
-        }
+    $elt = (object)NULL;
+    $elt->notify_id = get_seq();
+    $elt->name_id = $name_id;
+    $elt->email = $email;
+    $elt->fest_year = $year;
+    query("insert into notify(notify_id, fest_year, name_id, email)"
+        ." values(?, ?, ?, ?)",
+        array($elt->notify_id, $year, $elt->name_id, $elt->email));
+    $notify[] = $elt;
+    $notify_by_notify_id[$elt->notify_id] = $elt;
+    $notify_by_name_id[$elt->name_id] = $elt;
 
-        we_need_to_notify($leader_id);
-    } else {
-        var_dump($app);
-        exit();
-    }
+    return (0);
 }
 
 if ($arg_notify_id != 0) {
@@ -160,12 +227,6 @@ if ($arg_notify_id != 0) {
     $body .= "</td></tr>\n";
     $body .= "<tr><th>email</th><td>";
     $body .= h($elt->email);
-    $body .= "</td></tr>\n";
-    $body .= "<tr><th>sent_dttm</th><td>";
-    $body .= h($elt->sent_dttm);
-    $body .= "</td></tr>\n";
-    $body .= "<tr><th>repsonded_dttm</th><td>";
-    $body .= h($elt->responded_dttm);
     $body .= "</td></tr>\n";
     $body .= "</table>\n";
 
@@ -206,33 +267,98 @@ if ($arg_notify_id != 0) {
     pfinish ();
 }
 
+function make_evid_link($evid) {
+    global $evid_map;
+    if (($app = evid_to_app($evid)) == NULL)
+        return sprintf ("[stray evid %s]", h($evid));
+        
+    if (($title = $app->curvals['event_title']) == "")
+        $title = $app->curvals['group_name'];
 
-if ($arg_import == 1) {
-    $f = fopen("webgrid.tsv", "r");
-    while (($row = fgets ($f)) != NULL) {
-        $cols = explode("\t", $row);
-        $evid = $cols[0];
+    $label = sprintf ("%s %s", $evid, $title);
 
-        // notify_event($evid);
+    $t = sprintf ("index.php?app_id=%d", $app->app_id);
+    return (mklink($label, $t));
+}
 
-        for ($idx = 7; $idx <= 10; $idx++) {
-            $name_id = intval($cols[$idx]);
-            if ($name_id) {
-                $leader_id = @$group_to_group_leader[$name_id];
-                if ($leader_id) {
-                    we_need_to_notify($leader_id);
+
+function walk_grid() {
+    global $webgrid, $group_to_group_leader;
+    foreach ($webgrid as $elt) {
+        $success = [];
+        $fails = [];
+        foreach ($elt->name_ids as $name_id) {
+            $leader_id = @$group_to_group_leader[$name_id];
+            if ($leader_id) {
+                if (we_need_to_notify("leader", $leader_id) < 0) {
+                    $fails[] = $leader_id;
                 } else {
-                    we_need_to_notify($name_id);
+                    $success[] = $leader_id;
                 }
+            } else {
+                if (we_need_to_notify("individual", $name_id) < 0) {
+                    $fails[] = $name_id;
+                } else {
+                    $success[] = $name_id;
+                }
+            }
+        }
+        
+        global $performers, $name_id_to_pcode;
+
+        if (count($fails) > 0) {
+            if (count($success) > 0) {
+                $msg = sprintf("<div>event %s</div>\n",
+                    make_evid_link($elt->evid));
+                $msg .= "<ul class='notify_err'>\n";
+                $msg .= "<li>";
+                $msg .= "notified ";
+                foreach ($success as $name_id) {
+                    $p = @$performers[$name_id];
+                    $pcode = @$name_id_to_pcode[$name_id];
+                    if ($p && $pcode) {
+                        $t = sprintf("https://cgi.neffa.org/performer/index.pl"
+                            ."?P=%s", rawurlencode($pcode));
+                        $msg .= sprintf(" %s", mklink_nw($p->name, $t));
+                    } else {
+                        $msg .= sprintf(" %d", $name_id);
+                    }
+                }
+                $msg .= "</li>\n";
+                $msg .= "<li>";
+                $msg .= "skipped ";
+                foreach ($fails as $name_id) {
+                    $p = @$performers[$name_id];
+                    $pcode = @$name_id_to_pcode[$name_id];
+                    if ($p && $pcode) {
+                        $t = sprintf("https://cgi.neffa.org/performer/index.pl"
+                            ."?P=%s", rawurlencode($pcode));
+                        $msg .= sprintf(" %s", mklink_nw($p->name, $t));
+                    } else {
+                        $msg .= sprintf(" %d", $name_id);
+                    }
+                }
+                $msg .= "</li>\n";
+                $msg .= "</ul>\n";
+                global $stray_secondaries;
+                $stray_secondaries[] = $msg;
+            } else {
+                $msg = sprintf ("can't find email for event %s",
+                    make_evid_link($elt->evid));
+                global $errs;
+                $errs[] = $msg;
             }
         }
     }
     do_commits();
-
-    $body .= "<div>import done</div>\n";
-    $body .= mklink("[back]", "notify.php");
-    pfinish();
 }
+
+walk_grid();
+
+if (count($errs) > 0) {
+    $body .= "<h1 style='color:red'>see end of page for errors</h1>\n";
+}
+
 
 $rows = array();
 foreach ($notify as $elt) {
@@ -243,18 +369,39 @@ foreach ($notify as $elt) {
     $cols[] = h($elt->name_id);
     $cols[] = h(@$perf->name);
     $cols[] = h($elt->email);
-    $cols[] = h($elt->group_contact_id);
-    $cols[] = h($elt->sent_dttm);
-    $cols[] = h($elt->responded_dttm);
     $rows[] = $cols;
     
 }
             
 $body .= sprintf("<div>%d rows</div>\n", count($notify));
 $body .= mktable(array(
-    "notify_id", "name_id", "name", "email", 
-    "contact", "sent_dttm", "responded_dttm"),
+    "notify_id", "name_id", "name", "email"),
     $rows);
+
+if (count($errs) > 0) {
+    $body .= "<h1 style='color:red'>errors</h1>\n";
+    foreach ($errs as $err) {
+        $body .= sprintf ("<div>%s</div>\n", $err);
+    }
+}
+        
+if (count($stray_secondaries) > 0) {
+    $body .= "<h1>stray secondaries</h1>\n";
+    $body .= "<p>For these events, we have a addresses for some but not"
+          ." all of the people in webgrid</p>\n";
+
+    foreach ($stray_secondaries as $elt) {
+        $body .= sprintf ("<div>%s</div>\n", $elt);
+    }
+}
+
+
+if (count($info) > 0) {
+    $body .= "<h1>info messages</h1>\n";
+    foreach ($info as $elt) {
+        $body .= sprintf ("<div>%s</div>\n", $elt);
+    }
+}
 
 pfinish();
 

@@ -335,3 +335,6 @@ p {
     border: 2px solid #f8f8f8;
 }
 
+.notify_err {
+    margin-left: 2em;
+}

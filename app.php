@@ -428,6 +428,13 @@ function get_applications ($year = 0, $test_flag = 0) {
 }
 
 /* === evid === */
+/*
+ * evids are like M123c
+ * The number is in general a performer id
+ * The suffix is omitted if the performer has only one application.
+ * M123 and M123a should be considered the same
+ * comparisons should be downcased
+ */
 function get_evid_info ($evid_key, $evid_core) {
     global $evid_info, $max_evid_core;
 
