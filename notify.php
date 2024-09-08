@@ -3,8 +3,14 @@
 require_once("app.php");
 
 $arg_notify_id = intval(@$_REQUEST['notify_id']);
+$arg_reload = intval (@$_REQUEST['reload']);
 
 pstart ();
+
+if ($arg_reload == 1) {
+    query ("delete from notify");
+    redirect ("notify.php");
+}
 
 read_notify_info();
 
@@ -176,6 +182,10 @@ function walk_grid() {
 }
 
 walk_grid();
+
+$body .= "<div class='admin_box'>\n";
+$body .= mklink ("reload webgrid [for debugging]", "notify.php?reload=1");
+$body .= "</div>\n";
 
 if (count($errs) > 0) {
     $body .= "<h1 style='color:red'>see end of page for errors</h1>\n";
