@@ -751,6 +751,201 @@ function make_cgi_pcode_link($pcode) {
 }
 
 
+function canonical_evid($evid) {
+    $key = strtolower($evid);
+    if (! preg_match('/[a-z]$/', $key))
+        $key .= "a";
+    return($key);
+}
+
+function evid_to_app($evid) {
+    global $evid_map;
+    return (@$evid_map[canonical_evid($evid)]);
+}
+
+// might return empty string
+function get_email($perf) {
+    if (@$perf->best_email)
+        return ($perf->best_email);
+
+    $app_email = trim(@$apps[0]->curvals['email']);
+    if ($app_email != "") {
+        $perf->best_email = $app_email;
+    } else {
+        $perf->best_email = $perf->pdb_email;
+    }
+
+    $emails = [];
+    $emails[strtolower($perf->pdb_email)] = 1;
+    foreach ($perf->apps as $app) {
+        $emails[strtolower(trim($app->curvals['email']))] = 1;
+    }
+    if (count($emails) > 1) {
+        $msg = "<div>\n";
+        $msg .= sprintf ("<div>performer %d has multiple emails</div>\n",
+            $perf->number);
+        if ($perf->pdb_email) {
+            $msg .= sprintf ("<div>from performer db: %s</div>\n",
+                h($perf->pdb_email));
+        } else {
+            $msg .= sprintf("<div>not set in perforer db</div>\n");
+        }
+        foreach ($perf->apps as $app) {
+            $msg .= sprintf ("<div>%s in %s</div>\n",
+                h($app->curvals['email']),
+                h($app->curvals['event_title']));
+        }
+
+        $msg .= sprintf ("<div>used: %s</div>\n", h($perf->best_email));
+        $msg .= "</div>\n";
+        $info[] = $msg;
+    }
+
+    return ($perf->best_email);
+}
+
+function read_notify_info() {
+    global $errs, $info, $stray_secondaries;
+    $errs = [];
+    $info = [];
+    $stray_secondaries = [];
+
+    global $pdb_params;
+    $pdb = get_db ("neffa_pdb", $pdb_params);
+
+    global $name_id_to_pcode;
+    global $pcode_to_name_id;
+    $name_id_to_pcode = [];
+    $pcode_to_name_id = [];
+    $q = query ("select id, pcode from pcodes");
+    while (($r = fetch ($q)) != NULL) {
+        $name_id = intval($r->id);
+        $pcode = trim($r->pcode);
+        $name_id_to_pcode[$name_id] = $pcode;
+        $pcode_to_name_id[$pcode] = $name_id;
+    }
+
+    $q = query_db ($pdb,
+        "select groupNumber, memberNumber"
+        ." from annotated_members"
+        ." where type = 'C'"
+        ." order by groupNumber");
+    global $group_to_group_leader, $group_leader_to_groups;
+
+    $group_to_group_leader = [];
+    $group_leader_to_groups = [];
+    while (($r = fetch ($q)) != NULL) {
+        $group_number = intval($r->groupNumber);
+        $leader_number = intval($r->memberNumber);
+        if (intval(@$group_to_group_leader[$group_number]) > 0) {
+            $pcode = @$name_id_to_pcode[$group_number];
+            if ($pcode) {
+                $t = make_cgi_pcode_link($pcode);
+            } else {
+                $t = "";
+            }
+
+            global $errs;
+            $errs[] = sprintf ("group %s has more than one leader", 
+                mklink_nw($group_number, $t));
+        } else {
+            $group_to_group_leader[$group_number] = $leader_number;
+            if (! isset ($group_leader_to_groups[$leader_number]))
+                $group_leader_to_groups[$leader_number] = [];
+            $group_leader_to_groups[$leader_number][] = $group_number;
+        }
+    }
+
+    // columns
+    // 1 evid
+    // 2 title
+    // 3 description
+    // 4 codes like D S, G S, T B N S
+    // 5 F, U, or S
+    // 6 room
+    // 7 time HHMM
+    // 8 to end: performer id's
+    $f = fopen("webgrid.tsv", "r");
+    global $webgrid;
+    $webgrid = [];
+    while (($row = fgets ($f)) != NULL) {
+        $cols = explode("\t", $row);
+        $elt = (object)NULL;
+        $elt->evid = trim($cols[0]);
+        $elt->title = trim($cols[1]);
+        $elt->desc = trim($cols[2]);
+        $elt->codes = trim($cols[3]);
+        $elt->day = trim($cols[4]); // F U S for fri sat sun
+        $elt->room = trim($cols[5]);
+        $elt->time = trim($cols[6]); // HHMM
+        $elt->name_ids = [];
+        for ($idx = 7; $idx < count($cols); $idx++) {
+            $name_id = intval(@$cols[$idx]);
+            if ($name_id)
+                $elt->name_ids[] = intval($cols[$idx]);
+        }
+        $webgrid[] = $elt;
+    }
+
+    global $performers;
+    $performers = array();
+    $q = query_db ($pdb,
+        "select number, performerName, email"
+        ." from performers");
+
+    while (($r = fetch($q)) != NULL) {
+        $perf = (object)NULL;
+        $perf->number = intval($r->number); // known in apply as name_id 
+        $perf->name = trim($r->performerName);
+        $perf->pdb_email = trim($r->email);
+        $perf->apps = [];
+        $performers[$perf->number] = $perf;
+    }
+
+    global $apps;
+    global $view_year;
+    $apps = get_applications($view_year);
+    add_evids($apps);
+
+
+    global $evid_map;
+    $evid_map = array();
+    foreach ($apps as $app) {
+        $evid_map[canonical_evid($app->evid)] = $app;
+    }
+
+    foreach ($apps as $app) {
+        $name_id = name_to_id($app->curvals['name']);
+        if (($perf = @$performers[$name_id]) != NULL) {
+            $perf->apps[] = $app;
+        }
+    }
+
+    global $notify, $notify_by_notify_id, $notify_by_name_id;
+
+    $notify = array();
+    $nofify_by_name_id = array();
+    $notify_by_notify_id = array();
+    $q = query ("select notify_id, name_id, email"
+        ." from notify"
+        ." where fest_year = ?"
+        ." order by notify_id",
+        $view_year);
+    while (($r = fetch ($q)) != NULL) {
+        $elt = (object)NULL;
+        $elt->notify_id = intval($r->notify_id);
+        $elt->name_id = intval($r->name_id);
+        $elt->email = trim($r->email);
+
+        $notify[] = $elt;
+        $notify_by_notify_id[$elt->notify_id] = $elt;
+        $notify_by_name_id[$elt->name_id] = $elt;
+    }
+}
+
+
+
+
 if (! get_option ("flat") && ! @$cli_mode) {
     require (router());
     /* NOTREACHED */

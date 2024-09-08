@@ -164,6 +164,11 @@ h2 {
     color: red;
 }
 
+.admin_box {
+    background: #faa;
+    border: 1px solid #a44;
+}
+
 p {
     margin: 1em 0;
 }
