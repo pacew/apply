@@ -14,7 +14,7 @@ if ($arg_reload == 1) {
 
 read_notify_info();
 
-function we_need_to_notify ($kind, $name_id) {
+function we_need_to_notify ($kind, $webgrid_elt, $name_id) {
     global $notify, $notify_by_name_id, $view_year;
     global $notify_by_notify_id;
     
@@ -97,89 +97,6 @@ function make_evid_link($evid) {
 }
 
 
-function walk_grid() {
-    global $webgrid, $group_to_group_leader;
-    foreach ($webgrid as $elt) {
-        $success = [];
-        $fails = [];
-        foreach ($elt->name_ids as $name_id) {
-            $leader_id = @$group_to_group_leader[$name_id];
-            if ($leader_id) {
-                if (we_need_to_notify("leader", $leader_id) < 0) {
-                    $fails[] = $leader_id;
-                } else {
-                    $success[] = $leader_id;
-                }
-            } else {
-                if (we_need_to_notify("individual", $name_id) < 0) {
-                    $fails[] = $name_id;
-                } else {
-                    $success[] = $name_id;
-                }
-            }
-        }
-        
-        global $performers, $name_id_to_pcode;
-
-        if (count($fails) > 0) {
-            if (count($success) > 0) {
-                $msg = sprintf("<div>event %s</div>\n",
-                    make_evid_link($elt->evid));
-                $msg .= "<ul class='notify_err'>\n";
-                $msg .= "<li>";
-                $msg .= "notified ";
-                foreach ($success as $name_id) {
-                    $p = @$performers[$name_id];
-                    $pcode = @$name_id_to_pcode[$name_id];
-                    if ($p && $pcode) {
-                        $t = make_cgi_pcode_link($pcode);
-                        $msg .= sprintf(" %s", mklink_nw($p->name, $t));
-                    } else {
-                        $msg .= sprintf(" %d", $name_id);
-                    }
-                }
-                $msg .= "</li>\n";
-                $msg .= "<li>";
-                $msg .= "skipped ";
-                foreach ($fails as $name_id) {
-                    $p = @$performers[$name_id];
-                    $pcode = @$name_id_to_pcode[$name_id];
-                    if ($p && $pcode) {
-                        $t = make_cgi_pcode_link($pcode);
-                        $msg .= sprintf(" %s", mklink_nw($p->name, $t));
-                    } else {
-                        $msg .= sprintf(" %d", $name_id);
-                    }
-                }
-                $msg .= "</li>\n";
-                $msg .= "</ul>\n";
-                global $stray_secondaries;
-                $stray_secondaries[] = $msg;
-            } else {
-                $msg = sprintf ("<div>can't find email for event %s</div>",
-                    make_evid_link($elt->evid));
-                $msg .= "<li>";
-                $msg .= "skipped ";
-                foreach ($fails as $name_id) {
-                    $p = @$performers[$name_id];
-                    $pcode = @$name_id_to_pcode[$name_id];
-                    if ($p && $pcode) {
-                        $t = make_cgi_pcode_link($pcode);
-                        $msg .= sprintf(" %s", mklink_nw($p->name, $t));
-                    } else {
-                        $msg .= sprintf(" %d", $name_id);
-                    }
-                }
-                $msg .= "</li>\n";
-                $msg .= "</ul>\n";
-
-                global $errs;
-                $errs[] = $msg;
-            }
-        }
-    }
-    do_commits();
-}
 
 walk_grid();
 

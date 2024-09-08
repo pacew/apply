@@ -19,6 +19,26 @@ if (($perf = @$performers[$name_id]) == NULL) {
     pfinish();
 }
 
+$msg = "";
+
+function we_need_to_notify ($kind, $webgrid_elt, $elt_name_id) {
+    global $name_id, $msg;
+    if ($elt_name_id == $name_id) {
+        if (($app = evid_to_app($webgrid_elt->evid)) != NULL) {
+            if (($title = $app->curvals['event_title']) == "")
+                $title = $app->curvals['group_name'];
+
+            $t = sprintf ("index.php?app_id=%d", $app->app_id);
+
+            $msg .= sprintf ("<div>%s</div>\n",
+                mklink($title, $t));
+        }
+    }
+}
+
+
+walk_grid();
+
 $title_html = sprintf("Welcome to NEFFA %d Performer Confirmation!",
     $submit_year);
 
@@ -38,6 +58,16 @@ if ($username) {
 
 $body .= sprintf("<p>Performer: %s &lt;%s&gt;</p>\n", 
     h($perf->name), h($perf->pdb_email));
+
+if ($msg == "") {
+    $body .= "[internal error - no events found]";
+} else {
+    $body .= "<p>You are associated with these events which"
+          ." have been scheduled:</p>\n";
+    $body .= $msg;
+}
+
+
 
 $pcode_link = make_cgi_pcode_link($arg_pcode);
 
