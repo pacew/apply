@@ -717,6 +717,40 @@ function autoquote($x) {
 }
 
 
+function populate_template($template_file, $vals) {
+    $html = file_get_contents ($template_file);
+
+    preg_match_all ('/\[\[\[([-_A-Za-z0-9 ]+)\]\]\]/', 
+        $html, $matches, PREG_OFFSET_CAPTURE | PREG_PATTERN_ORDER);
+
+    $placeholders = array_reverse ($matches[0]);
+    $names = array_reverse ($matches[1]);
+
+    for ($idx = 0; $idx < count ($placeholders); $idx++) {
+        $place = $placeholders[$idx];
+        $name = $names[$idx][0];
+
+        $len = strlen ($place[0]);
+        $start = $place[1];
+           
+        if (isset ($vals[$name])) {
+            $before = substr ($html, 0, $start);
+            $newval = $vals[$name];
+            $after = substr ($html, $start + $len);
+
+            $html = $before . $newval . $after;
+        }
+    }
+
+    return ($html);
+}
+
+function make_cgi_pcode_link($pcode) {
+    return sprintf("https://cgi.neffa.org/performer/index.pl"
+        ."?P=%s", rawurlencode($pcode));
+}
+
+
 if (! get_option ("flat") && ! @$cli_mode) {
     require (router());
     /* NOTREACHED */

@@ -11,13 +11,19 @@ $webgrid[] = array("F1344", array(12852));
 
 pstart ();
 
-$body .= "<div>west gallery 3976 ; bruce 1642</div>";
-
 $errs = [];
 $info = [];
 $stray_secondaries = [];
 
 $pdb = get_db ("neffa_pdb", $pdb_params);
+
+$name_id_to_pcode = [];
+$q = query ("select id, pcode from pcodes");
+while (($r = fetch ($q)) != NULL) {
+    $name_id = intval($r->id);
+    $pcode = trim($r->pcode);
+    $name_id_to_pcode[$name_id] = $pcode;
+}
 
 $q = query_db ($pdb,
     "select groupNumber, memberNumber"
@@ -30,7 +36,15 @@ while (($r = fetch ($q)) != NULL) {
     $group_number = intval($r->groupNumber);
     $leader_number = intval($r->memberNumber);
     if (intval(@$group_to_group_leader[$group_number]) > 0) {
-        $errs[] = sprintf ("group %d has more than one leader", $group_number);
+        $pcode = @$name_id_to_pcode[$group_number];
+        if ($pcode) {
+            $t = make_cgi_pcode_link($pcode);
+        } else {
+            $t = "";
+        }
+
+        $errs[] = sprintf ("group %s has more than one leader", 
+            mklink_nw($group_number, $t));
     } else {
         $group_to_group_leader[$group_number] = $leader_number;
         if (! isset ($group_leader_to_groups[$leader_number]))
@@ -83,13 +97,6 @@ while (($r = fetch($q)) != NULL) {
     $performers[$perf->number] = $perf;
 }
 
-$name_id_to_pcode = [];
-$q = query ("select id, pcode from pcodes");
-while (($r = fetch ($q)) != NULL) {
-    $name_id = intval($r->id);
-    $pcode = trim($r->pcode);
-    $name_id_to_pcode[$name_id] = $pcode;
-}
 
 
 $apps = get_applications($arg_year);
@@ -109,7 +116,7 @@ foreach ($apps as $app) {
 
 function evid_to_app($evid) {
     global $evid_map;
-    return ($evid_map[canonical_evid($evid)]);
+    return (@$evid_map[canonical_evid($evid)]);
 }
 
 foreach ($apps as $app) {
@@ -218,52 +225,30 @@ if ($arg_notify_id != 0) {
     }
     $body .= sprintf ("<div>%s</div>\n", mklink("[back]", "notify.php"));
 
-    $body .= "<table class='twocol'>\n";
-    $body .= "<tr><th>notify_id</th><td>";
-    $body .= sprintf ("%d", $elt->notify_id);
-    $body .= "</td></tr>\n";
-    $body .= "<tr><th>name_id</th><td>";
-    $body .= sprintf ("%d", $elt->name_id);
-    $body .= "</td></tr>\n";
-    $body .= "<tr><th>email</th><td>";
-    $body .= h($elt->email);
-    $body .= "</td></tr>\n";
-    $body .= "</table>\n";
-
-    $body .= sprintf ("<div>%s</div>\n", mklink("[back]", "notify.php"));
-
-    $rows = array();
-    foreach ($apps as $app) {
-        if ($app->ei->evid_core == $elt->name_id) {
-            $cols = array();
-            $t = sprintf("index.php?app_id=%d", $app->app_id);
-            $cols[] = mklink($app->app_id, $t);
-            $cols[] = h($app->curvals['name']);
-            $cols[] = h($app->curvals['email']);
-
-            $rows[] = $cols;
-        }
+    if (($perf = @$performers[$elt->name_id]) == NULL) {
+        $body .= "<div>can't find performer db entry for this person</div>\n";
+        pfinish();
     }
-
-    $body .= "<h3>apps</h3>\n";
-    $body .= mktable(array("app_id", "name", "email"), $rows);
     
-    $rows = array();
-    if (isset ($group_leader_to_groups[$elt->name_id])) {
-        foreach ($group_leader_to_groups[$elt->name_id] as $group_id) {
-            $group = @$performers[$group_id];
-
-            $cols = [];
-            $cols[] = $group_id;
-            $cols[] = @$group->name;
-            $rows[] = $cols;
-        }
-    }
-    if ($rows) {
-        $body .= "<h3>groups</h3>\n";
-        $body .= mktable(array("group_id", "group_name"), $rows);
+    if (($pcode = @$name_id_to_pcode[$elt->name_id]) == NULL) {
+        $body .= "<div>can't find pcode for this person</div>\n";
+        pfinish();
     }
 
+    $t = make_cgi_pcode_link($pcode);
+    $pcode_link = mklink($t, $t);
+    
+    $vals = [];
+
+    $vals['first_name'] = preg_replace ('/^[^,]*,/', "", $perf->name);
+    $vals['pcode_link'] = $pcode_link;
+
+
+
+    $body .= "<div class='notify_email'>\n";
+    $body .= populate_template("notify.html", $vals);
+    $body .= "</div>\n";
+    
     pfinish ();
 }
 
@@ -317,8 +302,7 @@ function walk_grid() {
                     $p = @$performers[$name_id];
                     $pcode = @$name_id_to_pcode[$name_id];
                     if ($p && $pcode) {
-                        $t = sprintf("https://cgi.neffa.org/performer/index.pl"
-                            ."?P=%s", rawurlencode($pcode));
+                        $t = make_cgi_pcode_link($pcode);
                         $msg .= sprintf(" %s", mklink_nw($p->name, $t));
                     } else {
                         $msg .= sprintf(" %d", $name_id);
@@ -331,8 +315,7 @@ function walk_grid() {
                     $p = @$performers[$name_id];
                     $pcode = @$name_id_to_pcode[$name_id];
                     if ($p && $pcode) {
-                        $t = sprintf("https://cgi.neffa.org/performer/index.pl"
-                            ."?P=%s", rawurlencode($pcode));
+                        $t = make_cgi_pcode_link($pcode);
                         $msg .= sprintf(" %s", mklink_nw($p->name, $t));
                     } else {
                         $msg .= sprintf(" %d", $name_id);
@@ -343,8 +326,23 @@ function walk_grid() {
                 global $stray_secondaries;
                 $stray_secondaries[] = $msg;
             } else {
-                $msg = sprintf ("can't find email for event %s",
+                $msg = sprintf ("<div>can't find email for event %s</div>",
                     make_evid_link($elt->evid));
+                $msg .= "<li>";
+                $msg .= "skipped ";
+                foreach ($fails as $name_id) {
+                    $p = @$performers[$name_id];
+                    $pcode = @$name_id_to_pcode[$name_id];
+                    if ($p && $pcode) {
+                        $t = make_cgi_pcode_link($pcode);
+                        $msg .= sprintf(" %s", mklink_nw($p->name, $t));
+                    } else {
+                        $msg .= sprintf(" %d", $name_id);
+                    }
+                }
+                $msg .= "</li>\n";
+                $msg .= "</ul>\n";
+
                 global $errs;
                 $errs[] = $msg;
             }

@@ -483,6 +483,9 @@ foreach ($questions as $question) {
                 $body .= sprintf (
                     "<input class='pcode' type='text' readonly='readonly'"
                     ." value='%s' />\n", h($pcode));
+
+                $t = make_cgi_pcode_link($pcode);
+                $body .= mklink_nw ("link to cgi", $t);
                 $body .= "</div>\n";
             }
         }

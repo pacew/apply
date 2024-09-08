@@ -34,31 +34,7 @@ $curvals['festival_year'] = $cur_year;
 $curvals['first_name'] = preg_replace ('/^[^,]*,/', "", $curvals['name']);
 $curvals['title_for_confirm'] = convert_event_title($curvals);
 
-
-$html = file_get_contents ("confirm.html");
-
-preg_match_all ('/\[\[\[([-_A-Za-z0-9 ]+)\]\]\]/', 
-                $html, $matches, PREG_OFFSET_CAPTURE | PREG_PATTERN_ORDER);
-
-$placeholders = array_reverse ($matches[0]);
-$names = array_reverse ($matches[1]);
-
-for ($idx = 0; $idx < count ($placeholders); $idx++) {
-    $place = $placeholders[$idx];
-    $name = $names[$idx][0];
-
-    $len = strlen ($place[0]);
-    $start = $place[1];
-           
-    if (isset ($curvals[$name])) {
-        $before = substr ($html, 0, $start);
-        $newval = $curvals[$name];
-        $after = substr ($html, $start + $len);
-
-        $html = $before . $newval . $after;
-    }
-}
-
+$html = populate_template("confirm.html", $curvals);
 
 $args = (object)NULL;
 $args->to_email = trim (strtolower ($curvals['email']));

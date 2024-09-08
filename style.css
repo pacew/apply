@@ -338,3 +338,20 @@ p {
 .notify_err {
     margin-left: 2em;
 }
+
+.notify_email {
+    background: #eee;
+    border: 2px solid #444;
+    padding: 1em;
+    margin: 1em;
+}
+
+.center {
+    text-align: center;
+}
+
+.bold_red {
+    color: red;
+    font-weight: bold;
+}
+
