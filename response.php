@@ -68,7 +68,12 @@ if ($arg_cancel == 1) {
 }
 
 if ($arg_cancel == 2) {
-    $body .= "cancel";
+    $body .= "<div>\n";
+    $body .= "We have recorded your request to cancel.  It may take a few"
+          ." days for all of our systems to be updated.  Please feel free"
+          ." to contact <a href=mailto:program@neffa.org>program@neffa.org</a>"
+          ." with any further concerns.";
+    $body .= "</div>\n";
     pfinish();
 }
 
