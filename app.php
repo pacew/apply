@@ -478,7 +478,6 @@ function repair_evids() {
     }
     do_commits ();
 }
-repair_evids();
 
 
 /*
