@@ -18,6 +18,8 @@ create user 'www-data'@'localhost' identified with auth_socket;
 grant all privileges on *.* to 'www-data'@'localhost' with grant option;
 
 daily mysql backups in neffa:/home/neffapace/aux/backups/*
+scp apply.neffa.org:aux/backups/latest.gz .
+
 
 psite restore apply-production-YYYYMMDDTHHMMSS.sql.gz
 

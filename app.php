@@ -428,9 +428,62 @@ function get_applications ($year = 0, $test_flag = 0) {
 }
 
 /* === evid === */
+
+$q = query ("select max(evid_core) as evid_core from evid_info");
+$r = fetch ($q);
+$max_evid_core = intval ($r->evid_core);
+if ($max_evid_core < 10)
+    $max_evid_core = 10;
+
+function repair_evids() {
+    global $max_evid_core;
+
+    $hard_keys = array("13240",
+        "1992",
+        "oops5729",
+        "oops5738",
+        "oops5740",
+        "1880",
+        "oops5743",
+        "oops5744"
+    );
+
+    foreach ($hard_keys as $evid_key) {
+        $q = query ("select evid_core"
+            ." from evid_info"
+            ." where evid_key = ?",
+            $evid_key);
+        if (($r = fetch ($q)) == NULL)
+            continue;
+
+        if ($r->evid_core < 100) {
+            $max_evid_core++;
+            query("update evid_info set evid_core = ? where evid_key = ?",
+                array($max_evid_core, $evid_key));
+        }
+    }
+    
+    while (1) {
+        $q = query ("select evid_key, evid_core"
+            ." from evid_info"
+            ." where evid_core < 10"
+            ." limit 1");
+        if (($r = fetch ($q)) == NULL)
+            break;
+
+        $max_evid_core++;
+
+        query("update evid_info set evid_core = ? where evid_key = ?",
+            array($max_evid_core, $r->evid_key));
+    }
+    do_commits ();
+}
+repair_evids();
+
+
 /*
  * evids are like M123c
- * The number is in general a performer id
+ * The number is ... complicated
  * The suffix is omitted if the performer has only one application.
  * M123 and M123a should be considered the same
  * comparisons should be downcased
@@ -461,15 +514,9 @@ function get_evid_info ($evid_key, $evid_core) {
 }
 
 function add_evids($apps) {
-    global $evid_info, $max_evid_code;
+    global $evid_info, $max_evid_core;
 
     $evid_info = array ();
-
-    $q = query ("select max(evid_core) as evid_core from evid_info");
-    $r = fetch ($q);
-    $max_evid_core = intval ($r->evid_core);
-    if ($max_evid_core < 10)
-        $max_evid_core = 10;
 
     $q = query ("select evid_key, evid_core from evid_info");
     while (($r = fetch ($q)) != NULL) {
