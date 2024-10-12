@@ -25,6 +25,8 @@ $arg_download_csv = intval (@$_REQUEST['download_csv']);
 $arg_app_id = intval (@$_REQUEST['app_id']);
 $arg_year = intval (@$_REQUEST['year']);
 
+$csv_style = getsess ("csv_style");
+
 $apps = get_applications ($arg_year);
 
 add_evids($apps);
@@ -225,7 +227,10 @@ foreach ($apps as $app) {
             continue;
         }
         if ($question_id == "evid") {
-            $cols[] = $app->evid;
+            $val = $app->evid;
+            if ($csv_style == "experimental")
+                $val .= sprintf (".%d", $app->app_id);
+            $cols[] = $val;
             continue;
         }
         if ($question_id == "app_id") {
@@ -290,7 +295,10 @@ foreach ($apps as $app) {
                 $cols[] = @$val[$choice];
             }
         } else if ($question_id == "event_title") {
-            $cols[] = convert_event_title ($curvals);
+            $val = convert_event_title ($curvals);
+            if ($csv_style == "experimental")
+                $val .= sprintf (" [%d]", $app->app_id);
+            $cols[] = $val;
         } else {
             $cols[] = $val;
         }

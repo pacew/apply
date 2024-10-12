@@ -12,6 +12,8 @@ $arg_desired_test_flag = intval (@$_REQUEST['desired_test_flag']);
 $arg_return_to_app = intval (@$_REQUEST['return_to_app']);
 $arg_set_filter = intval (@$_REQUEST['set_filter']);
 $arg_filter = trim (@$_REQUEST['filter']);
+$arg_set_csv_style = intval (@$_REQUEST['set_csv_style']);
+$arg_csv_style = trim (@$_REQUEST['csv_style']);
 $arg_doc = intval (@$_REQUEST['doc']);
 
 if ($arg_doc == 1) {
@@ -43,6 +45,11 @@ if ($arg_set_year == 1) {
 
 if ($arg_set_filter == 1) {
     putsess ("filter", $arg_filter);
+    redirect ("admin.php");
+}
+
+if ($arg_set_csv_style == 1) {
+    putsess ("csv_style", $arg_csv_style);
     redirect ("admin.php");
 }
 
@@ -174,6 +181,31 @@ foreach ($filters as $filter) {
 $body .= " &nbsp;&nbsp;&nbsp; ";
 $body .= "<input type='submit' value='change filter' />\n";
 $body .= "</form>\n";
+
+
+/* ===== */
+$csv_styles = array ("normal", "experimental");
+$cur_style = getsess ("csv_style");
+if (array_search ($cur_style, $csv_styles) === FALSE)
+    $cur_style = "normal";
+
+$body .= "<form action='admin.php'>\n";
+$body .= "<input type='hidden' name='set_csv_style' value='1' />\n";
+$body .= "CSV style: ";
+foreach ($csv_styles as $csv_style) {
+    $body .= " &nbsp;&nbsp;&nbsp; ";
+    $c = "";
+    if ($cur_style == $csv_style)
+        $c = "checked='checked'";
+    $body .= sprintf ("<input type='radio' name='csv_style' value='%s' %s />\n",
+                      $csv_style, $c);
+    $body .= $csv_style;
+}
+$body .= " &nbsp;&nbsp;&nbsp; ";
+$body .= "<input type='submit' value='change csv_style' />\n";
+$body .= "[this option will be removed in a few days]";
+$body .= "</form>\n";
+
 
 $rows = array ();
 foreach ($apps as $app) {

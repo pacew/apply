@@ -109,6 +109,9 @@ foreach ($questions as $question) {
     if(! active_question ($question_id, $application->curvals))
         continue;
     
+    if (@$question['admin'])
+        continue;
+
     $q_text = $question['q'];
     $answer = @$application->curvals[$question_id];
   

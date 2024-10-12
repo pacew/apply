@@ -4,7 +4,7 @@ evid's always have a suffix (such as M123a)
 
 There's a flag near the bottom of the application for "Do Not Import" (also known as "Suppress").  Such applications are omitted from the csv download. 
 
-New fields are available to committee members at the bottom of the application.  (The "C_" prefix will be used for future committee fields)
+New fields are available to logged in committee members at the bottom of the application.  (The "C_" prefix will be used for future committee fields)
 
 C_extra_checks
 C_notes
