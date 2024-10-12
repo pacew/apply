@@ -187,7 +187,9 @@ foreach ($apps as $app) {
     }
     $cols = array ();
     $cols[] = mklink_span ($app->app_id, $target, $css);
-    $cols[] = mklink_span ($app->ts, $target, $css);
+
+    $date = preg_replace("/ .*/", "", $app->ts);
+    $cols[] = mklink_span ($date, $target, $css);
 
     $curvals = $app->curvals;
 
@@ -214,8 +216,19 @@ foreach ($apps as $app) {
 
     $cols[] = h($app->confirmed);
 
-    $t = sprintf ("download.php?view_csv=1&app_id=%d", $app->app_id);
-    $cols[] = mklink ("raw data", $t);
+    $full_notes = trim(@$curvals['C_notes']);
+    $notes = preg_replace("/\n.*/", "", $full_notes);
+    $suffix = "";
+    if (strcmp ($full_notes, $notes) != 0) {
+        $t = sprintf ("index.php?app_id=%d", $app->app_id);
+        $suffix = sprintf (" ...%s", mklink("[more]", $t));
+    }
+    $cols[] = h($notes) . $suffix;
+
+    if (0) {
+        $t = sprintf ("download.php?view_csv=1&app_id=%d", $app->app_id);
+        $cols[] = mklink ("raw data", $t);
+    }
 
     $show = 1;
     
@@ -230,10 +243,13 @@ foreach ($apps as $app) {
 if (count ($rows) == 0) {
     $body .= "<p>no data to display</p>\n";
 } else {
-    $body .= mktable (array ("app_id", "ts",
-                             "category",
-                             "group / title / name", "confirmation", ""),
-    $rows);
+    $body .= "<p class='admin'>click the submit date to edit</p>\n";
+    $body .= mktable (array ("app_id", "submit date",
+            "category",
+            "group / title / name", 
+            "confirmation",
+            "Committee notes<br/>(first line)"),
+        $rows);
 }
 
 

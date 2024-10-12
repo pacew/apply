@@ -174,6 +174,13 @@ $plain = preg_replace (":<p>:", "\n", $plain);
 $plain = preg_replace (":</p>:", "\n", $plain);
 
 if (! $want_email) {
+    if ($need_patch) {
+        // just redirect back to editor if this app already existed
+        flash("Saved");
+        $t = sprintf ("index.php?app_id=%d", $app_id);
+        redirect ($t);
+    }
+
     $body .= "<p>[admin: saving without sending email ... here's what"
           ." would have been sent]</p>\n";
     
