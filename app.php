@@ -673,6 +673,10 @@ function active_question ($question_id, $curvals) {
 
     $question = $questions_by_id[$question_id];
 
+    global $username;
+    if (@$question['admin'] && $username == "")
+        return (FALSE);
+
     if (($show_if = @$question['show_if']) != NULL) {
         if (is_array ($show_if[0])) {
             foreach ($show_if as $condition) {

@@ -369,6 +369,9 @@ foreach ($questions as $question) {
         $body .= sprintf (" &nbsp;|&nbsp; show_if: %s\n", 
                           h(json_encode ($question['show_if'])));
     }
+    if (@$question['admin']) {
+        $body .= " &nbsp;|&nbsp; admin\n"; 
+    }
     $body .= "</div>\n";
               
 

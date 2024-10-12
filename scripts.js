@@ -49,6 +49,9 @@ function update_hides () {
     var q = questions[idx];
     var want_field = true;
 
+    if (q.admin && window.admin_mode == false)
+      want_field = false;
+
     if (q.show_if) {
       if (Array.isArray (q.show_if[0])) {
 	q.show_if.forEach (function (condition) {
@@ -124,7 +127,7 @@ function valid_response (q) {
       return (true);
   }
 
-  if (q.optional)
+  if (q.optional || q.admin)
     return (true);
 
   if (q.type == "email")
