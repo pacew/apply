@@ -33,7 +33,7 @@ if (getsess ("admin")) {
     $body .= sprintf (
         "<p class='debug_box'>app_id %d [%s]</p>\n", 
         $application->curvals['app_id'],
-        mklink ("debug link", $t));
+        mklink ("back to edit page", $t));
 }
 
 

@@ -294,6 +294,11 @@
       { "val": "", "desc": "Import as usual" },
       { "val": "Suppress" }
     ]
-  }
+  },
 
+  { "id": "COMMITTEE_extra_checks",
+    "admin": 1,
+    "q": "ADMIN: COMMITTEE extra checks",
+    "textarea": 1
+  }
 ]

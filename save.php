@@ -12,16 +12,14 @@ if (@$_REQUEST['checkfield'] != "") {
     redirect ("/");
 }
 
+$want_email = 0;
+
 if ($app_id == 0) {
     $need_patch = 0;
     $app_id = get_seq ();
+    $want_email = 1;
 } else {
     $need_patch = 1;
-}
-
-$want_email = 0;
-if (@$_REQUEST['submit'] == "Submit") {
-    $want_email = 1;
 }
 
 $questions = get_questions ();

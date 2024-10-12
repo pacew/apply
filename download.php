@@ -292,6 +292,11 @@ if ($arg_app_id) {
     $t = sprintf ("index.php?app_id=%d", $arg_app_id);
     $body .= mklink ("edit", $t);
 
+    if (! $rows) {
+        $body .= "<div>no data found (maybe app is Do Not Import ?)</div>";
+        pfinish();
+    }
+
     foreach ($rows as $row) {
         $body .= "<table class='twocol'>\n";
         for ($idx = 0; $idx < count ($csvhdr); $idx++) {

@@ -309,7 +309,7 @@ if ($username) {
 
     $body .= "<input name='submit' type='submit' value='Save-no-email' />\n";
 
-    $body .= mklink ("[admin]", "admin.php");
+    $body .= mklink ("[applications]", "admin.php");
 
     $body .= " | ";
     $t = sprintf ("download.php?view_csv=1&app_id=%d", $arg_app_id);
@@ -537,8 +537,13 @@ foreach ($questions as $question) {
 
 }
 
-$body .= "<input id='submit_button'"
-    ." name='submit' type='submit' value='Submit' />\n";
+if ($arg_app_id == 0) {
+    $body .= "<input id='submit_button'"
+        ." name='submit' type='submit' value='Submit' />\n";
+} else {
+    $body .= "<input name='submit' type='submit'"
+        ." value='Update (will not send email)' />\n";
+}
 
 $body .= "<div id='submit_button_warning' style='display:none'>\n";
 $body .= "<p><strong>ERROR:</strong> You application can't be"
