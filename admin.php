@@ -12,6 +12,47 @@ $arg_desired_test_flag = intval (@$_REQUEST['desired_test_flag']);
 $arg_return_to_app = intval (@$_REQUEST['return_to_app']);
 $arg_set_filter = intval (@$_REQUEST['set_filter']);
 $arg_filter = trim (@$_REQUEST['filter']);
+$arg_doc = intval (@$_REQUEST['doc']);
+
+if ($arg_doc == 1) {
+    $body .= "<h1>Back link from spreadsheet to edit app</h1>\n";
+
+    $app_id = 999;
+    $secret = "example";
+
+    $target = make_edit_url($app_id, $secret);
+    $body .="<div>using 'example' as secret: ";
+    $body .= h($target);
+    $body .= "</p>\n";
+
+    preg_match("/nonce=([^&]*).auth=([^&]*)/", $target, $parts);
+    $nonce = $parts[1];
+    $auth = $parts[2];
+    if (check_edit_auth($app_id, $nonce, $auth, $secret) < 0) {
+        $body .= "<div>oops ... link doesn't work</div>";
+    }
+
+    $apps = get_applications ();
+    foreach ($apps as $app) {
+        $app_id = $app->app_id;
+        break;
+    }
+
+    $target = make_edit_url($app_id);
+    $body .="<div>a live link using the real secret: ";
+    $body .= mklink($target, $target);
+    $body .= "</p>\n";
+
+    preg_match("/nonce=([^&]*).auth=([^&]*)/", $target, $parts);
+    $nonce = $parts[1];
+    $auth = $parts[2];
+    if (check_edit_auth($app_id, $nonce, $auth) < 0) {
+        $body .= "<div>oops ... link doesn't work</div>";
+    }
+
+
+    pfinish();
+}
 
 if ($arg_set_year == 1) {
     $view_year = $arg_desired_year;
@@ -70,6 +111,8 @@ $body .= " | ";
 $body .= mklink ("templates", "templates.php");
 $body .= " | ";
 $body .= mklink ("webgrid notify", "notify.php");
+$body .= " | ";
+$body .= mklink ("technical_doc", "admin.php?doc=1");
 $body .= "</div>\n";
 
 $body .= "<div>\n";

@@ -2,10 +2,11 @@
 
 require_once("app.php");
 
-$anon_ok = 1;
-
 $arg_app_id = intval (@$_REQUEST['app_id']);
 $arg_show_all = intval (@$_REQUEST['show_all']);
+
+if ($arg_app_id == 0)
+    $anon_ok = 1;
 
 pstart ();
 
