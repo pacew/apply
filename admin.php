@@ -127,6 +127,9 @@ if ($key != "") {
     foreach (array ($cur_year, $last_year) as $year) {
         $t = sprintf ("/download.php?direct_download=%s&year=%d", 
                       rawurlencode ($key), $year);
+        if (getsess ("csv_style") == "experimental")
+            $t .= "&experimental=1";
+
         $url = make_absolute ($t);
         $body .= "<div>\n";
         $body .= sprintf ("fest year %d: ", $year);

@@ -2,6 +2,8 @@
 
 require_once("app.php");
 
+$arg_experimental = intval($_REQUEST['experimental']);
+
 $anon_ok = 1;
 
 pstart ();
@@ -228,7 +230,7 @@ foreach ($apps as $app) {
         }
         if ($question_id == "evid") {
             $val = $app->evid;
-            if ($csv_style == "experimental")
+            if ($csv_style == "experimental" || $arg_experimental)
                 $val .= sprintf (".%d", $app->app_id);
             $cols[] = $val;
             continue;
@@ -296,7 +298,7 @@ foreach ($apps as $app) {
             }
         } else if ($question_id == "event_title") {
             $val = convert_event_title ($curvals);
-            if ($csv_style == "experimental")
+            if ($csv_style == "experimental" || $arg_experimental)
                 $val .= sprintf (" [%d]", $app->app_id);
             $cols[] = $val;
         } else {
