@@ -41,6 +41,8 @@ if ($arg_view_data) {
 
     foreach ($apps as $app) {
         $curvals = $app->curvals;
+        if (@$curvals['do_not_import'] == "Suppress")
+            continue;
         $body .= "<div class='display_data'>\n";
         $body .= sprintf ("<h2>%d</h2>\n", $app->app_id);
         $body .= sprintf ("evid=<strong>%s</strong> ", $app->evid);
@@ -207,6 +209,9 @@ foreach ($output_order as $question_id) {
 $rows = array ();
 foreach ($apps as $app) {
     $curvals = $app->curvals;
+    if (@$curvals['do_not_import'] == "Suppress")
+        continue;
+
     if ($arg_app_id && $arg_app_id != $app->app_id)
         continue;
     $cols = array ();

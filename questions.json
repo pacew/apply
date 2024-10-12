@@ -285,6 +285,14 @@
   { "id": "notes",
     "textarea": 1,
     "optional": 1,
-    "q": "Any additional questions, comments?" }
-  
+    "q": "Any additional questions, comments?" },
+
+  { "id": "do_not_import",
+    "admin": 1,
+    "q": "ADMIN: suppress importing this app?",
+    "choices": [
+      { "val": "", "desc": "Import as usual" },
+      { "val": "Suppress" }
+    ]
+  }
 ]

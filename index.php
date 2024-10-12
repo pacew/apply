@@ -375,7 +375,7 @@ foreach ($questions as $question) {
     $body .= "<h3>";
     $body .= autoquote($question['q']);
 
-    if (! @$question['optional']) {
+    if (! @$question['optional'] && !@$question['admin']) {
         $body .= sprintf (" <span class='required_marker'>*</span>");
         $body .= " <span class='required_text'></span>";
     } else {
