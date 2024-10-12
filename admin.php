@@ -149,6 +149,7 @@ $body .= "<input type='submit' value='Refresh performer index' />\n";
 $body .= "</form>\n";
 
 $apps = get_applications ();
+add_evids($apps);
 
 $body .= sprintf ("<h2>%d applications [%s]</h2>\n", 
                   count($apps), mklink ("graph", "graph.php"));
@@ -187,6 +188,8 @@ foreach ($apps as $app) {
     }
     $cols = array ();
     $cols[] = mklink_span ($app->app_id, $target, $css);
+
+    $cols[] = mklink_span ($app->evid, $target, $css);
 
     $date = preg_replace("/ .*/", "", $app->ts);
     $cols[] = mklink_span ($date, $target, $css);
@@ -243,8 +246,9 @@ foreach ($apps as $app) {
 if (count ($rows) == 0) {
     $body .= "<p>no data to display</p>\n";
 } else {
-    $body .= "<p class='admin'>click the submit date to edit</p>\n";
-    $body .= mktable (array ("app_id", "submit date",
+    $body .= "<p class='admin'>click the evid or submit date"
+        ." to view or edit an application</p>\n";
+    $body .= mktable (array ("app_id", "evid", "submit date",
             "category",
             "group / title / name", 
             "confirmation",
