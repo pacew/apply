@@ -1,0 +1,28 @@
+If a non-logged in user visits the link directly to the application page, they are redirected to the login screen, and then taken to the requested application. 
+
+evid's always have a suffix (such as M123a)
+
+There's a flag near the bottom of the application for "Do Not Import" (also known as "Suppress").  Such applications are omitted from the csv download. 
+
+New fields are available to committee members at the bottom of the application.  (The "C_" prefix will be used for future committee fields)
+
+C_extra_checks
+C_notes
+C_rejection_reason
+C_rejection_notes
+
+The old "online only" cvs column is replaced with "app_link" which is the direct link to edit the application (forcing the user to login first, if necessary).
+
+The system no longer sends email when you save edits to an application.
+
+There's a new "technical documentation" page, linked to from the admin menu.  Mainly intended to record things that Jonathan Young use when connecting with apply.neffa.org.
+
+Changes to the applications list:
+
+* The evid is displayed
+
+* The "ts" (timestamp) column is now "Subtmit date"
+
+* The first line of the C_notes field is displayed.  If the note is more than one line long, a [more] link is included.
+
+
