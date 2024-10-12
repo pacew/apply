@@ -158,7 +158,11 @@ $output_order = array (
     "inperson",
     "online",
     "room_size",
-	"fms_category"
+	"fms_category",
+    "C_extra_checks",
+    "C_notes",
+    "C_rejection_reason",
+    "C_rejection_notes"
 );
 
 $csvhdr = array ();

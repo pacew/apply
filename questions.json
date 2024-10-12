@@ -296,9 +296,27 @@
     ]
   },
 
-  { "id": "COMMITTEE_extra_checks",
+  { "id": "C_extra_checks",
     "admin": 1,
     "q": "ADMIN: COMMITTEE extra checks",
+    "textarea": 1
+  },
+  
+  { "id": "C_notes",
+    "admin": 1,
+    "q": "ADMIN: COMMITTEE notes",
+    "textarea": 1
+  },
+  
+  { "id": "C_rejection_reason",
+    "admin": 1,
+    "q": "ADMIN: COMMITTEE Rejection reason",
+    "textarea": 1
+  },
+  
+  { "id": "C_rejection_notes",
+    "admin": 1,
+    "q": "ADMIN: COMMITTEE Rejection notes",
     "textarea": 1
   }
 ]
