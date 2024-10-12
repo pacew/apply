@@ -32,7 +32,7 @@ add_evids($apps);
 $body .= "<div>\n";
 $body .= mklink ("home", "/");
 $body .= " | ";
-$body .= mklink ("[admin]", "admin.php");
+$body .= mklink ("[applications]", "admin.php");
 $body .= "</div>\n";
 
 if ($arg_view_data) {
@@ -156,7 +156,7 @@ $output_order = array (
 	"notes",
     "format",
     "inperson",
-    "online",
+    "app_link",
     "room_size",
 	"fms_category",
     "C_extra_checks",
@@ -233,6 +233,12 @@ foreach ($apps as $app) {
             continue;
         }
         
+        if ($question_id == "app_link") {
+            $t = sprintf("/index.php?app_id=%d", $app->app_id);
+            $cols[] = make_absolute($t);
+            continue;
+        }
+
         $question = @$questions_by_id[$question_id];
         $class = @$question['class'];
         $val = @$curvals[$question_id];
