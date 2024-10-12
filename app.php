@@ -1073,39 +1073,6 @@ function walk_grid() {
     do_commits();
 }
 
-function make_edit_url($app_id, $secret = "") {
-    global $cfg;
-    if ($secret == "") {
-        $filename = $cfg['aux_dir'] . "/auth_for_edit";
-        $secret = trim(file_get_contents($filename));
-    }
-    $nonce = bin2hex(random_bytes(5));
-
-    $auth_msg = sprintf("%s%d", $nonce, $app_id);
-    $auth = hash_hmac("sha256", $auth_msg, $secret);
-    $url = sprintf("https://apply.neffa.org/index.php"
-        ."?app_id=%d"
-        ."&nonce=%s"
-        ."&auth=%s",
-        $app_id, $nonce, $auth);
-    return ($url);
-}
-
-function check_edit_auth($app_id, $nonce, $auth, $secret = "") {
-    global $cfg;
-    if ($secret == "") {
-        $filename = $cfg['aux_dir'] . "/auth_for_edit";
-        $secret = trim(file_get_contents($filename));
-    }
-    $auth_msg = sprintf("%s%d", $nonce, $app_id);
-    $expected_auth = hash_hmac('sha256', $auth_msg, $secret);
-
-    if (strcmp($auth, $expected_auth) == 0)
-        return (0);
-
-    return (-1);
-}
-
 if (! get_option ("flat") && ! @$cli_mode) {
     require (router());
     /* NOTREACHED */
