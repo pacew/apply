@@ -346,9 +346,11 @@ if ($username) {
     $body .= "</div>\n";
 
     if ($application) {
-        $body .= sprintf ("<div>year %d test %d</div>\n",
+        $body .= sprintf ("<div>year %d test %d app_id %d evid '%s'</div>\n",
                           $application->fest_year,
-                          $application->test_flag);
+                          $application->test_flag,
+                          $arg_app_id,
+                          $application->evid);
     }
 
     $body .= "</div>\n";

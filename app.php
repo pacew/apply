@@ -426,6 +426,7 @@ function get_applications ($year = 0, $test_flag = 0) {
         $app->neffa_id = name_to_id ($app->curvals['name']);
     }
 
+    // just for cleaning up data from before persistent evids 
     foreach ($apps as $app) {
         if ($app->evid == "")
             update_evid ($apps, $app);
@@ -505,7 +506,9 @@ function extract_evid_core($evid) {
 
 // M123a -> 1 ; M123-99 -> 99
 function extract_evid_seq($evid) {
-    if (preg_match('/^.*([a-z])$/', $evid, $parts)) {
+    if (trim($evid) == "") {
+        return (0);
+    } else if (preg_match('/^.*([a-z])$/', $evid, $parts)) {
         $suffix = $parts[1];
         return (ord($suffix) - ord("a") + 1);
     } else if (preg_match('/^.*-([0-9]*)$/', $evid, $parts)) {
@@ -524,6 +527,7 @@ function next_evid_seq($apps, $neffa_id) {
                 $max_seq = $seq;
         }
     }
+
     return ($max_seq + 1);
 }
 
@@ -622,6 +626,7 @@ function get_application ($app_id) {
         return (NULL);
 
     $app = (object)NULL;
+    $app->app_id = $app_id;
     $app->fest_year = $fest_year;
     $app->test_flag = $test_flag;
     $app->access_code = $access_code;

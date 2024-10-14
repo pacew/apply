@@ -110,7 +110,7 @@ query (
 if (($application = get_application ($app_id)) == NULL)
     fatal ("can't re-read application");
 
-update_evid($apps, $application);
+update_evid(get_applications(), $application);
 
 do_commits ();
 
