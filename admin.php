@@ -19,6 +19,7 @@ $arg_doc = intval (@$_REQUEST['doc']);
 if ($arg_doc == 1) {
     $body .= "<h1>Back link from spreadsheet to edit app</h1>\n";
 
+    // get the first app on the list to make an example
     $apps = get_applications ();
     foreach ($apps as $app) {
         $app_id = $app->app_id;
@@ -159,7 +160,6 @@ $body .= "<input type='submit' value='Refresh performer index' />\n";
 $body .= "</form>\n";
 
 $apps = get_applications ();
-add_evids($apps);
 
 $body .= sprintf ("<h2>%d applications [%s]</h2>\n", 
                   count($apps), mklink ("graph", "graph.php"));

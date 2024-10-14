@@ -10,7 +10,7 @@ pstart ();
 $title_html = "Confirm";
 
 $app = get_application ($arg_app_id);
-if (count($app->curvals) == 0)
+if ($app == NULL || count($app->curvals) == 0)
     fatal ("can't find application");
 $curvals = $app->curvals;
 

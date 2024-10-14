@@ -82,7 +82,9 @@ if ($arg_app_id) {
           ." you can reverse your override by pasting in the original answer"
           ."]"
           ."</div>\n";
-    $application = get_application ($arg_app_id);
+    if (($application = get_application ($arg_app_id)) == NULL)
+        fatal ("can't find application");
+
     if ($application->fest_year != $submit_year) {
         $title_html = sprintf ("Previous year app %d %s",
                                $application->fest_year,
@@ -455,7 +457,7 @@ foreach ($questions as $question) {
 
         if ($class == "lookup_individual" || $class == "lookup_group") {
             if ($cur) {
-                if (name_to_id ($cur) == 0) {
+                if (($neffa_id = name_to_id ($cur)) == 0) {
                     $body .= "<span class='initial_attention attention'>"
                           ."not found in NEFFA database</span>\n";
                     $t = sprintf ("admin.php?refresh_idx=1&return_to_app=%d",
@@ -463,8 +465,10 @@ foreach ($questions as $question) {
                     if ($username)
                         $body .= mklink ("[refresh]", $t);
                 } else {
-                    $body .= "<span class='initial_attention attention_good'>"
-                          ."matched in database!</span>";
+                    $body .= sprintf("<span"
+                        ." class='initial_attention attention_good'>"
+                        ."matched in database!  (%d)</span>",
+                        $neffa_id);
                 }
             }
         }

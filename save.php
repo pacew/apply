@@ -75,18 +75,17 @@ function make_access_code () {
     return (generate_urandom_string (8));
 }
 
-
 if ($need_patch == 0) {
     $access_code = make_access_code ();
     
     query ("insert into json (app_id, ts, username, val, access_code,"
-           ."   fest_year, test_flag)"
-           ." values (?,current_timestamp,?,?,?,?,?)",
+           ."   fest_year, test_flag, evid)"
+           ." values (?,current_timestamp,?,?,?,?,?,?)",
            array ($app_id, 
                   $username, 
                   json_encode ($newvals),
                   $access_code,
-                  $submit_year, $submit_test_flag));
+                  $submit_year, $submit_test_flag, $app->evid));
 } else {
     if (($application = get_application ($app_id)) == NULL)
         fatal ("can't find base application to update");
@@ -108,11 +107,12 @@ query (
     "update json set attention = ? where app_id = ?",
     array ($needs_attention, $app_id));
 
-
-do_commits ();
-
 if (($application = get_application ($app_id)) == NULL)
     fatal ("can't re-read application");
+
+update_evid($apps, $application);
+
+do_commits ();
 
 $to_email = trim (strtolower ($application->curvals['email']));
 

@@ -31,8 +31,6 @@ $csv_style = getsess ("csv_style");
 
 $apps = get_applications ($arg_year);
 
-add_evids($apps);
-
 $body .= "<div>\n";
 $body .= mklink ("home", "/");
 $body .= " | ";

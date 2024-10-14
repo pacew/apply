@@ -371,25 +371,20 @@ function get_questions () {
     return ($questions);
 }
 
+$cached_apps = NULL;
 function get_applications ($year = 0, $test_flag = 0) {
-    global $view_year, $view_test_flag;
+    global $cached_apps, $view_year, $view_test_flag;
     
+    if ($cached_apps)
+        return ($cached_apps);
+
     if ($year == 0)
         $year = $view_year;
     if ($test_flag == 0)
         $test_flag = $view_test_flag;
 
     $apps = array ();
-
-    if (get_option("db") == "postgres") {
-        $ts_col = "to_char (ts, 'YYYY-MM-DD HH24:MI:SS') as ts";
-        $confirmed_col = "to_char (ts, 'YYYY-MM-DD HH24:MI:SS') as confirmed";
-    } else {
-        $ts_col = "ts";
-        $confirmed_col = "confirmed";
-    }
-
-    $q = query ("select app_id, val, attention, $ts_col, $confirmed_col"
+    $q = query ("select app_id, val, attention, ts, confirmed, evid"
                 ." from json"
                 ." where fest_year = ?"
                 ."   and test_flag = ?"
@@ -400,10 +395,11 @@ function get_applications ($year = 0, $test_flag = 0) {
 
         if (strncmp ($r->val, "{", 1) == 0) {
             $app = (object)NULL;
-            $app->app_id = $app_id;
+            $app->app_id = intval($app_id);
             $app->attention = intval($r->attention);
-            $app->ts = $r->ts;
-            $app->confirmed = $r->confirmed;
+            $app->ts = trim($r->ts);
+            $app->confirmed = trim($r->confirmed);
+            $app->evid = trim($r->evid);
             $app->curvals = json_decode ($r->val, TRUE);
             if ($app->curvals == NULL) {
                 $curvals = array();
@@ -426,178 +422,168 @@ function get_applications ($year = 0, $test_flag = 0) {
         }
     }
 
+    foreach ($apps as $app) {
+        $app->neffa_id = name_to_id ($app->curvals['name']);
+    }
+
+    foreach ($apps as $app) {
+        if ($app->evid == "")
+            update_evid ($apps, $app);
+    }
+
+    $cached_apps = $apps;
     return ($apps);
 }
 
 /* === evid === */
 
-$q = query ("select max(evid_core) as evid_core from evid_info");
-$r = fetch ($q);
-$max_evid_core = intval ($r->evid_core);
-if ($max_evid_core < 10)
-    $max_evid_core = 10;
 
-function repair_evids() {
-    global $max_evid_core;
-
-    $hard_keys = array("13240",
-        "1992",
-        "oops5729",
-        "oops5738",
-        "oops5740",
-        "1880",
-        "oops5743",
-        "oops5744"
-    );
-
-    foreach ($hard_keys as $evid_key) {
-        $q = query ("select evid_core"
-            ." from evid_info"
-            ." where evid_key = ?",
-            $evid_key);
-        if (($r = fetch ($q)) == NULL)
-            continue;
-
-        if ($r->evid_core < 100) {
-            $max_evid_core++;
-            query("update evid_info set evid_core = ? where evid_key = ?",
-                array($max_evid_core, $evid_key));
-        }
-    }
-    
-    while (1) {
-        $q = query ("select evid_key, evid_core"
-            ." from evid_info"
-            ." where evid_core < 10"
-            ." limit 1");
-        if (($r = fetch ($q)) == NULL)
-            break;
-
-        $max_evid_core++;
-
-        query("update evid_info set evid_core = ? where evid_key = ?",
-            array($max_evid_core, $r->evid_key));
-    }
-    do_commits ();
+$evid_neffa_id_to_core = array ();
+$evid_cores_used = array ();
+query ("delete from evid_info where evid_key not regexp '^[0-9].*'");
+$q = query ("select evid_key, evid_core from evid_info");
+while (($r = fetch ($q)) != NULL) {
+    $neffa_id = intval($r->evid_key);
+    $evid_core = intval ($r->evid_core);
+    $evid_neffa_id_to_core[$neffa_id] = $evid_core;
+    $evid_cores_used[$evid_core] = 1;
 }
 
+function neffa_id_to_evid_core ($neffa_id) {
+    global $evid_neffa_id_to_core, $evid_cores_used;
 
-/*
- * evids are like M123c
- * The number is ... complicated
- * The suffix is omitted if the performer has only one application.
- * M123 and M123a should be considered the same
- * comparisons should be downcased
- */
-function get_evid_info ($evid_key, $evid_core) {
-    global $evid_info, $max_evid_core;
-
-    if (($ei = @$evid_info[$evid_key]) != NULL)
-        return ($ei);
+    if (($evid_core = intval(@$evid_neffa_id_to_core[$neffa_id])) != 0)
+        return ($evid_core);
     
-    if ($evid_core == 0) {
-        $max_evid_core++;
-        $evid_core = $max_evid_core;
-
-        query (
-            "insert into evid_info (evid_key, evid_core) values (?,?)",
-            array ($evid_key, $evid_core));
-        do_commits ();
-    }
-
-    $ei = (object)NULL;
-    $ei->evid_key = $evid_key;
-    $ei->evid_core = $evid_core;
-    $ei->seq = 0;
-    $evid_info[$evid_key] = $ei;
-
-    return ($ei);
+    $evid_core = 10;
+    while (isset ($evid_cores_used[$evid_core]))
+        $evid_core += 1;
+        
+    $evid_cores_used[$evid_core] = 1;
+    $evid_neffa_id_to_core[$neffa_id] = $evid_core;
+    query ("insert into evid_info (evid_key, evid_core)"
+        ." values (?, ?)",
+        array ($neffa_id, $evid_core));
+    return ($evid_core);
 }
 
-function add_evids($apps) {
-    global $evid_info, $max_evid_core;
-
-    $evid_info = array ();
-
-    $q = query ("select evid_key, evid_core from evid_info");
-    while (($r = fetch ($q)) != NULL) {
-        $evid_key = trim ($r->evid_key);
-        $evid_core = intval ($r->evid_core);
-        if ($evid_core > $max_evid_core)
-            $max_evid_core = $evid_core;
-        get_evid_info ($evid_key, $evid_core);
+function evid_prefix_for_app($app) {
+    $curvals = $app->curvals;
+    if ($curvals['app_category'] == "Band" 
+        || $curvals['app_category'] == "Band_Solo" 
+        || $curvals['app_category'] == "Caller") {
+        switch (@$curvals['dance_style']) {
+        case "American": $prefix = "T"; break;
+        case "English": $prefix = "P"; break;
+        case "Couples": $prefix = "P"; break;
+        case "English_Couples": $prefix = "P"; break;
+        case "Int_Line": $prefix = "R"; break;
+        default: $prefix = "X"; break;
+        }
+    } else if ($curvals['app_category'] == "Performance") {
+        $prefix = "F";
+    } else if ($curvals['app_category'] == "Ritual") {
+        $prefix = "J";
+    } else {
+        $prefix = "M";
     }
 
+    return ($prefix);
+}
+
+function extract_evid_prefix($evid) {
+    if ($evid == "")
+        return ("");
+    return ($evid[0]);
+}
+
+function extract_evid_core($evid) {
+    if (preg_match('/^.([0-9]+)/', $evid, $parts))
+        return (intval($parts[1]));
+    return (0);
+}
+
+// M123a -> 1 ; M123-99 -> 99
+function extract_evid_seq($evid) {
+    if (preg_match('/^.*([a-z])$/', $evid, $parts)) {
+        $suffix = $parts[1];
+        return (ord($suffix) - ord("a") + 1);
+    } else if (preg_match('/^.*-([0-9]*)$/', $evid, $parts)) {
+        return (int($parts[1]));
+    } else {
+        return (1);
+    }
+}
+
+function next_evid_seq($apps, $neffa_id) {
+    $max_seq = 0;
     foreach ($apps as $app) {
-        if (($neffa_id = name_to_id ($app->curvals['name'])) != 0) {
-            $evid_key = $neffa_id;
-        } else if (($email = @$app->curvals['email']) != "") {
-            $evid_key = $email;
-        } else {
-            $evid_key = sprintf ("oops%d", $app->app_id);
+        if ($app->neffa_id == $neffa_id) {
+            $seq = extract_evid_seq($app->evid);
+            if ($seq > $max_seq)
+                $max_seq = $seq;
         }
+    }
+    return ($max_seq + 1);
+}
 
-        $ei = get_evid_info ($evid_key, 0);
-        $ei->seq++;
+function build_evid($prefix, $core, $seq) {
+    if ($seq <= 26) {
+        return (sprintf("%s%d%s", $prefix, $core, chr(ord("a") + $seq - 1)));
+    } else {
+        return (sprintf("%s%d-%d", $prefix, $core, $seq));
+    }
+}
 
-        $app->ei = $ei;
-        $app->evid_seq = $ei->seq;
+function update_evid($apps, $app) {
+    $old_evid = $app->evid;
+    $old_prefix = extract_evid_prefix($app->evid);
+    $old_core = extract_evid_core($app->evid);
+    $old_seq = extract_evid_seq($app->evid);
+
+    $new_prefix = evid_prefix_for_app($app);
+
+    if ($app->neffa_id) {
+        $new_core = neffa_id_to_evid_core($app->neffa_id);
+    } else {
+        $new_core = intval(sprintf("9999%05d", $app->app_id));
     }
 
-    foreach ($apps as $app) {
-        $curvals = $app->curvals;
-        if (
-            $curvals['app_category'] == "Band" 
-            || $curvals['app_category'] == "Band_Solo" 
-            || $curvals['app_category'] == "Caller") {
-            switch (@$curvals['dance_style']) {
-            case "American": $prefix = "T"; break;
-            case "English": $prefix = "P"; break;
-            case "Couples": $prefix = "P"; break;
-            case "English_Couples": $prefix = "P"; break;
-            case "Int_Line": $prefix = "R"; break;
-            default: $prefix = "oops"; break;
-            }
-        } else if ($curvals['app_category'] == "Performance") {
-            $prefix = "F";
-        } else if ($curvals['app_category'] == "Ritual") {
-            $prefix = "J";
+    if ($new_core == $old_core) {
+        $new_evid = build_evid($new_prefix, $new_core, $old_seq);
+    } else {
+        if ($app->neffa_id) {
+            $new_seq = next_evid_seq($apps, $app->neffa_id);
         } else {
-            $prefix = "M";
+            $new_seq = 1;
         }
+        $new_evid = build_evid($new_prefix, $new_core, $new_seq);
+    }
 
-        if (($ei = @$app->ei) == NULL) {
-            $evid_core = 0;
-            $suffix = "";
-        } else {
-            $evid_core = $ei->evid_core;
-            if ($app->evid_seq <= 26) {
-                $suffix = chr (ord ("a") - 1 + $app->evid_seq);
-            } else {
-                $suffix = sprintf ("-%d", $app->evid_seq);
-            }
-        }
-
-        $app->evid = $prefix . $evid_core . $suffix;
-    }    
+    if (strcmp ($new_evid, $old_evid) != 0) {
+        $app->evid = $new_evid;
+        query ("update json set evid = ? where app_id = ?",
+            array ($new_evid, $app->app_id));
+    }
 }
 
 /* === evid === */
 
 function get_application ($app_id) {
     $q = query ("select ts, username, val, access_code, fest_year, test_flag,"
-                ."   confirmed"
+                ."   confirmed, evid"
                 ." from json"
                 ." where app_id = ?"
                 ." order by ts",
                 $app_id);
     
-    $curvals = array ();
+    $curvals = NULL;
     $patches = array ();
     $access_code = NULL;
     $fest_year = 0;
     $test_flag = 0;
     $confirmed = "";
+    $evid = "";
     while (($r = fetch ($q)) != NULL) {
         if (strncmp ($r->val, "{", 1) == 0) {
             $curvals = json_decode ($r->val, TRUE);
@@ -605,6 +591,7 @@ function get_application ($app_id) {
             $fest_year = intval($r->fest_year);
             $test_flag = intval($r->test_flag);
             $confirmed = trim($r->confirmed);
+            $evid = trim($r->evid);
         } else {
             $p_arr = json_decode ($r->val, TRUE);
             $before_vals = array ();
@@ -631,14 +618,22 @@ function get_application ($app_id) {
         }
     }
 
-    $application = (object)NULL;
-    $application->fest_year = $fest_year;
-    $application->test_flag = $test_flag;
-    $application->access_code = $access_code;
-    $application->curvals = $curvals;
-    $application->patches = $patches;
-    $application->confirmed = $confirmed;
-    return ($application);
+    if ($curvals == NULL)
+        return (NULL);
+
+    $app = (object)NULL;
+    $app->fest_year = $fest_year;
+    $app->test_flag = $test_flag;
+    $app->access_code = $access_code;
+
+    $app->curvals = $curvals;
+    $app->neffa_id = name_to_id ($app->curvals['name']);
+
+    $app->patches = $patches;
+    $app->confirmed = $confirmed;
+    $app->evid = $evid;
+
+    return ($app);
 }
 
 function all_digits ($val) {
@@ -818,12 +813,9 @@ function get_email($perf) {
     if (@$perf->best_email)
         return ($perf->best_email);
 
-    $app_email = trim(@$apps[0]->curvals['email']);
-    if ($app_email != "") {
-        $perf->best_email = $app_email;
-    } else {
-        $perf->best_email = $perf->pdb_email;
-    }
+    $pdb->best_email = trim(@$pref->apps[0]->curvals['email']);
+    if ($app_email == "")
+        $pdb->best_email = $perf->pdb_email;
 
     $emails = [];
     $emails[strtolower($perf->pdb_email)] = 1;
@@ -838,7 +830,7 @@ function get_email($perf) {
             $msg .= sprintf ("<div>from performer db: %s</div>\n",
                 h($perf->pdb_email));
         } else {
-            $msg .= sprintf("<div>not set in perforer db</div>\n");
+            $msg .= sprintf("<div>not set in performer db</div>\n");
         }
         foreach ($perf->apps as $app) {
             $msg .= sprintf ("<div>%s in %s</div>\n",
@@ -952,11 +944,8 @@ function read_notify_info() {
         $performers[$perf->number] = $perf;
     }
 
-    global $apps;
     global $view_year;
     $apps = get_applications($view_year);
-    add_evids($apps);
-
 
     global $evid_map;
     $evid_map = array();

@@ -16,6 +16,7 @@ col attention integer
 col fest_year integer
 col test_flag integer
 col confirmed timestamp
+col evid text
 
 table pcodes
 col id integer
