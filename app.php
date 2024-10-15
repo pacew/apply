@@ -436,6 +436,21 @@ function get_applications ($year = 0, $test_flag = 0) {
     return ($apps);
 }
 
+function is_app_blank($app) {
+    foreach ($app->curvals as $key => $val) {
+        if ($key == "app_id")
+            continue;
+        if (is_array ($val)) {
+            if (count ($val) > 0)
+                return (0);
+        } else if ($val != "") {
+            return (0);
+        }
+    }
+    return (1);
+}
+
+
 /* === evid === */
 
 

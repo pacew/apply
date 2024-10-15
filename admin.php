@@ -161,10 +161,17 @@ $body .= "</form>\n";
 
 $apps = get_applications ();
 
+$blanks = array();
+foreach ($apps as $app) {
+    if (is_app_blank($app)) {
+        query ("delete from json where app_id = ?", $app->app_id);
+    }
+}
+
 $body .= sprintf ("<h2>%d applications [%s]</h2>\n", 
                   count($apps), mklink ("graph", "graph.php"));
 
-$filters = array ("all", "unconfirmed");
+$filters = array ("all", "unconfirmed", "show-suppressed");
 $cur_filter = getsess ("filter");
 if (array_search ($cur_filter, $filters) === FALSE)
     $cur_filter = "all";
@@ -271,6 +278,10 @@ foreach ($apps as $app) {
     $show = 1;
     
     if ($cur_filter == "unconfirmed" && $app->confirmed != "") {
+        $show = 0;
+    }
+
+    if (@$app->curvals['do_not_import'] && $cur_filter != "show-suppressed") {
         $show = 0;
     }
 

@@ -53,6 +53,23 @@ foreach ($questions as $question) {
     }
 }
 
+$some_data_present = 0;
+foreach ($newvals as $key => $val) {
+    if ($key == "app_id")
+        continue;
+    if (is_array($val)) {
+        if (count($val) > 0)
+            $some_data_present = 1;
+    } else if ($val != "") {
+        $some_data_present = 1;
+    }    
+}
+
+if ($some_data_present == 0) {
+    flash("invalid application: all fields were blank"); 
+    redirect("/");
+}
+
 $needs_attention = 0;
 foreach ($questions as $question) {
     $question_id = $question['id'];
@@ -79,19 +96,19 @@ if ($need_patch == 0) {
     $access_code = make_access_code ();
     
     query ("insert into json (app_id, ts, username, val, access_code,"
-           ."   fest_year, test_flag, evid)"
-           ." values (?,current_timestamp,?,?,?,?,?,?)",
+           ."   fest_year, test_flag)"
+           ." values (?,current_timestamp,?,?,?,?,?)",
            array ($app_id, 
                   $username, 
                   json_encode ($newvals),
                   $access_code,
-                  $submit_year, $submit_test_flag, $app->evid));
-} else {
-    if (($application = get_application ($app_id)) == NULL)
-        fatal ("can't find base application to update");
+                  $submit_year, $submit_test_flag));
+}
 
-    $access_code = $application->access_code;
+if (($application = get_application ($app_id)) == NULL)
+    fatal ("can't find read application");
 
+if ($need_patch) {
     $diff = mikemccabe\JsonPatch\JsonPatch::diff($application->curvals, 
                                                  $newvals);
 
@@ -103,14 +120,11 @@ if ($need_patch == 0) {
 
 }
 
+update_evid(get_applications(), $application);
+
 query (
     "update json set attention = ? where app_id = ?",
     array ($needs_attention, $app_id));
-
-if (($application = get_application ($app_id)) == NULL)
-    fatal ("can't re-read application");
-
-update_evid(get_applications(), $application);
 
 do_commits ();
 
