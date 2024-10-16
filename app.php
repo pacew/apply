@@ -456,7 +456,6 @@ function is_app_blank($app) {
 
 $evid_neffa_id_to_core = array ();
 $evid_cores_used = array ();
-query ("delete from evid_info where evid_key not regexp '^[0-9].*'");
 $q = query ("select evid_key, evid_core from evid_info");
 while (($r = fetch ($q)) != NULL) {
     $neffa_id = intval($r->evid_key);
