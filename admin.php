@@ -152,13 +152,6 @@ $body .= "</form>\n";
 
 $apps = get_applications ();
 
-$blanks = array();
-foreach ($apps as $app) {
-    if (is_app_blank($app)) {
-        query ("delete from json where app_id = ?", $app->app_id);
-    }
-}
-
 $body .= sprintf ("<h2>%d applications [%s]</h2>\n", 
                   count($apps), mklink ("graph", "graph.php"));
 
