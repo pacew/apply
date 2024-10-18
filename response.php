@@ -1,5 +1,7 @@
 <?php
 
+# performer is directed here to update their info
+
 require_once("app.php");
 
 $arg_pcode = trim(@$_REQUEST['pcode']);
@@ -20,24 +22,6 @@ if (($perf = @$performers[$name_id]) == NULL) {
 }
 
 $msg = "";
-
-function we_need_to_notify ($kind, $webgrid_elt, $elt_name_id) {
-    global $name_id, $msg;
-    if ($elt_name_id == $name_id) {
-        if (($app = evid_to_app($webgrid_elt->evid)) != NULL) {
-            if (($title = $app->curvals['event_title']) == "")
-                $title = $app->curvals['group_name'];
-
-            $t = sprintf ("index.php?app_id=%d", $app->app_id);
-
-            $msg .= sprintf ("<div>%s</div>\n",
-                mklink($title, $t));
-        }
-    }
-}
-
-
-walk_grid();
 
 $title_html = sprintf("Welcome to NEFFA %d Performer Confirmation!",
     $submit_year);

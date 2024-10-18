@@ -14,35 +14,6 @@ if ($arg_reload == 1) {
 
 read_notify_info();
 
-function we_need_to_notify ($kind, $webgrid_elt, $name_id) {
-    global $notify, $notify_by_name_id, $view_year;
-    global $notify_by_notify_id;
-    
-    if (isset ($notify_by_name_id[$name_id]))
-        return;
-    
-    global $errs, $performers;
-    if (($perf = @$performers[$name_id]) == NULL)
-        return (-1);
-
-    if (($email = get_email($perf)) == "")
-        return (-1);
-
-    $elt = (object)NULL;
-    $elt->notify_id = get_seq();
-    $elt->name_id = $name_id;
-    $elt->email = $email;
-    $elt->fest_year = $view_year;
-    query("insert into notify(notify_id, fest_year, name_id, email)"
-        ." values(?, ?, ?, ?)",
-        array($elt->notify_id, $view_year, $elt->name_id, $elt->email));
-    $notify[] = $elt;
-    $notify_by_notify_id[$elt->notify_id] = $elt;
-    $notify_by_name_id[$elt->name_id] = $elt;
-
-    return (0);
-}
-
 if ($arg_notify_id != 0) {
     $body .= sprintf ("<div>details for %d</div>\n", $arg_notify_id);
     if (($elt = @$notify_by_notify_id[$arg_notify_id]) == NULL) {
@@ -73,8 +44,6 @@ if ($arg_notify_id != 0) {
     $vals['first_name'] = preg_replace ('/^[^,]*,/', "", $perf->name);
     $vals['pcode_link'] = $pcode_link;
 
-
-
     $body .= "<div class='notify_email'>\n";
     $body .= populate_template("notify.html", $vals);
     $body .= "</div>\n";
@@ -96,7 +65,171 @@ function make_evid_link($evid) {
     return (mklink($label, $t));
 }
 
+// might return empty string
+function get_email($perf) {
+    if (@$perf->best_email)
+        return ($perf->best_email);
 
+    $perf_email = trim(@$pref->apps[0]->curvals['email']);
+
+    $emails = [];
+    if ($perf_email)
+        $emails[strtolower($perf_email)] = 1;
+    $first_app_email = "";
+    foreach ($perf->apps as $app) {
+        $app_email = trim($app->curvals['email']);
+        if ($app_email) {
+            if ($first_app_email == "")
+                $first_app_email = $app_email;
+            $emails[strtolower($app_email)] = 1;
+        }
+    }
+
+    if ($first_app_email)
+        $perf->best_email = $first_app_email;
+    else 
+        $perf->best_email = $perf_email;
+
+    if (count($emails) > 1) {
+        $msg = "<div>\n";
+        $msg .= sprintf ("<div>performer %d has multiple emails</div>\n",
+            $perf->number);
+        if ($perf_email) {
+            $msg .= sprintf ("<div>from performer db: %s</div>\n",
+                h($perf_email));
+        } else {
+            $msg .= sprintf("<div>not set in performer db</div>\n");
+        }
+        foreach ($perf->apps as $app) {
+            $msg .= sprintf ("<div>%s in %s</div>\n",
+                h($app->curvals['email']),
+                h($app->curvals['event_title']));
+        }
+
+        $msg .= sprintf ("<div>used: '%s'</div>\n", h($perf->best_email));
+        $msg .= "</div>\n";
+        global $info;
+        $info[] = $msg;
+    }
+
+    return ($perf->best_email);
+}
+
+function we_need_to_notify ($kind, $webgrid_elt, $name_id) {
+    global $notify, $notify_by_name_id, $view_year;
+    global $notify_by_notify_id;
+    
+    if (isset ($notify_by_name_id[$name_id]))
+        return;
+    
+    global $errs, $performers;
+    if (($perf = @$performers[$name_id]) == NULL)
+        return (-1);
+
+    if (($email = get_email($perf, $errs)) == "")
+        return (-1);
+
+    $elt = (object)NULL;
+    $elt->notify_id = get_seq();
+    $elt->name_id = $name_id;
+    $elt->email = $email;
+    $elt->fest_year = $view_year;
+    query("insert into notify(notify_id, fest_year, name_id, email)"
+        ." values(?, ?, ?, ?)",
+        array($elt->notify_id, $view_year, $elt->name_id, $elt->email));
+    $notify[] = $elt;
+    $notify_by_notify_id[$elt->notify_id] = $elt;
+    $notify_by_name_id[$elt->name_id] = $elt;
+
+    return (0);
+}
+
+
+function walk_grid() {
+    global $webgrid, $group_to_group_leader;
+    foreach ($webgrid as $webgrid_elt) {
+        $success = [];
+        $fails = [];
+        foreach ($webgrid_elt->name_ids as $name_id) {
+            $leader_id = @$group_to_group_leader[$name_id];
+            if ($leader_id) {
+                if (we_need_to_notify("leader", 
+                        $webgrid_elt, $leader_id) < 0) {
+                    $fails[] = $leader_id;
+                } else {
+                    $success[] = $leader_id;
+                }
+            } else {
+                if (we_need_to_notify("individual", 
+                        $webgrid_elt, $name_id) < 0) {
+                    $fails[] = $name_id;
+                } else {
+                    $success[] = $name_id;
+                }
+            }
+        }
+        
+        global $performers, $name_id_to_pcode;
+
+        if (count($fails) > 0) {
+            if (count($success) > 0) {
+                $msg = sprintf("<div>event %s</div>\n",
+                    make_evid_link($webgrid_elt->evid));
+                $msg .= "<ul class='notify_err'>\n";
+                $msg .= "<li>";
+                $msg .= "notified ";
+                foreach ($success as $name_id) {
+                    $p = @$performers[$name_id];
+                    $pcode = @$name_id_to_pcode[$name_id];
+                    if ($p && $pcode) {
+                        $t = make_cgi_pcode_link($pcode);
+                        $msg .= sprintf(" %s", mklink_nw($p->name, $t));
+                    } else {
+                        $msg .= sprintf(" %d", $name_id);
+                    }
+                }
+                $msg .= "</li>\n";
+                $msg .= "<li>";
+                $msg .= "skipped ";
+                foreach ($fails as $name_id) {
+                    $p = @$performers[$name_id];
+                    $pcode = @$name_id_to_pcode[$name_id];
+                    if ($p && $pcode) {
+                        $t = make_cgi_pcode_link($pcode);
+                        $msg .= sprintf(" %s", mklink_nw($p->name, $t));
+                    } else {
+                        $msg .= sprintf(" %d", $name_id);
+                    }
+                }
+                $msg .= "</li>\n";
+                $msg .= "</ul>\n";
+                global $stray_secondaries;
+                $stray_secondaries[] = $msg;
+            } else {
+                $msg = sprintf ("<div>can't find email for event %s</div>",
+                    make_evid_link($webgrid_elt->evid));
+                $msg .= "<li>";
+                $msg .= "skipped ";
+                foreach ($fails as $name_id) {
+                    $p = @$performers[$name_id];
+                    $pcode = @$name_id_to_pcode[$name_id];
+                    if ($p && $pcode) {
+                        $t = make_cgi_pcode_link($pcode);
+                        $msg .= sprintf(" %s", mklink_nw($p->name, $t));
+                    } else {
+                        $msg .= sprintf(" %d", $name_id);
+                    }
+                }
+                $msg .= "</li>\n";
+                $msg .= "</ul>\n";
+
+                global $errs;
+                $errs[] = $msg;
+            }
+        }
+    }
+    do_commits();
+}
 
 walk_grid();
 
