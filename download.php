@@ -203,6 +203,8 @@ foreach ($output_order as $question_id) {
     } else if ($question_id == "room_sound") {
         foreach ($room_sound_choices as $choice)
             $csvhdr[] = $choice;
+    } else if ($question_id == "C_extra_checks") {
+        $csvhdr[] = "COMMITTEE_extra_checks";
     } else {
         $csvhdr[] = $question_id;
     }
