@@ -453,7 +453,23 @@ function is_app_blank($app) {
 
 /* === evid === */
 
-
+/*
+ * evid_key is a performer id (used to sometimes be email addresses)
+ * evid_core is the digits in an evid like M10a
+ *
+ * weird history, but current benefit is to map mostly 4 and 5 digit performer
+ * id's to 2 and 3 digits numbers for event ids.
+ *
+ * the evid_core is the performer id of the main applicant of an event
+ * the suffix starts at a for the first event seen and counts up.
+ * 
+ * if the main applicant of an event changes, the evid changes to the new
+ * applicant's evid_core, and the suffix is changed to the letter after
+ * the highest letter currently associated with that evid_core
+ *
+ * when a new performer is seen, they get the lowest unused evid_core, thus
+ * filling in gaps and keeing evid_cores as short as possible
+ */
 $evid_neffa_id_to_core = array ();
 $evid_cores_used = array ();
 $q = query ("select evid_key, evid_core from evid_info");
@@ -470,6 +486,7 @@ function neffa_id_to_evid_core ($neffa_id) {
     if (($evid_core = intval(@$evid_neffa_id_to_core[$neffa_id])) != 0)
         return ($evid_core);
     
+    /* this neffa_id must be new - find an available evid_core */
     $evid_core = 10;
     while (isset ($evid_cores_used[$evid_core]))
         $evid_core += 1;
@@ -582,6 +599,7 @@ function update_evid($apps, $app) {
         $app->evid = $new_evid;
         query ("update json set evid = ? where app_id = ?",
             array ($new_evid, $app->app_id));
+        do_commits ();
     }
 }
 

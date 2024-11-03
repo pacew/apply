@@ -112,12 +112,14 @@ if ($need_patch) {
     $diff = mikemccabe\JsonPatch\JsonPatch::diff($application->curvals, 
                                                  $newvals);
 
-    query ("insert into json (app_id, ts, username, val, fest_year, test_flag)"
-           ." values (?,current_timestamp,?,?,?,?)",
-           array ($app_id, $username, json_encode ($diff),
-                  $application->fest_year,
-                  $application->test_flag));
-
+    if (count($diff) > 0) {
+        query ("insert into json (app_id, ts, username, val, fest_year,"
+            ."   test_flag)"
+            ." values (?,current_timestamp,?,?,?,?)",
+            array ($app_id, $username, json_encode ($diff),
+                $application->fest_year,
+                $application->test_flag));
+    }
 }
 
 update_evid(get_applications(), $application);
