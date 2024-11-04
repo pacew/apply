@@ -666,6 +666,12 @@ function get_application ($app_id) {
     $app->curvals = $curvals;
     $app->neffa_id = name_to_id ($app->curvals['name']);
 
+    if ($app->neffa_id > 0) {
+        $q = query ("select pcode from pcodes where id = ?", $app->neffa_id);
+        if (($r = fetch ($q)) != NULL)
+            $app->pcode = $r->pcode;
+    }
+
     $app->patches = $patches;
     $app->confirmed = $confirmed;
     $app->evid = $evid;
@@ -979,6 +985,17 @@ function read_notify_info() {
         $notify_by_notify_id[$elt->notify_id] = $elt;
         $notify_by_name_id[$elt->name_id] = $elt;
     }
+}
+
+function neffa_id_to_pcode($neffa_id) {
+    $q = query ("select pcode"
+        ." from pcodes"
+        ." where id = ?",
+        $neffa_id);
+    if (($r = fetch ($q)) == NULL)
+        return ("");
+
+    return ($r->pcode);
 }
 
 if (! get_option ("flat") && ! @$cli_mode) {

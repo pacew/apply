@@ -15,20 +15,81 @@ $arg_filter = trim (@$_REQUEST['filter']);
 $arg_doc = intval (@$_REQUEST['doc']);
 
 if ($arg_doc == 1) {
-    $body .= "<h1>Back link from spreadsheet to edit app</h1>\n";
-
     // get the first app on the list to make an example
     $apps = get_applications ();
+    $examples = array();
+
     foreach ($apps as $app) {
-        $app_id = $app->app_id;
-        break;
+        if ($app->curvals['name'] == "Brown,Dean")
+            $examples[] = $app;
     }
 
-    $path = sprintf("/index.php?app_id=%d", $app_id);
+    if (count($examples) == 0) {
+        $body .= "can't find example applications";
+        pfinih();
+    }
+
+    $app = $examples[0];
+    $neffa_id = name_to_id ($app->curvals['name']);
+    $pcode = neffa_id_to_pcode($neffa_id);
+
+    $body .="<h2>example admin link to edit app (will force login):</h2> ";
+    $body .= "<div>\n";
+    $path = sprintf("/index.php?app_id=%d", $app->app_id);
     $target = make_absolute($path);
-    $body .="<div>example link to edit app (will force login): ";
     $body .= mklink($target, $target);
-    $body .= "</p>\n";
+    $body .= "</div>\n";
+
+    $body .= "<h2>example magic link to response page"
+        ." (mailed to performer)</h2>\n";
+    $body .= "<div>\n";
+    $magic_link = sprintf("https://cgi.neffa.org/performer/confirm2.pl"
+        ."?P=%s", rawurlencode($pcode));
+    $body .= mklink ($magic_link, $magic_link);
+    $body .= "</div>\n";
+
+    $host = $_SERVER['HTTP_HOST'];
+
+    $body .= "<h2>cgi program redirects to these links"
+        ." to record confirmation</h2>\n";
+    $body .= sprintf ("<p>will be redirected back to %s plus args</p>",
+        h($magic_link));
+    $body .= "<table class='twocol'>\n";
+    $body .= "<tr><th>query</th><td>";
+    $t = sprintf("https://%s/store-response.php?pcode=%s", 
+        $host, rawurlencode($pcode));
+    $body .= mklink ($t, $t);
+    $body .= "</td></tr>\n";
+    $body .= "<tr><th>I will perform, record ok</th><td>";
+    $t = sprintf("https://%s/store-response.php?pcode=%s&confirm=2&record=2", 
+        $host, rawurlencode($pcode));
+    $body .= mklink ($t, $t);
+    $body .= "</td></tr>\n";
+    $body .= "<tr><th>I will perform, no record</th><td>";
+    $t = sprintf("https://%s/store-response.php?pcode=%s&confirm=2&record=3", 
+        $host, rawurlencode($pcode));
+    $body .= mklink ($t, $t);
+    $body .= "</td></tr>\n";
+    $body .= "<tr><th>I will not perform</th><td>";
+    $t = sprintf("https://%s/store-response.php?pcode=%s&confirm=3", 
+        $host, rawurlencode($pcode));
+    $body .= mklink ($t, $t);
+    $body .= "</td></tr>\n";
+    $body .= "</table>\n";
+
+    $body .= "<h2>cgi program sends a performer here to edit an event</h2>\n";
+    $body .= "<p>complicated cases include add an evid2 parameter."
+        ." apply.neffa.org will look at information such as group leadership"
+        ." to decide whether to allow editing of evid1 or evid2."
+        ." if there's not a clear answer, it will tell the performer to email"
+        ." program@neffa.org</p>\n";
+    $body .= "<div>\n";
+    $t = sprintf("https://%s/performer.php?pcode=%s&evid1=%s", 
+        $host, rawurlencode($pcode), rawurlencode($app->evid));
+    $body .= mklink ($t, $t);
+    $body .= "</div>\n";
+
+
 
     pfinish();
 }

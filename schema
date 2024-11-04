@@ -37,7 +37,23 @@ col val text
 table notify
 col notify_id integer
 col fest_year integer
+col test_flag integer
 col name_id integer
+col confirm integer
+col record_ok integer
 col email text
 col sent_dttm timestamp
 col responded_dttm timestamp
+
+create table notify (
+  notify_id int,
+  fest_year int,
+  test_flag int,
+  name_id int,
+  confirm int,
+  record int,
+  email text,
+  sent_dttm timestamp,
+  responded_dttm timestamp
+);
+  
