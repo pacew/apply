@@ -13,6 +13,13 @@ $arg_return_to_app = intval (@$_REQUEST['return_to_app']);
 $arg_set_filter = intval (@$_REQUEST['set_filter']);
 $arg_filter = trim (@$_REQUEST['filter']);
 $arg_doc = intval (@$_REQUEST['doc']);
+$arg_set_group_filter = intval(@$_REQUEST['set_group_filter']);
+$arg_group_filter = intval(@$_REQUEST['group_filter']);
+
+if ($arg_set_group_filter)
+    putsess("group_filter", $arg_group_filter);
+
+$group_filter = intval(getsess("group_filter"));
 
 if ($arg_doc == 1) {
     // get the first app on the list to make an example
@@ -234,6 +241,21 @@ foreach ($filters as $filter) {
     $body .= $filter;
 }
 $body .= " &nbsp;&nbsp;&nbsp; ";
+
+$body .= "<input type='hidden' name='set_group_filter' value='1' />\n";
+$body .= "<select name='group_filter'>\n";
+make_option (0, $group_filter, "any");
+make_option (1, $group_filter, "ritual dance");
+make_option (2, $group_filter, "dance performance");
+make_option (3, $group_filter, "american");
+make_option (4, $group_filter, "english");
+make_option (5, $group_filter, "international");
+make_option (6, $group_filter, "jam");
+make_option (7, $group_filter, "song");
+make_option (8, $group_filter, "concert");
+make_option (9, $group_filter, "spoken_word");
+$body .= "</select>\n";
+
 $body .= "<input type='submit' value='change filter' />\n";
 $body .= "</form>\n";
 
@@ -303,6 +325,64 @@ foreach ($apps as $app) {
 
     if (@$app->curvals['do_not_import'] && $cur_filter != "show-suppressed") {
         $show = 0;
+    }
+
+    switch ($group_filter) {
+    case 1:
+        if ($curvals['app_category'] != 'Ritual')
+            $show = 0;
+        break;
+    case 2:
+        if ($curvals['app_category'] != 'Performance')
+            $show = 0;
+        break;
+    case 3:
+        $show = 0;
+        if ($curvals['app_category'] == "Band"
+            || $curvals['app_category'] == "Band_Solo"
+            || $curvals['app_category'] == "Caller") {
+            if ($curvals['dance_style'] == "American")
+                $show = 1;
+        }
+        break;
+    case 4:
+        $show = 0;
+        if ($curvals['app_category'] == "Band"
+            || $curvals['app_category'] == "Band_Solo"
+            || $curvals['app_category'] == "Caller") {
+            if ($curvals['dance_style'] == "English_Couples")
+                $show = 1;
+        }
+        break;
+    case 5:
+        $show = 0;
+        if ($curvals['app_category'] == "Band"
+            || $curvals['app_category'] == "Band_Solo"
+            || $curvals['app_category'] == "Caller") {
+            if ($curvals['dance_style'] == "Int_Line")
+                $show = 1;
+        }
+        break;
+    case 6:
+        if ($curvals['app_category'] != 'Other' 
+            || $curvals['fms_category'] != "jam")
+            $show = 0;
+        break;
+    case 7:
+        if ($curvals['app_category'] != 'Other' 
+            || $curvals['fms_category'] != "song")
+            $show = 0;
+        break;
+    case 8:
+        if ($curvals['app_category'] != 'Other' 
+            || $curvals['fms_category'] != "concert")
+            $show = 0;
+        break;
+    case 9:
+        if ($curvals['app_category'] != 'Other' 
+            || $curvals['fms_category'] != "spoken_word")
+            $show = 0;
+        break;
     }
 
     if ($show)
