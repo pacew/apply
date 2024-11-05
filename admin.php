@@ -22,6 +22,8 @@ if ($arg_set_group_filter)
 $group_filter = intval(getsess("group_filter"));
 
 if ($arg_doc == 1) {
+        
+
     // get the first app on the list to make an example
     $apps = get_applications ();
     $examples = array();
@@ -47,54 +49,75 @@ if ($arg_doc == 1) {
     $body .= mklink($target, $target);
     $body .= "</div>\n";
 
+    $body .= "<hr/>\n";
+
+    $host = $_SERVER['HTTP_HOST'];
+    $magic_link = sprintf("https://%s/response.php?pcode=%s",
+        $host, rawurlencode($pcode));
+    
+    $confirm2_link = sprintf("https://cgi.neffa.org/performer/confirm2.pl"
+        ."?P=%s", rawurlencode($pcode));
+
     $body .= "<h2>example magic link to response page"
         ." (mailed to performer)</h2>\n";
     $body .= "<div>\n";
-    $magic_link = sprintf("https://cgi.neffa.org/performer/confirm2.pl"
-        ."?P=%s", rawurlencode($pcode));
     $body .= mklink ($magic_link, $magic_link);
     $body .= "</div>\n";
+    $body .= "<div>this will immediately redirect to confirm2.pl with"
+        ." the current values of the confirm and record parameters</div>\n";
 
-    $host = $_SERVER['HTTP_HOST'];
+    $body .= "<hr/>\n";
 
     $body .= "<h2>cgi program redirects to these links"
         ." to record confirmation</h2>\n";
-    $body .= sprintf ("<p>will be redirected back to %s plus args</p>",
-        h($magic_link));
     $body .= "<table class='twocol'>\n";
     $body .= "<tr><th>query</th><td>";
-    $t = sprintf("https://%s/store-response.php?pcode=%s", 
+    $t = sprintf("https://%s/response.php?pcode=%s", 
         $host, rawurlencode($pcode));
     $body .= mklink ($t, $t);
     $body .= "</td></tr>\n";
     $body .= "<tr><th>I will perform, record ok</th><td>";
-    $t = sprintf("https://%s/store-response.php?pcode=%s&confirm=2&record=2", 
+    $t = sprintf("https://%s/response.php?pcode=%s&confirm=2&record=2", 
         $host, rawurlencode($pcode));
     $body .= mklink ($t, $t);
     $body .= "</td></tr>\n";
     $body .= "<tr><th>I will perform, no record</th><td>";
-    $t = sprintf("https://%s/store-response.php?pcode=%s&confirm=2&record=3", 
+    $t = sprintf("https://%s/response.php?pcode=%s&confirm=2&record=3", 
         $host, rawurlencode($pcode));
     $body .= mklink ($t, $t);
     $body .= "</td></tr>\n";
     $body .= "<tr><th>I will not perform</th><td>";
-    $t = sprintf("https://%s/store-response.php?pcode=%s&confirm=3", 
+    $t = sprintf("https://%s/response.php?pcode=%s&confirm=3", 
         $host, rawurlencode($pcode));
     $body .= mklink ($t, $t);
     $body .= "</td></tr>\n";
     $body .= "</table>\n";
 
+    $body .= sprintf ("<p>will be redirected back to %s plus args</p>",
+        h($confirm2_link));
+
+    $body .= "<hr/>\n";
+
     $body .= "<h2>cgi program sends a performer here to edit an event</h2>\n";
-    $body .= "<p>complicated cases include add an evid2 parameter."
-        ." apply.neffa.org will look at information such as group leadership"
-        ." to decide whether to allow editing of evid1 or evid2."
-        ." if there's not a clear answer, it will tell the performer to email"
-        ." program@neffa.org</p>\n";
     $body .= "<div>\n";
-    $t = sprintf("https://%s/performer.php?pcode=%s&evid1=%s", 
-        $host, rawurlencode($pcode), rawurlencode($app->evid));
+    $t = sprintf("https://%s/performer.php"
+        ."?pcode=%s"
+        ."&eventid=S_BallroomAB_1200",
+        $host, rawurlencode($pcode));
     $body .= mklink ($t, $t);
     $body .= "</div>\n";
+
+    $body .= "<p>apply.neffa.org will use eventid to find the right row"
+        ." in webgrid.tsv, then use group leader logic to find the right"
+        ." app_id for this pcode.  "
+        ." if there's not a clear answer, it will tell the performer to email"
+        ." program@neffa.org</p>\n";
+    $body .= "<p>eventid is formed with the equivalent of"
+        ." '_'.join([ Day, Room.replace(' ', ''), StartTime]) using"
+        ." the values from webgrid.tsv</p>\n";
+    $body .= "<p>eventid is compared exactly (case sensitive) to avoid"
+        ." trouble if some future room name has"
+        ." exotic utf8 characters</p>\n";
 
 
 

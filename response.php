@@ -1,122 +1,109 @@
 <?php
 
-# performer is directed here to update their info
-
 require_once("app.php");
 
+$anon_ok = 1;
+
 $arg_pcode = trim(@$_REQUEST['pcode']);
-$arg_cancel = intval(@$_REQUEST['cancel']);
+$arg_confirm = intval(@$_REQUEST['confirm']);
+$arg_record = intval(@$_REQUEST['record']);
 
-pstart();
+pstart ();
 
-read_notify_info();
+function need_help() {
+    global $body;
 
-if (($name_id = @$pcode_to_name_id[$arg_pcode]) == 0) {
-    $body .= "<div>pcode not found</div>\n";
+    $body .= "<h1>Internal error</h1>\n";
+    $body .= "<p>There is a technical problem with your application."
+        ." Please send email to ";
+    $email = "mailto:program@neffa.org";
+    $body .= mklink ($email, $email);
+    $body .= " to request assistance.";
+    $body .="<p>\n";
     pfinish();
 }
 
-if (($perf = @$performers[$name_id]) == NULL) {
-    $body .= "<div>performer not found</div>\n";
-    pfinish();
-}
+$q = query("select id"
+    ." from pcodes"
+    ." where pcode = ?",
+    $arg_pcode);
+if (($r = fetch ($q)) == NULL)
+    need_help();
 
-$msg = "";
+$neffa_id = intval(@$r->id);
 
-$title_html = sprintf("Welcome to NEFFA %d Performer Confirmation!",
-    $submit_year);
+$old_confirm = 0;
+$old_record = 0;
 
-if ($username) {
-    $body .= "<div class='admin_box'>\n";
-    $body .= mklink ("main notify page", "notify.php");
-    if (($elt = @$notify_by_name_id[$name_id]) != NULL) {
-        $body .= " | ";
-        $t = sprintf ("notify.php?notify_id=%d", $elt->notify_id);
-        $body .= mklink ("perfomer notify page", $t);
-    }
-    $body .= "</div>\n";
-}
-
-
-
-
-$body .= sprintf("<p>Performer: %s &lt;%s&gt;</p>\n", 
-    h($perf->name), h($perf->pdb_email));
-
-if ($msg == "") {
-    $body .= "[internal error - no events found]";
+$q = query ("select notify_id, confirm, record"
+    ." from notify"
+    ." where fest_year = ?"
+    ."   and test_flag = ?"
+    ."   and name_id = ?",
+    array($view_year, $view_test_flag, $neffa_id));
+if (($r = fetch ($q)) != NULL) {
+    $notify_id = intval($r->notify_id);
+    $old_confirm = intval($r->confirm);
+    $old_record = intval($r->record);
 } else {
-    $body .= "<p>You are associated with these events which"
-          ." have been scheduled:</p>\n";
-    $body .= $msg;
+    $notify_id = get_seq();
+    query ("insert into notify (notify_id, fest_year, test_flag, name_id)"
+        ." values (?, ?, ?, ?)",
+        array ($notify_id, $view_year, $view_test_flag, $neffa_id));
+}
+
+if (($new_confirm = $arg_confirm) != 0) {
+    query ("update notify set confirm = ?"
+        ." where notify_id = ?",
+        array ($new_confirm, $notify_id));
+} else {
+    $new_confirm = $old_confirm;
+}
+
+if (($new_record = $arg_record) != 0) {
+    query ("update notify set record = ?"
+        ." where notify_id = ?",
+        array ($new_record, $notify_id));
+} else {
+    $new_record = $old_record;
 }
 
 
+$body .= sprintf ("<div>pcode %s</div>\n", h($arg_pcode));
+$body .= sprintf ("<div>neffa_id %d</div>\n", $neffa_id);
 
-$pcode_link = make_cgi_pcode_link($arg_pcode);
+$apps = get_applications();
+foreach ($apps as $app) {
+    if ($app->neffa_id == $neffa_id) {
 
-$body .= "<p>TODO: webgrid events this person is responsible for</p>\n";
+        $t = sprintf ("index.php?app_id=%d", $app->app_id);
 
-if ($arg_cancel == 1) {
-    $body .= "<p>We are glad you applied, and sorry your plans have"
-          ." changed so that you will be unable to join us this year!"
-          ." Please consider joining our email list"
-          ." The NEFFA Loop to receive Festival updates including"
-          ." future application deadlines.</p>\n";
-    
-    $body .= "<form action='response.php'>\n";
-    $body .= sprintf ("<input type='hidden' name='pcode' value='%s' />\n",
-        rawurlencode($arg_pcode));
-    $body .= "<input type='hidden' name='cancel' value='2' />\n";
-    $body .= "<button type='submit'>"
-          ." click here to confirm your cancellation"
-          ."</button>\n";
-    $body .= "</form>\n";
-
-    $body .= "<div>\n";
-    $t = sprintf ("response.php?pcode=%s", rawurlencode($arg_pcode));
-    $body .= mklink ("go back to the main confirm page", $t);
-    $body .= "</div>\n";
-
-    pfinish();
-}
-
-if ($arg_cancel == 2) {
-    $body .= "<div>\n";
-    $body .= "We have recorded your request to cancel.  It may take a few"
-          ." days for all of our systems to be updated.  Please feel free"
-          ." to contact <a href=mailto:program@neffa.org>program@neffa.org</a>"
-          ." with any further concerns.";
-    $body .= "</div>\n";
-    pfinish();
+        $body .= "<div>";
+        $body .= mklink(h($app->curvals['name']), $t);
+        $body .= " - ";
+        $body .= mklink($app->evid, $t);
+        $body .= " - ";
+        $body .= mklink($app->app_id, $t);
+        $body .= "</div>\n";
+    }
 }
 
 
-$body .= sprintf ("<p>Are you still available to perform at NEFFA %d?</p>\n",
-    $submit_year);
-$body .= "<p>Please click one of the following</p>\n";
+$rows = [];
+$rows[] = array("confirm", $old_confirm, $new_confirm);
+$rows[] = array("record", $old_record, $new_record);
 
-$body .= "<div>\n";
-$body .= "<form action='https://cgi.neffa.org/performer/index.pl'>\n";
-$body .= sprintf ("<input type='hidden' name='P' value='%s' />\n",
-    rawurlencode($arg_pcode));
-$body .= "<button type='submit'>"
-      ." YES - I want to continue the confirmation"
-      ." process for one or more events"
-      ."</button>\n";
-$body .= "</form>\n";
-$body .= "</div>\n";
+$body .= mktable(array ("field", "old", "new"), $rows);
 
-$body .= "<div>\n";
-$body .= "<form action='response.php'>\n";
-$body .= sprintf ("<input type='hidden' name='pcode' value='%s' />\n",
-    rawurlencode($arg_pcode));
-$body .= "<input type='hidden' name='cancel' value='1' />\n";
-$body .= "<button type='submit'>"
-      ." NO - I need to cancel <strong>all</strong> my/our events"
-      ." as I am/we are unable to attend"
-      ."</button>\n";
-$body .= "</form>\n";
-$body .= "</div>\n";
+$t = sprintf ("https://cgi.neffa.org/performer/confirm2.pl"
+    ."?P=%s"
+    ."&confirm=%d"
+    ."&record=%d",
+    rawurlencode($arg_pcode),
+    $new_confirm,
+    $new_record);
 
-pfinish();
+$body .= sprintf ("<div>redirect will go to %s</div>",
+    mklink ($t, $t));
+
+pfinish ();

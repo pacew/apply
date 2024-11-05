@@ -32,7 +32,7 @@ if ($arg_notify_id != 0) {
         pfinish();
     }
 
-    $t = sprintf ("response.php?pcode=%s", rawurlencode($pcode));
+    $t = sprintf ("old-response.php?pcode=%s", rawurlencode($pcode));
     $body .= sprintf ("<p>cgi will send performer to: %s</p>\n",
         mklink($t, $t));
 
