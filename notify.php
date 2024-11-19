@@ -14,12 +14,12 @@ if ($arg_reload == 1) {
     redirect ("notify.php");
 }
 
-$webgrid_holding = sprintf ("%s/webgrid.tsv", $cfg['aux_dir']);
+$webgrid_file = sprintf ("%s/webgrid.tsv", $cfg['aux_dir']);
 
 if ($arg_upload == 1) {
     if (@$_FILES['webgrid']['tmp_name'] != "") {
         $webgrid = file_get_contents($_FILES['webgrid']['tmp_name']);
-        file_put_contents($webgrid_holding, $webgrid);
+        file_put_contents($webgrid_file, $webgrid);
     }
 
     if ($arg_return_json) {
@@ -28,7 +28,7 @@ if ($arg_upload == 1) {
         json_finish($ret);
     }
 
-    flash ("Success.  File is in holding area");
+    flash ("Success.  File is staged.  Click reload (below) to start using");
     redirect("notify.php");
 }
 
@@ -265,7 +265,7 @@ $body .= "<input type='submit' value='upload' />\n";
 $body .= "</form>\n";
 
 
-$body .= mklink ("reload webgrid [for debugging]", "notify.php?reload=1");
+$body .= mklink ("reload webgrid", "notify.php?reload=1");
 $body .= "</div>\n";
 
 if (count($errs) > 0) {

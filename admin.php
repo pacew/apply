@@ -122,7 +122,7 @@ if ($arg_doc == 1) {
 
     $body .= "<hr/>\n";
 
-    $body .= "<h2>uploading TSV to the holding area</h2>\n";
+    $body .= "<h2>uploading TSV</h2>\n";
 
     $body .= "<p>Make a post with the equivalent of the following:</p>\n";
     $body .= "<p>There's an interactive version of this form at ";
