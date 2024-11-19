@@ -7,6 +7,19 @@ $arg_reload = intval (@$_REQUEST['reload']);
 $arg_upload = intval (@$_REQUEST['upload']);
 $arg_return_json = intval(@$_REQUEST['return_json']);
 
+$arg_upload_passwd = trim(@$_REQUEST['upload_passwd']);
+
+
+if ($arg_upload_passwd) {
+    $expect = getvar("webgrid_upload_passwd");
+    if (strcmp ($arg_upload_passwd, $expect) != 0) {
+        $ret = (object)NULL;
+        $ret->status = 'not-authorized';
+        json_finish($ret);
+    }
+    $anon_ok = 1;
+}
+
 pstart ();
 
 if ($arg_reload == 1) {

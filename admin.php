@@ -130,6 +130,11 @@ if ($arg_doc == 1) {
     $body .= "</p>\n";
     $form = "<form action='notify.php' method='post'"
         ." enctype='multipart/form-data'>\n";
+    $passwd = getvar("webgrid_upload_passwd");
+
+    $form .= sprintf("<input type='hidden' name='upload_passwd'"
+        ." value='%s' />\n", $passwd);
+
     $form .= "<input type='hidden' name='upload' value='1' />\n";
     $form .= "<input type='hidden' name='return_json' value='1' />\n";
     $form .= "<input type='file' name='webgrid' />\n";
