@@ -912,7 +912,10 @@ function read_notify_info() {
     // 6 room
     // 7 time HHMM
     // 8 to end: performer id's
-    $f = fopen("webgrid.tsv", "r");
+
+    global $cfg;
+    $filename = sprintf ("%s/webgrid.tsv", $cfg['aux_dir']);
+    $f = fopen($filename, "r");
     global $webgrid;
     $webgrid = [];
     while (($row = fgets ($f)) != NULL) {

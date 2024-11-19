@@ -4,6 +4,8 @@ require_once("app.php");
 
 $arg_notify_id = intval(@$_REQUEST['notify_id']);
 $arg_reload = intval (@$_REQUEST['reload']);
+$arg_upload = intval (@$_REQUEST['upload']);
+$arg_return_json = intval(@$_REQUEST['return_json']);
 
 pstart ();
 
@@ -11,6 +13,25 @@ if ($arg_reload == 1) {
     query ("delete from notify");
     redirect ("notify.php");
 }
+
+$webgrid_holding = sprintf ("%s/webgrid.tsv", $cfg['aux_dir']);
+
+if ($arg_upload == 1) {
+    if (@$_FILES['webgrid']['tmp_name'] != "") {
+        $webgrid = file_get_contents($_FILES['webgrid']['tmp_name']);
+        file_put_contents($webgrid_holding, $webgrid);
+    }
+
+    if ($arg_return_json) {
+        $ret = (object)NULL;
+        $ret->status = 'ok';
+        json_finish($ret);
+    }
+
+    flash ("Success.  File is in holding area");
+    redirect("notify.php");
+}
+
 
 read_notify_info();
 
@@ -234,6 +255,16 @@ function walk_grid() {
 walk_grid();
 
 $body .= "<div class='admin_box'>\n";
+$body .= "<form action='notify.php' method='post'"
+    ." enctype='multipart/form-data'>\n";
+
+$body .= "<input type='hidden' name='upload' value='1' />\n";
+$body .= "Manually upload a new copy of the tsv file\n";
+$body .= "<input type='file' name='webgrid' />\n";
+$body .= "<input type='submit' value='upload' />\n";
+$body .= "</form>\n";
+
+
 $body .= mklink ("reload webgrid [for debugging]", "notify.php?reload=1");
 $body .= "</div>\n";
 

@@ -120,6 +120,27 @@ if ($arg_doc == 1) {
         ." exotic utf8 characters</p>\n";
 
 
+    $body .= "<hr/>\n";
+
+    $body .= "<h2>uploading TSV to the holding area</h2>\n";
+
+    $body .= "<p>Make a post with the equivalent of the following:</p>\n";
+    $body .= "<p>There's an interactive version of this form at ";
+    $body .= mklink("notify.php", "notify.php");
+    $body .= "</p>\n";
+    $form = "<form action='notify.php' method='post'"
+        ." enctype='multipart/form-data'>\n";
+    $form .= "<input type='hidden' name='upload' value='1' />\n";
+    $form .= "<input type='hidden' name='return_json' value='1' />\n";
+    $form .= "<input type='file' name='webgrid' />\n";
+    $form .= "<input type='submit' value='upload' />\n";
+    $form .= "</form>\n";
+
+    $body .= "<pre>\n";
+    $body .= h($form);
+    $body .= "</pre>\n";
+
+
 
     pfinish();
 }
