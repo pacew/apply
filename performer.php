@@ -5,37 +5,81 @@ require_once("app.php");
 $anon_ok = 1;
 
 $arg_pcode = trim(@$_REQUEST['pcode']);
-$arg_evid1 = trim(@$_REQUEST['evid1']);
-$arg_evid2 = trim(@$_REQUEST['evid2']);
+$arg_eventid = trim (@$_REQUEST['eventid']);
+$arg_save = intval (@$_REQUEST['save']);
 
 pstart ();
 
-$apps = get_applications();
-
-$win = 0;
-foreach ($apps as $app) {
-    if ($app->evid == $arg_evid1) {
-        $win = 1;
-        break;
-    }
-}
-
-if (! $win) {
-    $body .= "<p>evid not found</p>\n";
+if ($arg_save) {
+    $body .= "<p>saving is not implemented yet</p>\n";
     pfinish();
 }
 
-$t = sprintf ("index.php?app_id=%d", $app->app_id);
+$apps = get_applications();
 
-$body .= sprintf ("<p style='color:red'>"
-    ." let the person edit a few fields in %s</p>\n",
-    mklink_nw ($app->app_id, $t));
+read_notify_info();
+
+if (($wg = @$webgrid_by_eventid[$arg_eventid]) == NULL) {
+    $body .= sprintf("<p>eventid %s not found</p>\n", h($arg_eventid));
+    pfinish();
+}
+
+function find_app($evids, $pcode) {
+    global $apps_by_evid;
+    foreach ($evids as $evid) {
+        if (($app = @$apps_by_evid[$evid]) != NULL) {
+            $app_pcode = neffa_id_to_pcode($app->neffa_id);
+            if (strcmp ($app_pcode, $pcode) == 0)
+                return ($app);
+        }
+    }
+
+    return (NULL);
+}
+
+if (($app = find_app($wg->evids, $arg_pcode)) == NULL) {
+    $body .= sprintf ("<p>error: can't find application for %s %s</p>\n",
+        h($arg_pcode), h($arg_eventid));
+    pfinish ();
+}
+
+$body .= "<div class='admin_box'>";
+$body .= "<p>admin box</p>\n";
+$t = sprintf ("/index.php?app_id=%d", $app->app_id);
+$body .= sprintf ("<p>link to app %s</p>\n", mklink ($app->evid, $t));
 
 $magic_link = sprintf("https://cgi.neffa.org/performer/confirm2.pl"
     ."?P=%s", rawurlencode($arg_pcode));
 
-$body .= sprintf ("<p>on save, redirect to %s</p>\n", 
+$body .= sprintf ("<p>on save, will redirect to %s</p>\n", 
     mklink ($magic_link, $magic_link));
+
+$body .= "</div>\n";
+
+$body .= "<p>Here is the current information for your event.  You"
+    ." can use this form to request changes.</p>\n";
+
+$body .= "<form action='performer.php'>\n";
+$body .= "<input type='hidden' name='save' value='1' />\n";
+$body .= sprintf("<input type='hidden' name='pcode' value='%s' />\n", 
+    h($arg_pcode));
+$body .= sprintf("<input type='hidden' name='eventid' value='%s' />\n",
+    h($arg_eventid));
+$body .= "<table class='twocol'>\n";
+$body .= "<tr><th>Group name</th><td>";
+$body .= sprintf ("<input type='text' size='50'"
+    ." name='group_name' value='%s' />\n",
+    h($app->curvals['group_name']));
+$body .= "</td></tr>\n";
+    
+$body .= "<tr><th></th><td><input type='submit' value='Submit' />\n";
+$t = sprintf ("performer.php?pcode=%s&eventid=%s",
+    rawurlencode($arg_pcode), rawurlencode($arg_eventid));
+$body .= mklink ("cancel", $t);
+$body .= "</td></tr>\n";
+$body .= "</table>\n";
+$body .= "</form>\n";
+
 
 
 pfinish ();

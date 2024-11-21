@@ -372,6 +372,7 @@ function get_questions () {
 }
 
 $cached_apps = NULL;
+$apps_by_evid = array();
 function get_applications ($year = 0, $test_flag = 0) {
     global $cached_apps, $view_year, $view_test_flag;
     
@@ -422,8 +423,10 @@ function get_applications ($year = 0, $test_flag = 0) {
         }
     }
 
+    global $apps_by_evid;
     foreach ($apps as $app) {
         $app->neffa_id = name_to_id ($app->curvals['name']);
+        $apps_by_evid[$app->evid] = $app;
     }
 
     // just for cleaning up data from before persistent evids 
@@ -916,12 +919,16 @@ function read_notify_info() {
     global $cfg;
     $filename = sprintf ("%s/webgrid.tsv", $cfg['aux_dir']);
     $f = fopen($filename, "r");
-    global $webgrid;
+    global $webgrid, $webgrid_by_eventid;
     $webgrid = [];
+    $webgrid_by_eventid = [];
     while (($row = fgets ($f)) != NULL) {
         $cols = explode("\t", $row);
         $elt = (object)NULL;
-        $elt->evid = trim($cols[0]);
+        $elt->evids = array();
+        foreach (explode(",", $cols[0]) as $evid) {
+            $elt->evids[] = trim($evid);
+        }
         $elt->title = trim($cols[1]);
         $elt->desc = trim($cols[2]);
         $elt->codes = trim($cols[3]);
@@ -934,7 +941,11 @@ function read_notify_info() {
             if ($name_id)
                 $elt->name_ids[] = intval($cols[$idx]);
         }
+
+        $elt->eventid = sprintf("%s_%s_%s", 
+            $elt->day, $elt->time, $elt->room);
         $webgrid[] = $elt;
+        $webgrid_by_eventid[$elt->eventid] = $elt;
     }
 
     global $performers;

@@ -154,7 +154,7 @@ function we_need_to_notify ($kind, $webgrid_elt, $name_id) {
     global $notify_by_notify_id;
     
     if (isset ($notify_by_name_id[$name_id]))
-        return;
+        return (0);
     
     global $errs, $performers;
     if (($perf = @$performers[$name_id]) == NULL)
@@ -207,8 +207,12 @@ function walk_grid() {
 
         if (count($fails) > 0) {
             if (count($success) > 0) {
-                $msg = sprintf("<div>event %s</div>\n",
-                    make_evid_link($webgrid_elt->evid));
+                $msg = "<div>event(s) ";
+                foreach ($webgrid_elt->evids as $evid) {
+                    $msg .= make_evid_link($evid);
+                    $msg .= " ";
+                }
+                $msg .= "</div>\n";
                 $msg .= "<ul class='notify_err'>\n";
                 $msg .= "<li>";
                 $msg .= "notified ";
@@ -240,8 +244,14 @@ function walk_grid() {
                 global $stray_secondaries;
                 $stray_secondaries[] = $msg;
             } else {
-                $msg = sprintf ("<div>can't find email for event %s</div>",
-                    make_evid_link($webgrid_elt->evid));
+                $msg = "<div>can't find email for event(s) ";
+                foreach ($webgrid_elt->evids as $evid) {
+                    $msg .= make_evid_link($evid);
+                    $msg .= " ";
+                }
+                $msg .= "</div>\n";
+
+                $msg .= "<ul class='notify_err'>\n";
                 $msg .= "<li>";
                 $msg .= "skipped ";
                 foreach ($fails as $name_id) {
