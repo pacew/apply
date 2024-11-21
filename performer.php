@@ -70,6 +70,10 @@ $body .= "<tr><th>Group name</th><td>";
 $body .= sprintf ("<input type='text' size='50'"
     ." name='group_name' value='%s' />\n",
     h($app->curvals['group_name']));
+$body .= "<tr><th>Event title</th><td>";
+$body .= sprintf ("<input type='text' size='50'"
+    ." name='event_title' value='%s' />\n",
+    h($app->curvals['event_title']));
 $body .= "</td></tr>\n";
     
 $body .= "<tr><th></th><td><input type='submit' value='Submit' />\n";

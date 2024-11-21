@@ -943,7 +943,7 @@ function read_notify_info() {
         }
 
         $elt->eventid = sprintf("%s_%s_%s", 
-            $elt->day, $elt->time, $elt->room);
+            $elt->day, $elt->time, str_replace(" ", "", $elt->room));
         $webgrid[] = $elt;
         $webgrid_by_eventid[$elt->eventid] = $elt;
     }
