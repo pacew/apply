@@ -54,6 +54,14 @@ $magic_link = sprintf("https://cgi.neffa.org/performer/confirm2.pl"
 $body .= sprintf ("<p>on save, will redirect to %s</p>\n", 
     mklink ($magic_link, $magic_link));
 
+$t = sprintf("https://k.pacew.org:26534/performer.php"
+    ."?pcode=%s"
+    ."&eventid=%s",
+    rawurlencode($arg_pcode),
+    rawurlencode($arg_eventid));
+$body .= sprintf ("<p>bounce to dev site %s</p>\n", mklink($t, $t));
+
+
 $body .= "</div>\n";
 
 $body .= "<p>Here is the current information for your event.  You"
@@ -66,10 +74,6 @@ $body .= sprintf("<input type='hidden' name='pcode' value='%s' />\n",
 $body .= sprintf("<input type='hidden' name='eventid' value='%s' />\n",
     h($arg_eventid));
 $body .= "<table class='twocol'>\n";
-$body .= "<tr><th>Group name</th><td>";
-$body .= sprintf ("<input type='text' size='50'"
-    ." name='group_name' value='%s' />\n",
-    h($app->curvals['group_name']));
 $body .= "<tr><th>Event title</th><td>";
 $body .= sprintf ("<input type='text' size='50'"
     ." name='event_title' value='%s' />\n",

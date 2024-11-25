@@ -101,9 +101,9 @@ if ($arg_doc == 1) {
     $body .= "<h2>cgi program sends a performer here to edit an event</h2>\n";
     $body .= "<div>\n";
     $t = sprintf("https://%s/performer.php"
-        ."?pcode=%s"
-        ."&eventid=S_BallroomAB_1200",
-        $host, rawurlencode($pcode));
+        ."?pcode=KXnzmS27X249"
+        ."&eventid=U_1200_Marlborough",
+        $host);
     $body .= mklink ($t, $t);
     $body .= "</div>\n";
 
