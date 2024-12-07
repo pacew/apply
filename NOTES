@@ -156,3 +156,30 @@ grant all privileges on *.* to 'pace'@'localhost' with grant option;
 
 create user 'www-data'@'localhost' identified with auth_socket;
 grant all privileges on *.* to 'www-data'@'localhost' with grant option;
+
+
+
+
+
+I spot checked like this:
+
+problems with P1733a Fusion Dance
+can't find email for leader of Boston Fusion Dance Community
+
+click the link which goes to the application.  Notice the group name "Boston Fusion Dance Community".  It matched in the database, so there's a pcode in the pink box and  link to cgi next to it.  Click that, which goes to the cgi index page.  Indeed, there's no email address for this group.
+
+At the database level, the pcode shows the performer number is 12273, so in the neffa database:
+
+mysql> select performerName, email from performers where number = 12273;
++-------------------------------+-------+
+| performerName                 | email |
++-------------------------------+-------+
+| Boston Fusion Dance Community |       |
++-------------------------------+-------+
+1 row in set (0.00 sec)
+
+Let me know if there's some other step I'm supposed to do to find an email
+
+I did push a change to make the error list easier to read.  Let me know if there's anything else to chase.  
+
+My morning focus is going to be on editing by performers.

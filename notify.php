@@ -181,6 +181,13 @@ function we_need_to_notify ($name_id) {
     return (0);
 }
 
+function var_dump_ret($val) {
+    ob_start();
+    var_dump($val);
+    $ret = ob_get_contents();
+    ob_end_clean();
+    return sprintf ("<pre>%s</pre>\n", $ret);
+}
 
 function walk_grid() {
     global $webgrid, $group_to_group_leader;
@@ -195,6 +202,8 @@ function walk_grid() {
                 continue;
             }
 
+            global $name_id_to_pcode;
+
             $msg = "";
             if (strcmp ($app->curvals['main_performer'], "Group") == 0) {
                 $group_name = $app->curvals['group_name'];
@@ -204,8 +213,12 @@ function walk_grid() {
                     $msg .= sprintf("<div>can't find leader_id"
                         ." for group %s</div>\n", h($group_name));
                 } else if (we_need_to_notify($leader_id) < 0) {
-                    $msg .= sprintf ("<div>can't find email for leader of"
-                        ." %s</div>\n", h($group_name));
+                    $msg .= sprintf ("<div>can't find email for leader %d of"
+                        ." %s</div>\n", $leader_id, h($group_name));
+
+                    $msg .= "<div>probably, the leader of this group"
+                        ." did not themselves make an application this year"
+                        ."</div>\n";
                 }
             } else {
                 if (we_need_to_notify($app->neffa_id) < 0) {
