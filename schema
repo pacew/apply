@@ -56,4 +56,15 @@ create table notify (
   sent_dttm timestamp,
   responded_dttm timestamp
 );
-  
+
+
+create table requests (
+  request_id int,       
+  app_id int,
+  fest_year int,
+  test_flag int,
+  ts timestamp,
+  username text,
+  val text,
+  dismissed int
+);

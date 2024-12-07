@@ -181,14 +181,6 @@ function we_need_to_notify ($name_id) {
     return (0);
 }
 
-function var_dump_ret($val) {
-    ob_start();
-    var_dump($val);
-    $ret = ob_get_contents();
-    ob_end_clean();
-    return sprintf ("<pre>%s</pre>\n", $ret);
-}
-
 function walk_grid() {
     global $webgrid, $group_to_group_leader;
     foreach ($webgrid as $webgrid_elt) {

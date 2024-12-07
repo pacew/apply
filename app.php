@@ -1018,6 +1018,22 @@ function neffa_id_to_pcode($neffa_id) {
     return ($r->pcode);
 }
 
+function var_dump_ret($val) {
+    ob_start();
+    var_dump($val);
+    $ret = ob_get_contents();
+    ob_end_clean();
+    return sprintf ("<pre>%s</pre>\n", $ret);
+}
+
+function var_dump_inline($val) {
+    global $body;
+    ob_start();
+    var_dump($val);
+    $body .= "<pre>" . ob_get_contents() . "</pre>";
+    ob_end_clean();
+}
+
 if (! get_option ("flat") && ! @$cli_mode) {
     require (router());
     /* NOTREACHED */

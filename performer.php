@@ -14,8 +14,30 @@ pstart ();
 
 $body .= "<p>REMEMBER AUTHENTICATION</p>";
 
+$fields = array("event_title");
+
 if ($arg_save) {
     $app = get_application($arg_app_id);
+
+    $req = array();
+    foreach ($fields as $field) {
+        $oldval = $app->curvals[$field];
+        $newval = @$_REQUEST[$field];
+
+        if ($oldval != $newval) {
+            $req[$field] = $newval;
+        }
+    }
+
+    if (count($req) > 0) {
+        $request_id = get_seq();
+        query ("insert into requests (request_id,"
+            ." app_id, fest_year, test_flag, ts, username, val"
+            ." ) values (?, ?, ?, ?, current_timestamp, ?, ?)",
+            array($request_id, $arg_app_id, $submit_year, $submit_test_flag,
+                $username, json_encode($req)));
+    }
+
     $t = sprintf("index.php?app_id=%d", $arg_app_id);
     $body .= mklink($t, $t);
     pfinish();

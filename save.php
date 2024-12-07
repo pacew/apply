@@ -12,6 +12,18 @@ if (@$_REQUEST['checkfield'] != "") {
     redirect ("/");
 }
 
+if ($username) {
+    foreach ($_REQUEST as $key => $val) {
+        if (preg_match ('/dismiss_([0-9]*)/', $key, $parts)) {
+            $request_id = intval($parts[1]);
+            $dismissed = intval($val);
+            query ("update requests set dismissed = ? where request_id = ?",
+                array($dismissed, $request_id));
+        }
+    }
+}
+
+
 $want_email = 0;
 
 if ($app_id == 0) {

@@ -269,10 +269,22 @@ $body .= "</form>\n";
 
 $apps = get_applications ();
 
+$q = query ("select app_id"
+    ." from requests"
+    ." where fest_year = ?"
+    ."   and test_flag = ?"
+    ."   and dismissed <> 1",
+    array($view_year, $view_test_flag));
+$pending_requests = array();
+while (($r = fetch ($q)) != NULL) {
+    $pending_requests[intval($r->app_id)] = 1;
+}
+
+
 $body .= sprintf ("<h2>%d applications [%s]</h2>\n", 
                   count($apps), mklink ("graph", "graph.php"));
 
-$filters = array ("all", "unconfirmed", "show-suppressed");
+$filters = array ("all", "unconfirmed", "show-suppressed", "pending-requests");
 $cur_filter = getsess ("filter");
 if (array_search ($cur_filter, $filters) === FALSE)
     $cur_filter = "all";
@@ -374,6 +386,11 @@ foreach ($apps as $app) {
 
     if (@$app->curvals['do_not_import'] && $cur_filter != "show-suppressed") {
         $show = 0;
+    }
+
+    if ($cur_filter == "pending-requests") {
+        if (@$pending_requests[$app->app_id] == 0)
+            $show = 0;
     }
 
     switch ($group_filter) {

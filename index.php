@@ -10,6 +10,24 @@ if ($arg_app_id == 0)
 
 pstart ();
 
+$requests = array();
+
+if ($arg_app_id > 0) {
+    $q = query ("select request_id, ts, username, val, dismissed"
+        ." from requests"
+        ." where app_id = ?"
+        ." order by request_id",
+        $arg_app_id);
+    while (($r = fetch ($q)) != NULL) {
+        $req = (object)NULL;
+        $req->request_id = intval($r->request_id);
+        $req->ts = $r->ts;
+        $req->username = trim($r->username);
+        $req->val = json_decode($r->val, TRUE);
+        $req->dismissed = intval($r->dismissed);
+        $requests[] = $req;
+    }
+}
 
 if ($cfg['conf_key'] != "production") {
     $body .= sprintf ("<p class='debug_box'>effective time %s</p>\n", 
@@ -358,7 +376,43 @@ if ($username) {
                           $application->evid);
     }
 
+    if (count($requests) > 0) {
+        $body .= "<h2>requests</h2>\n";
+        $rows = array();
+        foreach($requests as $req) {
+            $cols = array();
+            $cols[] = $req->ts;
+            $cols[] = $req->username;
+
+            $changes = "";
+            foreach ($req->val as $key => $val) {
+                $changes .= sprintf ("<div><strong>%s</strong> %s</div>\n",
+                    h($key), h($val));
+            }
+            $cols[] = $changes;
+            $c = "";
+            if ($req->dismissed)
+                $c = "checked='checked'";
+            $dismiss_id = sprintf ("dismiss_%d", $req->request_id);
+            /* 
+             * checkboxes don't get sent if they aren't checked
+             * so if not checked, save.php will see the hidden 0.
+             * if checked, the checkbox will override the hidden 0
+             */
+            $cols[] = sprintf ("<input type='hidden' name='%s' value='0' />\n"
+                ." <input type='checkbox' $c name='%s' value='1' />",
+                $dismiss_id, $dismiss_id);
+
+            $rows[] = $cols;
+        }
+        $body .= mktable(array("time", "user", "change request", "dismissed"),
+            $rows);
+    }
+
+
+
     $body .= "</div>\n";
+
 }
 
 $body .= sprintf ("<input type='hidden' name='app_id' value='%d' />\n",
@@ -516,8 +570,19 @@ foreach ($questions as $question) {
     }
 
     $patches = @$application->patches[$question_id];
-    if ($patches) {
+
+    $reqs = array ();
+    foreach ($requests as $req) {
+        if (isset($req->val[$question_id])) {
+            $reqs[] = $req;
+        }
+    }
+
+    if ($patches || count($reqs) > 0) {
         $body .= "<div class='orig_answer'>\n";
+    }
+        
+    if ($patches) {
         $body .= "<h3>Changes made by admins</h3>\n";
         $rows = array ();
         foreach ($patches as $patch) {
@@ -541,6 +606,31 @@ foreach ($questions as $question) {
             $rows[] = $cols;
         }
         $body .= mktable (array ("timestamp", "user", "from val"), $rows);
+    }
+
+    if (count($reqs) > 0) {
+        $rows = array();
+        foreach ($reqs as $request) {
+            $cols = array();
+            $cols[] = h($request->ts);
+            $cols[] = h($username);
+            $cols[] = h($request->val[$question_id]);
+            if ($request->dismissed) {
+                $txt = "dismissed";
+            } else {
+                $txt = "";
+            }
+            $cols[] = h($txt);
+            $rows[] = $cols;
+        }
+        $body .= mktable(array("timestamp", "user", "change request", 
+                "dismissed?"), 
+            $rows);
+        $body .= "<div>(you can change the dismissed flag at the top"
+            ." of the application)</div>";
+    }
+        
+    if ($patches || count($reqs) > 0) {
         $body .= "</div>\n";
     }
 
