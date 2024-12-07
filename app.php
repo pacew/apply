@@ -373,6 +373,12 @@ function get_questions () {
 
 $cached_apps = NULL;
 $apps_by_evid = array();
+
+function clear_apps_cache() {
+    global $cached_apps;
+    $cached_apps = NULL;
+}
+
 function get_applications ($year = 0, $test_flag = 0) {
     global $cached_apps, $view_year, $view_test_flag;
     

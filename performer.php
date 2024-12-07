@@ -7,11 +7,17 @@ $anon_ok = 1;
 $arg_pcode = trim(@$_REQUEST['pcode']);
 $arg_eventid = trim (@$_REQUEST['eventid']);
 $arg_save = intval (@$_REQUEST['save']);
+$arg_app_id = intval (@$_REQUEST['app_id']);
+$arg_event_title = trim (@$_REQUEST['event_title']);
 
 pstart ();
 
+$body .= "<p>REMEMBER AUTHENTICATION</p>";
+
 if ($arg_save) {
-    $body .= "<p>saving is not implemented yet</p>\n";
+    $app = get_application($arg_app_id);
+    $t = sprintf("index.php?app_id=%d", $arg_app_id);
+    $body .= mklink($t, $t);
     pfinish();
 }
 
@@ -73,6 +79,8 @@ $body .= sprintf("<input type='hidden' name='pcode' value='%s' />\n",
     h($arg_pcode));
 $body .= sprintf("<input type='hidden' name='eventid' value='%s' />\n",
     h($arg_eventid));
+$body .= sprintf("<input type='hidden' name='app_id' value='%d' />\n",
+    $app->app_id);
 $body .= "<table class='twocol'>\n";
 $body .= "<tr><th>Event title</th><td>";
 $body .= sprintf ("<input type='text' size='50'"

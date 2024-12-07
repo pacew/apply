@@ -122,6 +122,7 @@ if ($need_patch) {
     }
 }
 
+clear_apps_cache();
 update_evid(get_applications(), $application);
 
 query (
