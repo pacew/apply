@@ -360,3 +360,7 @@ p {
     font-weight: bold;
 }
 
+.notify_error {
+    margin: 1em;
+    padding: .5em;
+}

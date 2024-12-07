@@ -219,6 +219,7 @@ function walk_grid() {
                 $err = "<div>\n";
                 $err .= sprintf ("<div>problems with %s</div>", 
                     make_evid_link($evid));
+                $err .= "</div>\n";
                 $err .= $msg;
                 $errs[] = $err;
             }
@@ -269,7 +270,7 @@ $body .= mktable(array(
 if (count($errs) > 0) {
     $body .= "<h1 style='color:red'>errors</h1>\n";
     foreach ($errs as $err) {
-        $body .= sprintf ("<div>%s</div>\n", $err);
+        $body .= sprintf ("<div class='notify_error'>%s</div>\n", $err);
     }
 }
         
