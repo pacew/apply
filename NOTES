@@ -1,5 +1,27 @@
+NEFFA 2025 Program Email Texts
+
+
 Systems Feature and Issue Tracker
 https://docs.google.com/spreadsheets/d/1UXBIxhuOAASVcXoVWiXymPQGLuOpHC9EwaSuI-ew5og/edit?gid=1768911079#gid=1768911079
+
+target of magic link, goes to resposne.php with yes/no confirm
+needs to record date
+  -> make response.php really redirect
+  *** then in notfiy.php add column for confirm date
+  add filter
+
+edit title, availability description "comments"
+  maybe just availability delta
+  
+add unscheduled performers: people who are applicants but not on the notify.php
+list
+   link to rejection letter
+   rejection reason
+   
+human readable location and date on performer.php
+  after submit back to confirm2
+  back to Performer Confirmation
+  
 
 
 

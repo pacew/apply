@@ -12,7 +12,8 @@ $arg_event_title = trim (@$_REQUEST['event_title']);
 
 pstart ();
 
-$body .= "<p>REMEMBER AUTHENTICATION</p>";
+$magic_link = sprintf("https://cgi.neffa.org/performer/confirm2.pl"
+    ."?P=%s", rawurlencode($arg_pcode));
 
 $fields = array("event_title");
 
@@ -37,6 +38,9 @@ if ($arg_save) {
             array($request_id, $arg_app_id, $submit_year, $submit_test_flag,
                 $username, json_encode($req)));
     }
+
+    if ($cfg['conf_key'] == "production")
+        redirect ($magic_link);
 
     $t = sprintf("index.php?app_id=%d", $arg_app_id);
     $body .= mklink($t, $t);
@@ -76,9 +80,6 @@ $body .= "<p>admin box</p>\n";
 $t = sprintf ("/index.php?app_id=%d", $app->app_id);
 $body .= sprintf ("<p>link to app %s</p>\n", mklink ($app->evid, $t));
 
-$magic_link = sprintf("https://cgi.neffa.org/performer/confirm2.pl"
-    ."?P=%s", rawurlencode($arg_pcode));
-
 $body .= sprintf ("<p>on save, will redirect to %s</p>\n", 
     mklink ($magic_link, $magic_link));
 
@@ -117,6 +118,9 @@ $body .= mklink ("cancel", $t);
 $body .= "</td></tr>\n";
 $body .= "</table>\n";
 $body .= "</form>\n";
+
+$body .= "<div>note: you may not request a change just to be able"
+    ." to attend another event</div>\n";
 
 
 

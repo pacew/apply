@@ -194,7 +194,7 @@ $body .= mklink ("home", "/");
 $body .= " | ";
 $body .= mklink ("show all", "admin.php");
 $body .= " | ";
-$body .= mklink ("new performers", "admin.php?just_new=1");
+$body .= mklink ("unmatched performers", "admin.php?just_new=1");
 $body .= " | ";
 $body .= mklink ("view data", "download.php?view_data=1");
 $body .= " | ";
