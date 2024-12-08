@@ -67,19 +67,16 @@ if ($arg_notify_id != 0) {
         pfinish();
     }
 
-    $t = sprintf("https://cgi.neffa.org/performer/confirm2.pl?P=%s",
+    $confirm2_link = sprintf("https://cgi.neffa.org/performer/confirm2.pl?P=%s",
         rawurlencode($pcode));
-    $body .= sprintf ("<p>%s</p>\n", mklink($t, $t));
+    $body .= sprintf ("<p>%s</p>\n", mklink($confirm2_link, $confirm2_link));
 
     $body .= "</div>\n"; /* admin_box */
 
-    $t = make_cgi_pcode_link($pcode);
-    $pcode_link = mklink($t, $t);
-    
     $vals = [];
 
     $vals['first_name'] = preg_replace ('/^[^,]*,/', "", $perf->name);
-    $vals['pcode_link'] = $pcode_link;
+    $vals['pcode_link'] = mklink($confirm2_link, $confirm2_link);
 
     $body .= "<div class='notify_email'>\n";
     $body .= populate_template("notify.html", $vals);
