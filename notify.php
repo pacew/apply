@@ -48,43 +48,6 @@ if ($arg_upload == 1) {
 
 read_notify_info();
 
-if ($arg_notify_id != 0) {
-    $body .= "<div class='admin_box'>\n";
-    $body .= sprintf ("<div>details for %d</div>\n", $arg_notify_id);
-    if (($elt = @$notify_by_notify_id[$arg_notify_id]) == NULL) {
-        $body .= "<div>not found</div>\n";
-        pfinish();
-    }
-    $body .= sprintf ("<div>%s</div>\n", mklink("[back]", "notify.php"));
-
-    if (($perf = @$performers[$elt->name_id]) == NULL) {
-        $body .= "<div>can't find performer db entry for this person</div>\n";
-        pfinish();
-    }
-    
-    if (($pcode = @$name_id_to_pcode[$elt->name_id]) == NULL) {
-        $body .= "<div>can't find pcode for this person</div>\n";
-        pfinish();
-    }
-
-    $confirm2_link = sprintf("https://cgi.neffa.org/performer/confirm2.pl?P=%s",
-        rawurlencode($pcode));
-    $body .= sprintf ("<p>%s</p>\n", mklink($confirm2_link, $confirm2_link));
-
-    $body .= "</div>\n"; /* admin_box */
-
-    $vals = [];
-
-    $vals['first_name'] = preg_replace ('/^[^,]*,/', "", $perf->name);
-    $vals['pcode_link'] = mklink($confirm2_link, $confirm2_link);
-
-    $body .= "<div class='notify_email'>\n";
-    $body .= populate_template("notify.html", $vals);
-    $body .= "</div>\n";
-    
-    pfinish ();
-}
-
 function make_evid_link($evid) {
     global $evid_map;
     if (($app = evid_to_app($evid)) == NULL)
@@ -232,6 +195,84 @@ function walk_grid() {
 
 walk_grid();
 
+if ($arg_notify_id != 0) {
+    $body .= "<div class='admin_box'>\n";
+    $body .= sprintf ("<div>details for %d</div>\n", $arg_notify_id);
+    if (($elt = @$notify_by_notify_id[$arg_notify_id]) == NULL) {
+        $body .= "<div>not found</div>\n";
+        pfinish();
+    }
+    $body .= sprintf ("<div>%s</div>\n", mklink("[back]", "notify.php"));
+
+    if (($perf = @$performers[$elt->name_id]) == NULL) {
+        $body .= "<div>can't find performer db entry for this person</div>\n";
+        pfinish();
+    }
+    
+    if (($pcode = @$name_id_to_pcode[$elt->name_id]) == NULL) {
+        $body .= "<div>can't find pcode for this person</div>\n";
+        pfinish();
+    }
+
+    $confirm2_link = sprintf("https://cgi.neffa.org/performer/confirm2.pl?P=%s",
+        rawurlencode($pcode));
+    $body .= sprintf ("<p>%s</p>\n", mklink($confirm2_link, $confirm2_link));
+
+    $rows = array();
+    foreach ($webgrid as $webgrid_elt) {
+        foreach ($webgrid_elt->evids as $evid) {
+            if (($app = @$apps_by_evid[$evid]) == NULL)
+                continue;
+
+            if (strcmp($app->curvals['main_performer'], "Group") == 0) {
+                $group_name = $app->curvals['group_name'];
+                $group_id = name_to_id ($group_name);
+                $name_id = @$group_to_group_leader[$group_id];
+            } else {
+                $name_id = $app->neffa_id;
+            }
+
+            if ($name_id == $elt->name_id) {
+                $eventid = $webgrid_elt->eventid;
+
+                $cols = array();
+
+                $t = sprintf ("index.php?app_id=%d", $app->app_id);
+                $cols[] = mklink ($app->evid, $t);
+
+                if (strcmp($app->curvals['main_performer'], "Group") == 0) {
+                    $txt = $app->curvals['group_name'];
+                } else {
+                    $txt = $app->curvals['event_title'];
+                }
+                
+                $cols[] = h($txt);
+
+                $t = sprintf("performer.php?pcode=%s&eventid=%s",
+                    rawurlencode($pcode), rawurlencode($eventid));
+                $cols[] = mklink ($eventid, $t);
+                $rows[] = $cols;
+            }
+        }
+    }
+    $body .= mktable (array ("evid", "title", "performer edit"), $rows);
+
+
+    $body .= "</div>\n"; /* admin_box */
+
+    $vals = [];
+
+    $vals['first_name'] = preg_replace ('/^[^,]*,/', "", $perf->name);
+    $vals['pcode_link'] = mklink($confirm2_link, $confirm2_link);
+
+    $body .= "<div class='notify_email'>\n";
+    $body .= populate_template("notify.html", $vals);
+    $body .= "</div>\n";
+    
+    pfinish ();
+}
+
+
 $body .= "<div class='admin_box'>\n";
 $body .= "<form action='notify.php' method='post'"
     ." enctype='multipart/form-data'>\n";
@@ -260,13 +301,20 @@ foreach ($notify as $elt) {
     $cols[] = h($elt->name_id);
     $cols[] = h(@$perf->name);
     $cols[] = h($elt->email);
+
+    $pcode = neffa_id_to_pcode($elt->name_id);
+    $t = sprintf("https://cgi.neffa.org/performer/confirm2.pl?P=%s",
+        rawurlencode($pcode));
+    $cols[] = mklink("magic", $t);
+
+
     $rows[] = $cols;
     
 }
             
 $body .= sprintf("<div>%d rows</div>\n", count($notify));
 $body .= mktable(array(
-    "notify_id", "name_id", "name", "email"),
+    "notify_id", "name_id", "name", "email", "magic"),
     $rows);
 
 if (count($errs) > 0) {
