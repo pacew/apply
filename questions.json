@@ -318,5 +318,11 @@
     "admin": 1,
     "q": "ADMIN: COMMITTEE Rejection notes",
     "textarea": 1
+  },
+
+  { "id": "P_notes",
+    "admin": 1,
+    "q": "ADMIN: Performer response notes",
+    "textarea": 1
   }
 ]

@@ -583,7 +583,7 @@ foreach ($questions as $question) {
     }
         
     if ($patches) {
-        $body .= "<h3>Changes made by admins</h3>\n";
+        $body .= "<h3>Prior values</h3>\n";
         $rows = array ();
         foreach ($patches as $patch) {
             $cols = array ();
@@ -605,7 +605,7 @@ foreach ($questions as $question) {
             $cols[] = h($txt);
             $rows[] = $cols;
         }
-        $body .= mktable (array ("timestamp", "user", "from val"), $rows);
+        $body .= mktable (array ("timestamp", "user", "old val"), $rows);
     }
 
     if (count($reqs) > 0) {

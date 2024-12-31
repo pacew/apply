@@ -121,6 +121,7 @@ if (($application = get_application ($app_id)) == NULL)
     fatal ("can't find read application");
 
 if ($need_patch) {
+    /* similar code is in performer.php */
     $diff = mikemccabe\JsonPatch\JsonPatch::diff($application->curvals, 
                                                  $newvals);
 

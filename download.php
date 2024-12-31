@@ -160,7 +160,8 @@ $output_order = array (
     "C_extra_checks",
     "C_notes",
     "C_rejection_reason",
-    "C_rejection_notes"
+    "C_rejection_notes",
+    "P_notes"
 );
 
 $csvhdr = array ();

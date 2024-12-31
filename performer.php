@@ -9,6 +9,7 @@ $arg_eventid = trim (@$_REQUEST['eventid']);
 $arg_save = intval (@$_REQUEST['save']);
 $arg_app_id = intval (@$_REQUEST['app_id']);
 $arg_event_title = trim (@$_REQUEST['event_title']);
+$arg_P_notes = trim (@$_REQUEST['P_notes']);
 
 pstart ();
 
@@ -22,7 +23,7 @@ if ($arg_save) {
 
     $req = array();
     foreach ($fields as $field) {
-        $oldval = $app->curvals[$field];
+        $oldval = @$app->curvals[$field];
         $newval = @$_REQUEST[$field];
 
         if ($oldval != $newval) {
@@ -37,6 +38,27 @@ if ($arg_save) {
             ." ) values (?, ?, ?, ?, current_timestamp, ?, ?)",
             array($request_id, $arg_app_id, $submit_year, $submit_test_flag,
                 $username, json_encode($req)));
+    }
+
+    $oldval = @$app->curvals['P_notes'];
+    $newval = @$_REQUEST['P_notes'];
+    if ($oldval != $newval) {
+        /* based on save.php */
+        
+        $newvals = $app->curvals;
+        $newvals['P_notes'] = @$_REQUEST['P_notes'];
+
+        $diff = mikemccabe\JsonPatch\JsonPatch::diff($app->curvals, 
+            $newvals);
+
+        if (count($diff) > 0) {
+            query ("insert into json (app_id, ts, username, val, fest_year,"
+                ."   test_flag)"
+                ." values (?,current_timestamp,?,?,?,?)",
+                array ($arg_app_id, "performer-response", json_encode ($diff),
+                    $app->fest_year,
+                    $app->test_flag));
+        }
     }
 
     if ($cfg['conf_key'] == "production")
@@ -105,10 +127,19 @@ $body .= sprintf("<input type='hidden' name='eventid' value='%s' />\n",
 $body .= sprintf("<input type='hidden' name='app_id' value='%d' />\n",
     $app->app_id);
 $body .= "<table class='twocol'>\n";
-$body .= "<tr><th>Event title</th><td>";
-$body .= sprintf ("<input type='text' size='50'"
-    ." name='event_title' value='%s' />\n",
-    h($app->curvals['event_title']));
+
+if (category_uses_title(@$app->curvals['app_category'])) {
+    $body .= "<tr><th>Event title</th><td>";
+    $body .= sprintf ("<input type='text' size='50'"
+        ." name='event_title' value='%s' />\n",
+        h($app->curvals['event_title']));
+    $body .= "</td></tr>\n";
+}
+
+$body .= "<tr><th>Performer notes</th><td>";
+$body .= sprintf ("<textarea rows='10' cols='80' name='P_notes' />\n");
+$body .= h(@$app->curvals['P_notes']);
+$body .= "</textarea>\n";
 $body .= "</td></tr>\n";
     
 $body .= "<tr><th></th><td><input type='submit' value='Submit' />\n";

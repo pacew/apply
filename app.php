@@ -790,6 +790,17 @@ function send_email ($args) {
     return (TRUE);
 }
 
+function category_uses_title($category) {
+    switch ($category) {
+    case "Band":
+    case "Ritual":
+    case "Performance":
+        return (0);
+    default:
+        return (1);
+    }
+}    
+
 function convert_event_title($curvals) {
     switch (@$curvals['app_category']) {
     case "Band":
