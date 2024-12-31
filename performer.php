@@ -97,26 +97,35 @@ if (($app = find_app($wg->evids, $arg_pcode)) == NULL) {
     pfinish ();
 }
 
-$body .= "<div class='admin_box'>";
-$body .= "<p>admin box</p>\n";
-$t = sprintf ("/index.php?app_id=%d", $app->app_id);
-$body .= sprintf ("<p>link to app %s</p>\n", mklink ($app->evid, $t));
+$body .= "<table class='twocol'>\n";
+$body .= "<tr><th>Applicant</th><td>\n";
+$body .= sprintf ("%s<br/>%s<br/>%s",
+    h($app->curvals['name']),
+    h($app->curvals['email']),
+    h($app->curvals['phone']));
+$body .= "</td></tr>\n";
 
-$body .= sprintf ("<p>on save, will redirect to %s</p>\n", 
-    mklink ($magic_link, $magic_link));
+if (@$app->curvals['group_name']) {
+    $body .= "<tr><th>Group name</th><td>\n";
+    $body .= h($app->curvals['group_name']);
+    $body .= "</td></tr>\n";
+}
 
-$t = sprintf("https://k.pacew.org:26534/performer.php"
-    ."?pcode=%s"
-    ."&eventid=%s",
-    rawurlencode($arg_pcode),
-    rawurlencode($arg_eventid));
-$body .= sprintf ("<p>bounce to dev site %s</p>\n", mklink($t, $t));
+$body .= "</table>\n";
 
+$body .= "<h1>Change Request Form</h1>\n";
 
-$body .= "</div>\n";
-
-$body .= "<p>Here is the current information for your event.  You"
-    ." can use this form to request changes.</p>\n";
+$body .= "<p>The form below allows you to request changes to some details"
+    ." about your event.</p>"
+    ."<p>You can use the <strong>Performer notes</strong>"
+    ." field to request a more complex change.</p>"
+    ."<p>You request will be reviewed"
+    ." by a member of the program committee, and they will you know by email"
+    ." about the status of your request.</p>"
+    ."<p>If you don't receive a response"
+    ." after a few days, please email "
+    ."<a href='mailto:program@neffa.org'>program@neffa.org</a>"
+    ." and describe what you need.</p>\n";
 
 $body .= "<form action='performer.php'>\n";
 $body .= "<input type='hidden' name='save' value='1' />\n";
@@ -152,6 +161,24 @@ $body .= "</form>\n";
 
 $body .= "<div>note: you may not request a change just to be able"
     ." to attend another event</div>\n";
+
+$body .= "<div class='admin_box'>";
+$body .= "<p>admin box</p>\n";
+$t = sprintf ("/index.php?app_id=%d", $app->app_id);
+$body .= sprintf ("<p>link to app %s</p>\n", mklink ($app->evid, $t));
+
+$body .= sprintf ("<p>on save, will redirect to %s</p>\n", 
+    mklink ($magic_link, $magic_link));
+
+$t = sprintf("https://k.pacew.org:26534/performer.php"
+    ."?pcode=%s"
+    ."&eventid=%s",
+    rawurlencode($arg_pcode),
+    rawurlencode($arg_eventid));
+$body .= sprintf ("<p>bounce to dev site %s</p>\n", mklink($t, $t));
+
+
+$body .= "</div>\n";
 
 
 
