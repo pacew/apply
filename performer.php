@@ -17,6 +17,7 @@ $magic_link = sprintf("https://cgi.neffa.org/performer/confirm2.pl"
     ."?P=%s", rawurlencode($arg_pcode));
 
 $fields = array("event_title");
+     
 
 if ($arg_save) {
     $app = get_application($arg_app_id);
@@ -30,6 +31,18 @@ if ($arg_save) {
             $req[$field] = $newval;
         }
     }
+
+    $avail = array();
+    
+    for ($day = 1; $day <= 3; $day++) {
+        for ($hour = 0; $hour <= 23; $hour++) {
+            $code = $day * 100000 + $hour * 100;
+            $newval = @$_REQUEST['i_availability'][$code];
+            if ($newval == "Y" || $newval == "P")
+                $avail[$code] = $newval;
+        }
+    }
+    $req['availability'] = $avail;
 
     if (count($req) > 0) {
         $request_id = get_seq();
@@ -111,6 +124,10 @@ if (@$app->curvals['group_name']) {
     $body .= "</td></tr>\n";
 }
 
+$body .= "<tr><th>Scheduled for</th><td>";
+$body .= h(@eventid_to_human($arg_eventid));
+$body .= "</td></th></tr>\n";
+
 $body .= "</table>\n";
 
 $body .= "<h1>Change Request Form</h1>\n";
@@ -135,32 +152,36 @@ $body .= sprintf("<input type='hidden' name='eventid' value='%s' />\n",
     h($arg_eventid));
 $body .= sprintf("<input type='hidden' name='app_id' value='%d' />\n",
     $app->app_id);
-$body .= "<table class='twocol'>\n";
 
-if (category_uses_title(@$app->curvals['app_category'])) {
-    $body .= "<tr><th>Event title</th><td>";
-    $body .= sprintf ("<input type='text' size='50'"
-        ." name='event_title' value='%s' />\n",
-        h($app->curvals['event_title']));
-    $body .= "</td></tr>\n";
-}
-
-$body .= "<tr><th>Performer notes</th><td>";
-$body .= sprintf ("<textarea rows='10' cols='80' name='P_notes' />\n");
-$body .= h(@$app->curvals['P_notes']);
-$body .= "</textarea>\n";
-$body .= "</td></tr>\n";
-    
-$body .= "<tr><th></th><td><input type='submit' value='Submit' />\n";
+$body .= "<input type='submit' value='Submit request' />\n";
 $t = sprintf ("performer.php?pcode=%s&eventid=%s",
     rawurlencode($arg_pcode), rawurlencode($arg_eventid));
 $body .= mklink ("cancel", $t);
-$body .= "</td></tr>\n";
-$body .= "</table>\n";
-$body .= "</form>\n";
 
-$body .= "<div>note: you may not request a change just to be able"
+
+if (category_uses_title(@$app->curvals['app_category'])) {
+    $body .= "<h3>Event title</h3>";
+    $body .= sprintf ("<div><input type='text' size='50'"
+        ." name='event_title' value='%s' /></div>\n",
+        h($app->curvals['event_title']));
+}
+
+$body .= "<h3>Performer notes</h3>";
+$body .= sprintf ("<textarea rows='10' cols='80' name='P_notes' />\n");
+$body .= h(@$app->curvals['P_notes']);
+$body .= "</textarea>\n";
+    
+$body .= make_schedule ($app, "availability", 1);
+$body .= "<div class='attention'>note: you may not request a schedule change just to be able"
     ." to attend another event</div>\n";
+
+
+$body .= "<input type='submit' value='Submit request' />\n";
+$t = sprintf ("performer.php?pcode=%s&eventid=%s",
+    rawurlencode($arg_pcode), rawurlencode($arg_eventid));
+$body .= mklink ("cancel", $t);
+
+$body .= "</form>\n";
 
 $body .= "<div class='admin_box'>";
 $body .= "<p>admin box</p>\n";

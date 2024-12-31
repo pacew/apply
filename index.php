@@ -122,182 +122,6 @@ $body .= sprintf ("var admin_mode = %s;\n", $val);
 $body .= "//]]>\n";
 $body .= "</script>\n";
 
-function h24_to_12 ($hour) {
-    if ($hour < 12) {
-        return (sprintf ("%dam", $hour));
-    } else if ($hour == 12) {
-        return ("noon");
-    } else if ($hour < 23) {
-        return (sprintf ("%dpm", $hour - 12));
-    } else {
-        return ("11:30pm");
-    }
-}
-
-function make_schedule ($application, $question_id) {
-    $curvals = @$application->curvals[$question_id];
-    $input_id = sprintf ("i_%s", $question_id);
-
-    $full_from_day = 1;
-    $full_to_day = 3;
-    $full_from_hour = array (24, 19, 10, 10);
-    $full_to_hour =   array ( 0, 22, 22, 16);
-
-    $core_from_day = 2;
-    $core_to_day = 3;
-    $core_from_hour = array (24, 24, 10, 10);
-    $core_to_hour =   array ( 0,  0, 17, 15);
-
-    $table_from_hour = min ($full_from_hour);
-    $table_to_hour = max ($full_to_hour);
-
-    $core_min_from_hour = min ($core_from_hour);
-    $core_max_to_hour = max ($core_to_hour);
-
-    $day_names = array ("", "Friday", "Saturday", "Sunday");
-
-    $ret = "<div class='schedule'>\n";
-
-    $ret .= "<p><input type='checkbox' id='sched_any'>"
-         ." Any time during the Festival is OK</p>\n";
-
-    $hdr1 = "";
-    $hdr2 = "";
-    $hdr3 = "";
-    $hdr4 = "";
-    for ($day = $full_from_day; $day <= $full_to_day; $day++) {
-        $classes = array ();
-        if ($day == 1)
-            $classes[] = "sched_fri";
-        
-        if ($day == 2)
-            $classes[] = "group2";
-
-        if ($core_from_day <= $day && $day <= $core_to_day) {
-            $classes[] = "sched_core";
-        } else {
-            $classes[] = "sched_ext";
-        }
-        
-        $class_str = implode (' ', $classes);
-        
-        $hdr1 .= sprintf ("<th colspan='3' class='%s'>%s</th>\n",
-                          $class_str, $day_names[$day]);
-
-        $hdr2 .= sprintf ("<th colspan='3' class='%s'>"
-                          ."<input class='sched_all_day' type='checkbox'"
-                          ." data-day='%d' />"
-                          ." Any time today"
-                          ."</th>\n",
-                          $class_str, $day);
-
-        $hdr3 .= sprintf ("<th colspan='3' class='%s'>"
-                          ."<input class='sched_not_day' type='checkbox'"
-                          ." data-day='%d' />"
-                          ." No time today"
-                          ."</th>\n",
-                          $class_str, $day);
-
-        $hdr4 .= sprintf ("<th class='%s'>No</th>\n"
-                          ."<th class='%s'>OK</th>\n"
-                          ."<th class='%s'>Preferred</th>\n",
-                          $class_str,
-                          $class_str,
-                          $class_str);
-                          
-    }
-
-
-    $ret .= "<table class='boxed sched'>\n";
-    $ret .= "<thead>\n";
-    $ret .= "<tr class='boxed_header'>\n";
-    $ret .= "<th>Time</th>\n";
-    $ret .= $hdr1;
-    $ret .= "</tr>\n";
-
-    $ret .= "<tr class='boxed_header'>\n";
-    $ret .= "<th></th>\n";
-    $ret .= $hdr2;
-    $ret .= "</tr>\n";
-
-    $ret .= "<tr class='boxed_header'>\n";
-    $ret .= "<th></th>\n";
-    $ret .= $hdr3;
-    $ret .= "</tr>\n";
-
-    $ret .= "<tr class='boxed_header'>\n";
-    $ret .= "<th></th>\n";
-    $ret .= $hdr4;
-    $ret .= "</tr>\n";
-
-    $ret .= "</thead>\n";
-
-    $ret .= "<tbody>\n";
-    for ($hour = $table_from_hour; $hour <= $table_to_hour; $hour++) {
-        $from = h24_to_12 ($hour);
-        $to = h24_to_12 ($hour + 1);
-        
-        $classes = [];
-        if ($core_min_from_hour <= $hour && $hour <= $core_max_to_hour) {
-            $classes[] = "sched_core";
-        } else {
-            $classes[] = "sched_ext";
-        }
-
-		if ($hour < 12 || $hour > 15)
-				$classes[] = "sched_exclude_performance";
-
-        $ret .= sprintf ("<tr class='%s'>\n", join(' ', $classes));
-        $ret .= sprintf ("<td>%s to %s</td>\n", $from, $to);
-        for ($day = $full_from_day; $day <= $full_to_day; $day++) {
-            $classes = array ();
-            if ($day == 1)
-                $classes[] = "sched_fri";
-            
-            if ($day == 2)
-                $classes[] = "group2";
-
-            if ($core_from_hour[$day] <= $hour
-                && $hour <= $core_to_hour[$day]) {
-                $classes[] = "sched_core";
-            } else {
-                $classes[] = "sched_ext";
-            }
-            
-            $class_str = implode (' ', $classes);
-
-            $code = $day * 100000 + $hour * 100;
-            
-            $name = sprintf ("%s[%d]", $input_id, $code);
-            
-            foreach (array ("N", "Y", "P") as $val) {
-                $checked = "";
-                if (isset ($curvals[$code]) && $curvals[$code] == $val)
-                    $checked = "checked='checked'";
-                
-                $ret .= sprintf ("<td class='%s'>", $class_str);
-
-                if ($full_from_hour[$day] <= $hour
-                    && $hour <= $full_to_hour[$day]) {
-                    $ret .= sprintf (
-                        "<input class='sched_item' type='radio' data-day='%d'"
-                        ." name='%s' value='%s' %s>",
-                        $day, $name, $val, $checked);
-                }
-                
-                $ret .= "</td>\n";
-            }
-        }
-        $ret .= "</tr>\n";
-    }
-    $ret .= "</tbody>\n";
-    $ret .= "</table>\n";
-    
-    $ret .= "</div>\n";
-    
-    return ($ret);
-}
-
 $body .= "<div class='preface'>\n";
 $body .= file_get_contents ($_SERVER['APP_ROOT'] . "/preface.html");
 $body .= "</div>\n";
@@ -386,8 +210,12 @@ if ($username) {
 
             $changes = "";
             foreach ($req->val as $key => $val) {
-                $changes .= sprintf ("<div><strong>%s</strong> %s</div>\n",
-                    h($key), h($val));
+                if ($key == "availability") {
+                    $changes .= " availability ";
+                } else {
+                    $changes .= sprintf ("<div><strong>%s</strong> %s</div>\n",
+                        h($key), h($val));
+                }
             }
             $cols[] = $changes;
             $c = "";
@@ -414,6 +242,39 @@ if ($username) {
     $body .= "</div>\n";
 
 }
+
+function format_availability ($avail) {
+    $ret = "";
+    $ret .= "<table>\n";
+    $ret .= "<tr>";
+    $ret .= "<th></th>";
+    for ($hour = 10; $hour <= 22; $hour++) {
+        $hour12 = $hour;
+        if ($hour12 > 12)
+            $hour12 -= 12;
+        $ret .= sprintf ("<th>%d</th>", $hour12);
+    }
+    $ret .= "</tr>\n";
+
+    for ($day = 1; $day <= 3; $day++) {
+        $ret .= "<tr>\n";
+        $days = array (1 => "Fri", 2 => "Sat", 3 => "Sun");
+        $ret .= sprintf ("<th>%s</th>", @$days[$day]);
+
+        for ($hour = 10; $hour <= 22; $hour++) {
+            $ret .= "<td>";
+            $code = $day * 100000 + $hour * 100;
+            $ret .= @$avail[$code];
+            $ret .= "</td>";
+        }
+        
+        $ret .= "</tr>\n";
+    }
+    
+    $ret .= "</table>\n";
+    return ($ret);
+}
+
 
 $body .= sprintf ("<input type='hidden' name='app_id' value='%d' />\n",
                   $arg_app_id);
@@ -466,7 +327,7 @@ foreach ($questions as $question) {
     $body .= "<div class='input_wrapper'>\n";
     
     if ($question_id == "availability") {
-        $body .= make_schedule ($application, $question_id);
+        $body .= make_schedule ($application, $question_id, 0);
     } else if (@$question['choices']) {
         foreach ($question['choices'] as $choice) {
             $passed = 0;
@@ -613,8 +474,12 @@ foreach ($questions as $question) {
         foreach ($reqs as $request) {
             $cols = array();
             $cols[] = h($request->ts);
-            $cols[] = h($username);
-            $cols[] = h($request->val[$question_id]);
+            if ($question_id == "availability") {
+                $cols[] = sprintf ("<td>%s</td>\n",
+                    format_availability($request->val[$question_id]));
+            } else {
+                $cols[] = h($request->val[$question_id]);
+            }
             if ($request->dismissed) {
                 $txt = "dismissed";
             } else {
@@ -623,7 +488,7 @@ foreach ($questions as $question) {
             $cols[] = h($txt);
             $rows[] = $cols;
         }
-        $body .= mktable(array("timestamp", "user", "change request", 
+        $body .= mktable(array("timestamp", "change request", 
                 "dismissed?"), 
             $rows);
         $body .= "<div>(you can change the dismissed flag at the top"

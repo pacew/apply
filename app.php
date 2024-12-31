@@ -1045,6 +1045,221 @@ function var_dump_inline($val) {
     ob_end_clean();
 }
 
+function h24_to_12 ($hour) {
+    if ($hour < 12) {
+        return (sprintf ("%dam", $hour));
+    } else if ($hour == 12) {
+        return ("noon");
+    } else if ($hour < 23) {
+        return (sprintf ("%dpm", $hour - 12));
+    } else {
+        return ("11:30pm");
+    }
+}
+
+function make_schedule ($application, $question_id, $for_update) {
+    $curvals = @$application->curvals[$question_id];
+    $input_id = sprintf ("i_%s", $question_id);
+
+    $full_from_day = 1;
+    $full_to_day = 3;
+    $full_from_hour = array (24, 19, 10, 10);
+    $full_to_hour =   array ( 0, 22, 22, 16);
+
+    $core_from_day = 2;
+    $core_to_day = 3;
+    $core_from_hour = array (24, 24, 10, 10);
+    $core_to_hour =   array ( 0,  0, 17, 15);
+
+    $table_from_hour = min ($full_from_hour);
+    $table_to_hour = max ($full_to_hour);
+
+    $core_min_from_hour = min ($core_from_hour);
+    $core_max_to_hour = max ($core_to_hour);
+
+    $day_names = array ("", "Friday", "Saturday", "Sunday");
+
+    $ret = "<div class='schedule'>\n";
+
+    if ($for_update == 0) {
+        $ret .= "<p><input type='checkbox' id='sched_any'>"
+            ." Any time during the Festival is OK</p>\n";
+    }
+
+    $hdr1 = "";
+    $hdr2 = "";
+    $hdr3 = "";
+    $hdr4 = "";
+    for ($day = $full_from_day; $day <= $full_to_day; $day++) {
+        $classes = array ();
+        if ($day == 1)
+            $classes[] = "sched_fri";
+        
+        if ($day == 2)
+            $classes[] = "group2";
+
+        if ($core_from_day <= $day && $day <= $core_to_day) {
+            $classes[] = "sched_core";
+        } else {
+            $classes[] = "sched_ext";
+        }
+        
+        $class_str = implode (' ', $classes);
+        
+        $hdr1 .= sprintf ("<th colspan='3' class='%s'>%s</th>\n",
+                          $class_str, $day_names[$day]);
+
+        $hdr2 .= sprintf ("<th colspan='3' class='%s'>"
+                          ."<input class='sched_all_day' type='checkbox'"
+                          ." data-day='%d' />"
+                          ." Any time today"
+                          ."</th>\n",
+                          $class_str, $day);
+
+        $hdr3 .= sprintf ("<th colspan='3' class='%s'>"
+                          ."<input class='sched_not_day' type='checkbox'"
+                          ." data-day='%d' />"
+                          ." No time today"
+                          ."</th>\n",
+                          $class_str, $day);
+
+        $hdr4 .= sprintf ("<th class='%s'>No</th>\n"
+                          ."<th class='%s'>OK</th>\n"
+                          ."<th class='%s'>Preferred</th>\n",
+                          $class_str,
+                          $class_str,
+                          $class_str);
+                          
+    }
+
+
+    $ret .= "<table class='boxed sched'>\n";
+    $ret .= "<thead>\n";
+    $ret .= "<tr class='boxed_header'>\n";
+    $ret .= "<th>Time</th>\n";
+    $ret .= $hdr1;
+    $ret .= "</tr>\n";
+
+    if ($for_update == 0) {
+        $ret .= "<tr class='boxed_header'>\n";
+        $ret .= "<th></th>\n";
+        $ret .= $hdr2;
+        $ret .= "</tr>\n";
+
+        $ret .= "<tr class='boxed_header'>\n";
+        $ret .= "<th></th>\n";
+        $ret .= $hdr3;
+        $ret .= "</tr>\n";
+    }
+
+    $ret .= "<tr class='boxed_header'>\n";
+    $ret .= "<th></th>\n";
+    $ret .= $hdr4;
+    $ret .= "</tr>\n";
+
+    $ret .= "</thead>\n";
+
+    $ret .= "<tbody>\n";
+    for ($hour = $table_from_hour; $hour <= $table_to_hour; $hour++) {
+        $from = h24_to_12 ($hour);
+        $to = h24_to_12 ($hour + 1);
+        
+        $classes = [];
+        if ($core_min_from_hour <= $hour && $hour <= $core_max_to_hour) {
+            $classes[] = "sched_core";
+        } else {
+            $classes[] = "sched_ext";
+        }
+
+		if ($hour < 12 || $hour > 15)
+				$classes[] = "sched_exclude_performance";
+
+        $ret .= sprintf ("<tr class='%s'>\n", join(' ', $classes));
+        $ret .= sprintf ("<td>%s to %s</td>\n", $from, $to);
+        for ($day = $full_from_day; $day <= $full_to_day; $day++) {
+            $classes = array ();
+            if ($day == 1)
+                $classes[] = "sched_fri";
+            
+            if ($day == 2)
+                $classes[] = "group2";
+
+            if ($core_from_hour[$day] <= $hour
+                && $hour <= $core_to_hour[$day]) {
+                $classes[] = "sched_core";
+            } else {
+                $classes[] = "sched_ext";
+            }
+            
+            $class_str = implode (' ', $classes);
+
+            $code = $day * 100000 + $hour * 100;
+            
+            $name = sprintf ("%s[%d]", $input_id, $code);
+            
+            foreach (array ("N", "Y", "P") as $val) {
+                $checked = "";
+                if (isset ($curvals[$code]) && $curvals[$code] == $val)
+                    $checked = "checked='checked'";
+                
+                $ret .= sprintf ("<td class='%s'>", $class_str);
+
+                if ($full_from_hour[$day] <= $hour
+                    && $hour <= $full_to_hour[$day]) {
+                    $ret .= sprintf (
+                        "<input class='sched_item' type='radio' data-day='%d'"
+                        ." name='%s' value='%s' %s>",
+                        $day, $name, $val, $checked);
+                }
+                
+                $ret .= "</td>\n";
+            }
+        }
+        $ret .= "</tr>\n";
+    }
+    $ret .= "</tbody>\n";
+    $ret .= "</table>\n";
+    
+    $ret .= "</div>\n";
+    
+    return ($ret);
+}
+
+function eventid_to_human($eventid) {
+    $arr = preg_split ('/_/', $eventid);
+    switch ($arr[0]) {
+    case "F":
+        $day = "Friday";
+        break;
+    case "S":
+        $day = "Saturday";
+        break;
+    case "U":
+        $day = "Sunday";
+        break;
+    default:
+        $day = "?";
+    }
+
+    $hhmm = intval($arr[1]);
+    $hour = floor($hhmm / 100);
+    $minute = $hhmm % 100;
+
+    $room = $arr[2];
+
+    if ($hour < 12) {
+        $ampm = "am";
+    } else if ($hour == 12) {
+        $ampm = "pm";
+    } else {
+        $hour -= 12;
+        $ampm = "pm";
+    }
+    $ret = sprintf ("%s %d:%02d%s %s", $day, $hour, $minute, $ampm, $room);
+    return ($ret);
+}
+
+
 if (! get_option ("flat") && ! @$cli_mode) {
     require (router());
     /* NOTREACHED */
