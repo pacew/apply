@@ -477,6 +477,8 @@ foreach ($questions as $question) {
             if ($question_id == "availability") {
                 $cols[] = sprintf ("<td>%s</td>\n",
                     format_availability($request->val[$question_id]));
+            } else if ($question_id == "P_notes") {
+                /* skip */
             } else {
                 $cols[] = h($request->val[$question_id]);
             }
@@ -488,9 +490,14 @@ foreach ($questions as $question) {
             $cols[] = h($txt);
             $rows[] = $cols;
         }
-        $body .= mktable(array("timestamp", "change request", 
-                "dismissed?"), 
-            $rows);
+
+        if ($question_id == "P_notes") {
+            $hdr = array("timestamp", "dismissed?");
+        } else {
+            $hdr = array("timestamp", "change request", "dismissed?");
+        }
+
+        $body .= mktable($hdr, $rows);
         $body .= "<div>(you can change the dismissed flag at the top"
             ." of the application)</div>";
     }

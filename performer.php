@@ -34,28 +34,29 @@ if ($arg_save) {
 
     $avail = array();
     
+    $avail_changed = 0;
     for ($day = 1; $day <= 3; $day++) {
         for ($hour = 0; $hour <= 23; $hour++) {
             $code = $day * 100000 + $hour * 100;
+            $oldval = @$app->curvals['availability'][$code];
             $newval = @$_REQUEST['i_availability'][$code];
+            if ($oldval != $newval) {
+                $avail_changed = 1;
+            }
             if ($newval == "Y" || $newval == "P")
                 $avail[$code] = $newval;
         }
     }
-    $req['availability'] = $avail;
 
-    if (count($req) > 0) {
-        $request_id = get_seq();
-        query ("insert into requests (request_id,"
-            ." app_id, fest_year, test_flag, ts, username, val"
-            ." ) values (?, ?, ?, ?, current_timestamp, ?, ?)",
-            array($request_id, $arg_app_id, $submit_year, $submit_test_flag,
-                $username, json_encode($req)));
-    }
+    if ($avail_changed) 
+        $req['availability'] = $avail;
 
+    /* handle performer notes specially */
     $oldval = @$app->curvals['P_notes'];
     $newval = @$_REQUEST['P_notes'];
     if ($oldval != $newval) {
+        $req['P_notes'] = ""; 
+
         /* based on save.php */
         
         $newvals = $app->curvals;
@@ -73,6 +74,16 @@ if ($arg_save) {
                     $app->test_flag));
         }
     }
+
+    if (count($req) > 0) {
+        $request_id = get_seq();
+        query ("insert into requests (request_id,"
+            ." app_id, fest_year, test_flag, ts, username, val"
+            ." ) values (?, ?, ?, ?, current_timestamp, ?, ?)",
+            array($request_id, $arg_app_id, $submit_year, $submit_test_flag,
+                $username, json_encode($req)));
+    }
+
 
     if ($cfg['conf_key'] == "production")
         redirect ($magic_link);
