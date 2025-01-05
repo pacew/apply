@@ -256,7 +256,7 @@ $idx_name = sprintf ("%s/neffa_idx.json", $cfg['aux_dir']);
 $mtime = filemtime ($idx_name);
 $body .= sprintf (
     "<div>neffa performer index last updated %s</div>\n",
-    strftime ("%Y-%m-%d %H:%M:%S", $mtime));
+    db_time_to_eastern($mtime));
 
 $body .= "<form action='admin.php' method='post'>\n";
 $body .= "<input type='hidden' name='refresh_idx' value='1' />\n";
@@ -336,8 +336,9 @@ foreach ($apps as $app) {
 
     $cols[] = mklink_span ($app->evid, $target, $css);
 
-    $date = preg_replace("/ .*/", "", $app->ts);
-    $cols[] = mklink_span ($date, $target, $css);
+    $date = date_create($app->ts, $utc_tz);
+    $date->setTimezone($eastern_tz);
+    $cols[] = mklink_span ($date->format('Y-m-d'), $target, $css);
 
     $curvals = $app->curvals;
 
@@ -362,7 +363,7 @@ foreach ($apps as $app) {
     
     $cols[] = $txt;
 
-    $cols[] = h($app->confirmed);
+    $cols[] = db_time_to_eastern($app->confirmed);;
 
     $full_notes = trim(@$curvals['C_notes']);
     $notes = preg_replace("/\n.*/", "", $full_notes);

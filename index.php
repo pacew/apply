@@ -172,12 +172,12 @@ if ($username) {
         $body .= " | ";
         $t = sprintf ("https://cgi.neffa.org/performer/confirm2.pl?P=%s",
             $application->pcode);
-        $body .= mklink ("[view cgi.neeffa.org confirm2]", $t);
+        $body .= mklink ("[view performer confirmation page]", $t);
     }    
 
     if (@$application->confirmed) {
         $body .= sprintf ("<div>confirmation sent %s</div>\n",
-                          $application->confirmed);
+            db_time_to_eastern ($application->confirmed));
     } else {
         $body .= "<div>confirmation not yet sent</div>\n";
     }
@@ -205,7 +205,7 @@ if ($username) {
         $rows = array();
         foreach($requests as $req) {
             $cols = array();
-            $cols[] = $req->ts;
+            $cols[] = db_time_to_eastern($req->ts);
             $cols[] = $req->username;
 
             $changes = "";
@@ -448,7 +448,7 @@ foreach ($questions as $question) {
         $rows = array ();
         foreach ($patches as $patch) {
             $cols = array ();
-            $cols[] = h($patch->ts);
+            $cols[] = h(db_time_to_eastern($patch->ts));
             $cols[] = h($patch->username);
             if (is_array ($patch->oldval)) {
                 if (associative_array ($patch->oldval)) {
@@ -473,7 +473,7 @@ foreach ($questions as $question) {
         $rows = array();
         foreach ($reqs as $request) {
             $cols = array();
-            $cols[] = h($request->ts);
+            $cols[] = h(db_time_to_eastern($request->ts));
             if ($question_id == "availability") {
                 $cols[] = sprintf ("<td>%s</td>\n",
                     format_availability($request->val[$question_id]));

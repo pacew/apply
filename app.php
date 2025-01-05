@@ -14,6 +14,20 @@ $pdb_params['user'] = 'pace_willisson';
 $file = sprintf ("%s/neffadb_passwd", $cfg['aux_dir']);
 $pdb_params['password'] = trim (file_get_contents ($file));
 
+$utc_tz = new DateTimeZone("UTC");
+$eastern_tz = new DateTimeZone("US/Eastern");
+function db_time_to_eastern($ts_db) {
+    global $utc_tz, $eastern_tz;
+    if (is_int($ts_db))
+        $ts_db = sprintf("@%d", $ts_db);
+    $date = date_create($ts_db, $utc_tz);
+    if ($date) {
+        $date->setTimezone($eastern_tz);
+        return ($date->format("Y-m-d H:i:s T"));
+    } else {
+        return ($ts_db);
+    }
+}
 
 if (! @$cli_mode 
     && @$_SERVER['HTTPS'] == "" 
