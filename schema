@@ -68,3 +68,13 @@ create table requests (
   val text,
   dismissed int
 );
+
+create table rejected (
+  rejected_id int,
+  email text,
+  fest_year int,
+  test_flag int,
+  ts timestamp,
+  username text,
+  reason text
+);

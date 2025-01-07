@@ -6,6 +6,7 @@ $arg_notify_id = intval(@$_REQUEST['notify_id']);
 $arg_reload = intval (@$_REQUEST['reload']);
 $arg_upload = intval (@$_REQUEST['upload']);
 $arg_return_json = intval(@$_REQUEST['return_json']);
+$arg_show_rejected = intval(@$_REQUEST['show_rejected']);
 
 $arg_upload_passwd = trim(@$_REQUEST['upload_passwd']);
 
@@ -114,7 +115,7 @@ function get_email($perf) {
 
 function we_need_to_notify ($name_id) {
     global $notify, $notify_by_name_id, $view_year;
-    global $notify_by_notify_id;
+    global $notify_by_notify_id, $notify_by_email;
     
     if (isset ($notify_by_name_id[$name_id]))
         return (0);
@@ -137,6 +138,7 @@ function we_need_to_notify ($name_id) {
     $notify[] = $elt;
     $notify_by_notify_id[$elt->notify_id] = $elt;
     $notify_by_name_id[$elt->name_id] = $elt;
+    $notify_by_email[strtolower($elt->email)] = $elt;
 
     return (0);
 }
@@ -272,6 +274,89 @@ if ($arg_notify_id != 0) {
     pfinish ();
 }
 
+function do_rejects () {
+    global $notify_by_name_id, $notify_by_email;
+    global $body;
+    
+    $rows = array ();
+    foreach (get_applications() as $app) {
+        if (@$app->curvals['do_not_import'] == "Suppress")
+            continue;
+        
+        if (@$notify_by_name_id[$app->neffa_id])
+            continue;
+
+        $email = trim(strtolower($app->curvals['email']));
+        if (@$notify_by_email[$email])
+            continue;
+        
+        reject_performer ($email, $app);
+    }
+}
+
+if ($arg_show_rejected) {
+    global $rejected;
+    
+    do_rejects();
+    
+    $body .= "<h1>Rejected performers</h1>\n";
+    $body .= sprintf ("<div>%s</div>\n",
+        mklink ("back to notify list", "notify.php"));
+
+    foreach ($rejected as $rej) {
+        $body .= sprintf ("<h2>%s</h2>\n", h($rej->email));
+
+        $reasons = array ();
+        $last_reason = "";
+        
+        foreach ($rej->apps as $app) {
+            $reason = trim (@$app->curvals['C_rejection_reason']);
+            $last_reason = $reason;
+            if ($reason)
+                $reasons[$reason] = 1;
+        }
+        
+        if (count($reasons) == 1) {
+            $have_common_reason = 1;
+        } else {
+            $have_common_reason = 0;
+            $body .= "<div class='attention'>ERROR: these app(s) don't"
+                ." have a single common "
+                ." rejection reason</div>\n";
+        }
+
+        foreach ($rej->apps as $app) {
+            $t = sprintf ("index.php?app_id=%d", $app->app_id);
+            $body .= "<div>\n";
+
+            $txt = sprintf ("%s ", $app->evid);
+            if (@$app->curvals['group_name'])
+                $txt .= sprintf (" G:%s ", h($app->curvals['group_name']));
+
+            if (@$app->curvals['event_title'])
+                $txt .= sprintf (" T:%s", h($app->curvals['event_title']));
+
+            if (@$app->curvals['name'])
+                $txt .= sprintf (" N: %s", h($app->curvals['name']));
+
+            $body .= mklink ($txt, $t);
+
+            $body .= "</div>\n";
+
+            if ($have_common_reason == 0) {
+                $reason = trim (@$app->curvals['C_rejection_reason']);
+                $body .= sprintf ("<div>%s</div>\n", $reason);
+            }
+        }
+
+        if ($have_common_reason) {
+            $body .= sprintf ("<div>%s</div>\n", $last_reason);
+        }
+    }
+
+    pfinish ();
+}
+
 
 $body .= "<div class='admin_box'>\n";
 $body .= "<form action='notify.php' method='post'"
@@ -291,6 +376,10 @@ if (count($errs) > 0) {
     $body .= "<h1 style='color:red'>see end of page for errors</h1>\n";
 }
 
+$body .= "<div>\n";
+$t = "notify.php?show_rejected=1";
+$body .= mklink ("show rejected", $t);
+$body .= "</div>\n";
 
 $rows = array();
 foreach ($notify as $elt) {

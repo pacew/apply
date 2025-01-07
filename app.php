@@ -1009,11 +1009,12 @@ function read_notify_info() {
         }
     }
 
-    global $notify, $notify_by_notify_id, $notify_by_name_id;
+    global $notify, $notify_by_notify_id, $notify_by_name_id, $notify_by_email;
 
     $notify = array();
     $nofify_by_name_id = array();
     $notify_by_notify_id = array();
+    $notify_by_email = array ();
     global $view_year;
     $q = query ("select notify_id, name_id, email"
         ." from notify"
@@ -1029,7 +1030,61 @@ function read_notify_info() {
         $notify[] = $elt;
         $notify_by_notify_id[$elt->notify_id] = $elt;
         $notify_by_name_id[$elt->name_id] = $elt;
+        $notify_by_email[strtolower($elt->email)] = $elt;
     }
+}
+
+function xread_rejected () {
+    global $rejected;
+    global $rejected_by_email;
+    global $view_year, $view_test_flag;
+
+    if (isset ($rejected))
+        return;
+
+    $rejected = array ();
+    $rejected_by_email = array();
+    
+    $q = query ("select rejected_id, email, ts, username, reason"
+        ." from rejected"
+        ." where fest_year = ?"
+        ."   and test_flag = ?"
+        ." order by rejected_id",
+        array ($view_year, $view_test_flag));
+    while (($r = fetch ($q)) != NULL) {
+        $elt = (object)NULL;
+        $elt->rejected_id = intval ($r->rejected_id);
+        $elt->email = trim(strtolower($r->email));
+        $elt->ts = $r->ts;
+        $elt->username = $r->username;
+        $elt->reason = $r->reason;
+
+        $rejected[] = $elt;
+        $rejected_by_email[$elt->email] = $elt;
+    }
+}
+
+$rejected = array ();
+$rejected_by_email = array ();
+
+function reject_performer($email, $app) {
+    global $submit_year, $submit_test_flag, $username;
+    global $rejected;
+    global $rejected_by_email;
+    global $utc_tz;
+    
+    $email = trim(strtolower($email));
+
+    if (($rej = @$rejected_by_email[$email]) == NULL) {
+        $rej = (object)NULL;
+        $rej->email = $email;
+        $rej->apps = array ();
+
+        $rejected[] = $rej;
+        $rejected_by_email[$rej->email] = $rej;
+    }
+
+    $rej->apps[] = $app;
 }
 
 function neffa_id_to_pcode($neffa_id) {
