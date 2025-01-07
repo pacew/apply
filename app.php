@@ -145,6 +145,17 @@ function pstart () {
 		$body .= $flash;
 		$body .= "</div>\n";
 	}
+
+    global $filters, $cur_filter;
+    $filters = array ("all", "unconfirmed", 
+        "show-suppressed", "pending-requests");
+    $cur_filter = getsess ("filter");
+    if (array_search ($cur_filter, $filters) === FALSE)
+        $cur_filter = "all";
+
+    global $group_filter;
+    $group_filter = intval(getsess("group_filter"));
+
 }
 
 function pfinish () {
@@ -1326,6 +1337,67 @@ function eventid_to_human($eventid) {
     }
     $ret = sprintf ("%s %d:%02d%s %s", $day, $hour, $minute, $ampm, $room);
     return ($ret);
+}
+
+function passes_group_filter ($app) {
+    global $group_filter;
+    switch ($group_filter) {
+    case 0:
+        return (1);
+    case 1:
+        if ($app->curvals['app_category'] == 'Ritual')
+            return (1);
+        return (0);
+    case 2:
+        if ($app->curvals['app_category'] == 'Performance')
+            return (1);
+        return (0);
+    case 3:
+        if ($app->curvals['app_category'] == "Band"
+            || $app->curvals['app_category'] == "Band_Solo"
+            || $app->curvals['app_category'] == "Caller") {
+            if ($app->curvals['dance_style'] == "American")
+                return (1);
+        }
+        return (0);
+    case 4:
+        if ($app->curvals['app_category'] == "Band"
+            || $app->curvals['app_category'] == "Band_Solo"
+            || $app->curvals['app_category'] == "Caller") {
+            if ($app->curvals['dance_style'] == "English_Couples")
+                return (1);
+        }
+        return (0);
+    case 5:
+        if ($app->curvals['app_category'] == "Band"
+            || $app->curvals['app_category'] == "Band_Solo"
+            || $app->curvals['app_category'] == "Caller") {
+            if ($app->curvals['dance_style'] == "Int_Line")
+                return (1);
+        }
+        return (0);
+    case 6:
+        if ($app->curvals['app_category'] == 'Other' 
+            && $app->curvals['fms_category'] == "jam")
+            return (1);
+        return (0);
+    case 7:
+        if ($app->curvals['app_category'] == 'Other' 
+            && $app->curvals['fms_category'] == "song")
+            return (1);
+        return (0);
+    case 8:
+        if ($app->curvals['app_category'] == 'Other' 
+            || $app->curvals['fms_category'] == "concert")
+            return (1);
+        return (0);
+    case 9:
+        if ($app->curvals['app_category'] == 'Other' 
+            && $app->curvals['fms_category'] == "spoken_word")
+            return (1);
+        return (0);
+    }
+    return (1);
 }
 
 

@@ -16,10 +16,11 @@ $arg_doc = intval (@$_REQUEST['doc']);
 $arg_set_group_filter = intval(@$_REQUEST['set_group_filter']);
 $arg_group_filter = intval(@$_REQUEST['group_filter']);
 
-if ($arg_set_group_filter)
+if ($arg_set_filter == 1) {
+    putsess ("filter", $arg_filter);
     putsess("group_filter", $arg_group_filter);
-
-$group_filter = intval(getsess("group_filter"));
+    redirect ("admin.php");
+}
 
 if ($arg_doc == 1) {
         
@@ -159,11 +160,6 @@ if ($arg_set_year == 1) {
     redirect ("admin.php");
 }
 
-if ($arg_set_filter == 1) {
-    putsess ("filter", $arg_filter);
-    redirect ("admin.php");
-}
-
 if ($arg_refresh_idx) {
     $cmd = sprintf ("sh -c 'cd %s; ./mkindex 2>&1'", $cfg['src_dir']);
     $body .= sprintf ("<div>running %s</div>\n", h($cmd));
@@ -207,6 +203,8 @@ $body .= " | ";
 $body .= mklink ("templates", "templates.php");
 $body .= " | ";
 $body .= mklink ("webgrid notify", "notify.php");
+$body .= " | ";
+$body .= mklink ("rejections", "notify.php?show_rejected=1");
 $body .= " | ";
 $body .= mklink ("technical_doc", "admin.php?doc=1");
 $body .= "</div>\n";
@@ -284,11 +282,6 @@ while (($r = fetch ($q)) != NULL) {
 $body .= sprintf ("<h2>%d applications [%s]</h2>\n", 
                   count($apps), mklink ("graph", "graph.php"));
 
-$filters = array ("all", "unconfirmed", "show-suppressed", "pending-requests");
-$cur_filter = getsess ("filter");
-if (array_search ($cur_filter, $filters) === FALSE)
-    $cur_filter = "all";
-
 $body .= "<form action='admin.php'>\n";
 $body .= "<input type='hidden' name='set_filter' value='1' />\n";
 $body .= "Show: ";
@@ -303,7 +296,6 @@ foreach ($filters as $filter) {
 }
 $body .= " &nbsp;&nbsp;&nbsp; ";
 
-$body .= "<input type='hidden' name='set_group_filter' value='1' />\n";
 $body .= "<select name='group_filter'>\n";
 make_option (0, $group_filter, "any");
 make_option (1, $group_filter, "ritual dance");
@@ -394,63 +386,8 @@ foreach ($apps as $app) {
             $show = 0;
     }
 
-    switch ($group_filter) {
-    case 1:
-        if ($curvals['app_category'] != 'Ritual')
-            $show = 0;
-        break;
-    case 2:
-        if ($curvals['app_category'] != 'Performance')
-            $show = 0;
-        break;
-    case 3:
+    if (! passes_group_filter ($app))
         $show = 0;
-        if ($curvals['app_category'] == "Band"
-            || $curvals['app_category'] == "Band_Solo"
-            || $curvals['app_category'] == "Caller") {
-            if ($curvals['dance_style'] == "American")
-                $show = 1;
-        }
-        break;
-    case 4:
-        $show = 0;
-        if ($curvals['app_category'] == "Band"
-            || $curvals['app_category'] == "Band_Solo"
-            || $curvals['app_category'] == "Caller") {
-            if ($curvals['dance_style'] == "English_Couples")
-                $show = 1;
-        }
-        break;
-    case 5:
-        $show = 0;
-        if ($curvals['app_category'] == "Band"
-            || $curvals['app_category'] == "Band_Solo"
-            || $curvals['app_category'] == "Caller") {
-            if ($curvals['dance_style'] == "Int_Line")
-                $show = 1;
-        }
-        break;
-    case 6:
-        if ($curvals['app_category'] != 'Other' 
-            || $curvals['fms_category'] != "jam")
-            $show = 0;
-        break;
-    case 7:
-        if ($curvals['app_category'] != 'Other' 
-            || $curvals['fms_category'] != "song")
-            $show = 0;
-        break;
-    case 8:
-        if ($curvals['app_category'] != 'Other' 
-            || $curvals['fms_category'] != "concert")
-            $show = 0;
-        break;
-    case 9:
-        if ($curvals['app_category'] != 'Other' 
-            || $curvals['fms_category'] != "spoken_word")
-            $show = 0;
-        break;
-    }
 
     if ($show)
         $rows[] = $cols;

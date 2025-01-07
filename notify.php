@@ -297,13 +297,33 @@ function do_rejects () {
 if ($arg_show_rejected) {
     global $rejected;
     
+    $error_count = 0;
+    
     do_rejects();
     
     $body .= "<h1>Rejected performers</h1>\n";
     $body .= sprintf ("<div>%s</div>\n",
         mklink ("back to notify list", "notify.php"));
 
+    global $group_filter;
+    if ($group_filter) {
+        $body .= "<div class='attention'>\n";
+        $body .= "A group filter is in effect.  Go back to ";
+        $body .= mklink ("applications", "admin.php");
+        $body .= " to change the filter setting.";
+        $body .= "</div>\n";
+    }
+
     foreach ($rejected as $rej) {
+        $visible_apps = 0;
+        foreach ($rej->apps as $app) {
+            if (passes_group_filter ($app))
+                $visible_apps += 1;
+        }
+
+        if ($visible_apps == 0)
+            continue;
+
         $body .= sprintf ("<h2>%s</h2>\n", h($rej->email));
 
         $reasons = array ();
@@ -320,6 +340,7 @@ if ($arg_show_rejected) {
             $have_common_reason = 1;
         } else {
             $have_common_reason = 0;
+            $error_count += 1;
             $body .= "<div class='attention'>ERROR: these app(s) don't"
                 ." have a single common "
                 ." rejection reason</div>\n";
@@ -353,6 +374,8 @@ if ($arg_show_rejected) {
             $body .= sprintf ("<div>%s</div>\n", $last_reason);
         }
     }
+
+    $body .= sprintf ("<div>error count %d</div>\n", $error_count);
 
     pfinish ();
 }
