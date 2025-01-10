@@ -275,7 +275,7 @@ if ($arg_notify_id != 0) {
 }
 
 function do_rejects () {
-    global $notify_by_name_id, $notify_by_email;
+    global $notify_by_name_id, $notify_by_email, $webgrid_by_evid;
     global $body;
     
     $rows = array ();
@@ -284,6 +284,9 @@ function do_rejects () {
             continue;
         
         if (@$notify_by_name_id[$app->neffa_id])
+            continue;
+
+        if (@$webgrid_by_evid[$app->evid])
             continue;
 
         $email = trim(strtolower($app->curvals['email']));

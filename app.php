@@ -961,9 +961,10 @@ function read_notify_info() {
     global $cfg;
     $filename = sprintf ("%s/webgrid.tsv", $cfg['aux_dir']);
     $f = fopen($filename, "r");
-    global $webgrid, $webgrid_by_eventid;
+    global $webgrid, $webgrid_by_eventid, $webgrid_by_evid;
     $webgrid = [];
     $webgrid_by_eventid = [];
+    $webgrid_by_evid = [];
     while (($row = fgets ($f)) != NULL) {
         $cols = explode("\t", $row);
         $elt = (object)NULL;
@@ -994,6 +995,9 @@ function read_notify_info() {
             $elt->day, $elt->time, str_replace(" ", "", $elt->room));
         $webgrid[] = $elt;
         $webgrid_by_eventid[$elt->eventid] = $elt;
+        foreach ($elt->evids as $evid) {
+            $webgrid_by_evid[$evid] = $elt;
+        }
     }
 
     global $performers;
