@@ -968,8 +968,14 @@ function read_notify_info() {
         $cols = explode("\t", $row);
         $elt = (object)NULL;
         $elt->evids = array();
-        foreach (explode(",", $cols[0]) as $evid) {
-            $elt->evids[] = trim($evid);
+        foreach (explode(",", $cols[0]) as $raw_evid) {
+            $evid = trim($raw_evid);
+            if (strlen ($evid) > 0) {
+                $evid = sprintf ("%s%s",
+                    strtoupper($raw_evid[0]),
+                    strtolower(substr($raw_evid, 1)));
+            }
+            $elt->evids[] = $evid;
         }
         $elt->title = trim($cols[1]);
         $elt->desc = trim($cols[2]);
