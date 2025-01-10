@@ -317,6 +317,8 @@ if ($arg_show_rejected) {
         $body .= "</div>\n";
     }
 
+    $groups = array ();
+
     foreach ($rejected as $rej) {
         $visible_apps = 0;
         foreach ($rej->apps as $app) {
@@ -327,7 +329,8 @@ if ($arg_show_rejected) {
         if ($visible_apps == 0)
             continue;
 
-        $body .= sprintf ("<h2>%s</h2>\n", h($rej->email));
+        $item = "";
+        $item .= sprintf ("<h2>%s</h2>\n", h($rej->email));
 
         $reasons = array ();
         $last_reason = "";
@@ -344,14 +347,14 @@ if ($arg_show_rejected) {
         } else {
             $have_common_reason = 0;
             $error_count += 1;
-            $body .= "<div class='attention'>ERROR: these app(s) don't"
+            $item .= "<div class='attention'>ERROR: these app(s) don't"
                 ." have a single common "
                 ." rejection reason</div>\n";
         }
 
         foreach ($rej->apps as $app) {
             $t = sprintf ("index.php?app_id=%d", $app->app_id);
-            $body .= "<div>\n";
+            $item .= "<div>\n";
 
             $txt = sprintf ("%s ", $app->evid);
             if (@$app->curvals['group_name'])
@@ -363,18 +366,44 @@ if ($arg_show_rejected) {
             if (@$app->curvals['name'])
                 $txt .= sprintf (" N: %s", h($app->curvals['name']));
 
-            $body .= mklink ($txt, $t);
+            $item .= mklink ($txt, $t);
 
-            $body .= "</div>\n";
+            $item .= "</div>\n";
 
             if ($have_common_reason == 0) {
                 $reason = trim (@$app->curvals['C_rejection_reason']);
-                $body .= sprintf ("<div>%s</div>\n", $reason);
+                $item .= sprintf ("<div>%s</div>\n", $reason);
             }
         }
 
         if ($have_common_reason) {
-            $body .= sprintf ("<div>%s</div>\n", $last_reason);
+            $item .= sprintf ("<div>%s</div>\n", $last_reason);
+        }
+
+        $prefix = $app->evid[0];
+        if (! isset ($groups[$prefix])) {
+            $groups[$prefix] = array ();
+        }
+        $groups[$prefix][] = $item;
+    }
+
+    $body .= sprintf ("<div>error count %d</div>\n", $error_count);
+
+    $desired_order = array ("T", "P", "R", "X", "M", "F", "J");
+
+    foreach ($desired_order as $prefix) {
+        if (isset ($groups[$prefix])) {
+            $body .= "<hr/>\n";
+            foreach ($groups[$prefix] as $item) {
+                $body .= $item;
+            }
+            $groups[$prefix] = array ();
+        }
+    }
+
+    foreach ($groups as $group) {
+        foreach ($group as $item) {
+            $body .= $item;
         }
     }
 
