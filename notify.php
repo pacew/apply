@@ -269,9 +269,10 @@ if ($arg_notify_id != 0) {
     $vals['fest_year'] = $submit_year;
 
     $body .= "<div class='notify_email'>\n";
+    $body .= sprintf ("<p>To: %s<br/>\n", h($elt->email));
     $subject = sprintf ("You have been scheduled for NEFFA %d!",
         $submit_year);
-    $body .= sprintf ("<p>Subject: %s</p>\n", h($subject));
+    $body .= sprintf ("Subject: %s</p>\n", h($subject));
 
     $body .= populate_template("notify.html", $vals);
     $body .= "</div>\n";
@@ -390,6 +391,9 @@ if ($arg_show_rejected) {
             $email = $rej->email;
 
             $item .= "<form action='rejection.php'>\n";
+            $item .= sprintf ("<input type='hidden'"
+                ." name='email' value='%s' />\n", 
+                rawurlencode($email));
             $item .= sprintf ("<input type='hidden'"
                 ." name='first_name' value='%s' />\n", 
                 rawurlencode($first_name));

@@ -19,9 +19,6 @@ https://docs.google.com/spreadsheets/d/1UXBIxhuOAASVcXoVWiXymPQGLuOpHC9EwaSuI-ew
 ACCEPT: send acceptance letters to scheduled performers (enable email
 send) test ASAP, send Jan 15
 
-REJECT: Customize rejection letters before sending with rejection
-reason (allow free text in Rejection Reason field in existing app)
-
 CONFIRM: Send nag emails every three days asking for confirmation
 until confirmation is received
 
@@ -30,9 +27,6 @@ notify page - same as report date confirmed)
 
 CONFIRM: Record the date that the performer submitted confirmation
 from the confirm page
-
-ACCEPT/REJECT: Include invite link to join the NEFFA Loop on each
-communication to performers
 
 REJECT: Send rejections to unscheduled performers
 
