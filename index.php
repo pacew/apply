@@ -169,10 +169,12 @@ if ($username) {
         $t = sprintf ("confirm.php?app_id=%d", $arg_app_id);
         $body .= mklink ("[view confirm page]", $t);
 
-        $body .= " | ";
-        $t = sprintf ("https://cgi.neffa.org/performer/confirm2.pl?P=%s",
-            $application->pcode);
-        $body .= mklink ("[view performer confirmation page]", $t);
+        if (@$application->pcode) {
+            $body .= " | ";
+            $t = sprintf ("https://cgi.neffa.org/performer/confirm2.pl?P=%s",
+                $application->pcode);
+            $body .= mklink ("[view performer confirmation page]", $t);
+        }
     }    
 
     if (@$application->confirmed) {

@@ -266,8 +266,13 @@ if ($arg_notify_id != 0) {
 
     $vals['first_name'] = preg_replace ('/^[^,]*,/', "", $perf->name);
     $vals['pcode_link'] = mklink($confirm2_link, $confirm2_link);
+    $vals['fest_year'] = $submit_year;
 
     $body .= "<div class='notify_email'>\n";
+    $subject = sprintf ("You have been scheduled for NEFFA %d!",
+        $submit_year);
+    $body .= sprintf ("<p>Subject: %s</p>\n", h($subject));
+
     $body .= populate_template("notify.html", $vals);
     $body .= "</div>\n";
     
@@ -378,6 +383,20 @@ if ($arg_show_rejected) {
 
         if ($have_common_reason) {
             $item .= sprintf ("<div>%s</div>\n", $last_reason);
+
+            $first_name = preg_replace ('/^[^,]*,/', "", 
+                $app->curvals['name']);
+
+            $email = $rej->email;
+
+            $item .= "<form action='rejection.php'>\n";
+            $item .= sprintf ("<input type='hidden'"
+                ." name='first_name' value='%s' />\n", 
+                rawurlencode($first_name));
+            $item .= sprintf ("<input type='hidden'"
+                ." name='text' value='%s' />\n", rawurlencode($last_reason));
+            $item .= "<input type='submit' value='View rejection email' />\n";
+            $item .= "</form>\n";
         }
 
         $prefix = $app->evid[0];
