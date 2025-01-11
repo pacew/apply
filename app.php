@@ -815,7 +815,7 @@ function send_email ($args) {
     return (TRUE);
 }
 
-function category_uses_title($category) {
+function category_uses_title_and_desc($category) {
     switch ($category) {
     case "Band":
     case "Ritual":

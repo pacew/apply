@@ -9,6 +9,7 @@ $arg_eventid = trim (@$_REQUEST['eventid']);
 $arg_save = intval (@$_REQUEST['save']);
 $arg_app_id = intval (@$_REQUEST['app_id']);
 $arg_event_title = trim (@$_REQUEST['event_title']);
+$arg_event_desc = trim (@$_REQUEST['event_desc']);
 $arg_P_notes = trim (@$_REQUEST['P_notes']);
 
 pstart ();
@@ -16,7 +17,7 @@ pstart ();
 $magic_link = sprintf("https://cgi.neffa.org/performer/confirm2.pl"
     ."?P=%s", rawurlencode($arg_pcode));
 
-$fields = array("event_title");
+$fields = array("event_title", "event_desc");
      
 
 if ($arg_save) {
@@ -170,15 +171,19 @@ $t = sprintf ("performer.php?pcode=%s&eventid=%s",
 $body .= mklink ("cancel", $t);
 
 
-if (category_uses_title(@$app->curvals['app_category'])) {
+if (category_uses_title_and_desc(@$app->curvals['app_category'])) {
     $body .= "<h3>Event title</h3>";
     $body .= sprintf ("<div><input type='text' size='50'"
         ." name='event_title' value='%s' /></div>\n",
         h($app->curvals['event_title']));
+    $body .= "<h3>Event description</h3>";
+    $body .= "<textarea rows='5' cols='70' name='event_desc' />\n";
+    $body .= h($app->curvals['event_desc']);
+    $body .= "</textarea>\n";
 }
 
 $body .= "<h3>Performer notes</h3>";
-$body .= sprintf ("<textarea rows='10' cols='80' name='P_notes' />\n");
+$body .= "<textarea rows='10' cols='80' name='P_notes' />\n";
 $body .= h(@$app->curvals['P_notes']);
 $body .= "</textarea>\n";
     
