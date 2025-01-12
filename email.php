@@ -27,6 +27,7 @@ foreach ($arg_notify_ids as $notify_id) {
 
 $development_emails = array();
 $development_emails['pace.willisson+ntest@gmail.com'] = 1;
+$development_emails['lynnoel@lynnoel.com'] = 1;
 
 read_notify_info();
 
@@ -40,10 +41,11 @@ if ($arg_send_email) {
         }
 
         $to_email = $erec->email;
-        $to_email = "pace.willisson+ntest@gmail.com";
+
+        if ($cfg['conf_key'] != "production")
+            $to_email = "pace.willisson+ntest@gmail.com";
 
         $em = prepare_notify_email($to_email, $perf, $pcode);
-
 
         if (0) {
             $body .= "<hr/>\n";
@@ -62,6 +64,9 @@ if ($arg_send_email) {
         $args->body_text = $em->plain;
 
         $really_send_email = 0;
+        if ($cfg['conf_key'] == "production")
+            $really_send_email = 1;
+
         if ($really_send_email) {
             if (! isset ($development_emails[$args->to_email])) {
                 $body .= sprintf ("<div>not allowed to send to %s</div>\n",
@@ -70,6 +75,10 @@ if ($arg_send_email) {
             }
 
             send_email($args);
+            $body .= sprintf ("<div>%s: success</div>\n", h($to_email));
+        } else {
+            $body .= sprintf ("<div>%s: skipped due to test mode</div>\n",
+                h($to_email));
         }
  
         $event = "acceptance_notification";
@@ -85,8 +94,6 @@ if ($arg_send_email) {
                 $submit_year, $submit_test_flag,
                 $erec->name_id, $event));
         do_commits();
-        
-        $body .= sprintf ("<div>%s: success</div>\n", h($to_email));
     }
     $body .= sprintf ("<div>%s</div>\n",
         mklink ("back to notify page", "notify.php"));
@@ -147,6 +154,12 @@ foreach ($erecs as $erec) {
     $rows[] = $cols;
 }
 
+$body .= sprintf ("<div>%s</div>\n", 
+    mklink ("back to notification page", "notify.php"));
+
+
+$body .= "<h1>emails for this batch</h1>\n";
+
 $body .= mktable(array ("notify_id", "name", "email", 
         "confirm", "record", "prior emails"), 
     $rows);
@@ -162,5 +175,7 @@ foreach ($arg_notify_ids as $notify_id) {
 $body .= "<input type='submit' value='send email to this batch' />\n";
 $body .= "(this may take a while ... don't be impatient with reload)";
 $body .= "</form>\n";
+$body .= sprintf ("<div style='margin-top:3em'>%s</div>\n", 
+    mklink ("back to notification page", "notify.php"));
 
 pfinish();
