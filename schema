@@ -82,14 +82,18 @@ create table rejected (
 
 create table confirmations (
   name_id int,
-  confirmed int,
-  record_ok int,
+  fest_year int,
+  test_flag int,
+  confirm int,
+  record int,
   updated timestamp
 );
 
 create table interactions (
   interaction_id int,
+  fest_year int,
+  test_flag int,
   ts timestamp,
   name_id int,
   event text
-)
+);

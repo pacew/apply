@@ -278,8 +278,10 @@ if ($arg_notify_id != 0) {
     $q = query ("select interaction_id, ts, event"
         ." from interactions"
         ." where name_id = ?"
+        ."   and fest_year = ?"
+        ."   and test_flag = ?"
         ." order by interaction_id",
-        $elt->name_id);
+        array($elt->name_id, $submit_year, $submit_test_flag));
     $rows = array();
     while (($r = fetch ($q)) != NULL) {
         $cols = array();
@@ -526,6 +528,25 @@ foreach ($notify as $elt) {
     $pcode = neffa_id_to_pcode($elt->name_id);
     $cols[] = mklink("magic", make_confirm2_link($pcode));
 
+    $c = "";
+    if (($conf = @$confirmations[$elt->name_id]) != NULL) {
+        switch ($conf->confirm) {
+        case 0:
+            $c = "";
+            break;
+        case 2:
+            $c = "confirmed";
+            break;
+        case 3:
+            $c = "declined";
+            break;
+        default:
+            $c = sprintf ("code %d", $conf->confirm);
+            break;
+        }
+    }
+    $cols[] = h($c);
+
     $rows[] = $cols;
     
 }
@@ -536,7 +557,7 @@ $body .= "<input type='submit'"
 
 $body .= sprintf("<div>%d performers</div>\n", count($notify));
 $body .= mktable(array(
-    "notify_id", "name_id", "name", "email", "magic"),
+    "notify_id", "name_id", "name", "email", "magic", "confirmed"),
     $rows);
 
 $body .= "</form>\n";

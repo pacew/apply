@@ -1056,6 +1056,23 @@ function read_notify_info() {
         $notify_by_name_id[$elt->name_id] = $elt;
         $notify_by_email[strtolower($elt->email)] = $elt;
     }
+
+    global $confirmations, $submit_year, $submit_test_flag;
+    $confirmations = array();
+    
+    $q = query ("select name_id, confirm, record"
+        ." from confirmations"
+        ." where fest_year = ? and test_flag = ?"
+        ." order by name_id",
+        array ($submit_year, $submit_test_flag));
+    while (($r = fetch($q)) != NULL) {
+        $name_id = intval($r->name_id);
+        
+        $conf = (object)NULL;
+        $conf->confirm = intval($r->confirm);
+        $conf->record = intval($r->record);
+        $confirmations[$name_id] = $conf;
+    }
 }
 
 function xread_rejected () {

@@ -10,8 +10,7 @@ $arg_send_email = intval (@$_REQUEST['send_email']);
 $erecs = array ();
 
 foreach ($arg_notify_ids as $notify_id) {
-    $q = query ("select name_id, confirm, record,"
-        ."  email, sent_dttm, responded_dttm"
+    $q = query ("select name_id, email"
         ." from notify"
         ." where notify_id = ?",
         $notify_id);
@@ -22,21 +21,16 @@ foreach ($arg_notify_ids as $notify_id) {
     $erec = (object)NULL;
     $erec->notify_id = $notify_id;
     $erec->name_id = intval($r->name_id);
-    $erec->confirm = $r->confirm;
-    $erec->record = $r->record;
     $erec->email = trim($r->email);
-    $erec->sent_dttm = trim($r->sent_dttm);
-    $erec->responded_dttm = trim($r->responded_dttm);
-
     $erecs[] = $erec;
 }
 
 $development_emails = array();
 $development_emails['pace.willisson+ntest@gmail.com'] = 1;
 
-if ($arg_send_email) {
-    read_notify_info();
+read_notify_info();
 
+if ($arg_send_email) {
     foreach ($erecs as $erec) {
         if (($perf = @$performers[$erec->name_id]) == NULL
             || ($pcode = neffa_id_to_pcode($perf->number)) == "") {
@@ -85,9 +79,11 @@ if ($arg_send_email) {
     
         $interaction_id = get_seq();
         query ("insert into interactions ("
-            ." interaction_id, ts, name_id, event"
-            ." ) values (?, current_timestamp, ?, ?)",
-            array ($interaction_id, $erec->name_id, $event));
+            ." interaction_id, fest_year, test_flag, ts, name_id, event"
+            ." ) values (?, ?, ?, current_timestamp, ?, ?)",
+            array ($interaction_id, 
+                $submit_year, $submit_test_flag,
+                $erec->name_id, $event));
         do_commits();
         
         $body .= sprintf ("<div>%s: success</div>\n", h($to_email));
@@ -98,23 +94,62 @@ if ($arg_send_email) {
     pfinish ();
 }
 
+$display_confirm = array();
+$display_confirm[2] = "yes";
+$display_confirm[3] = "declined";
+
+$display_record = array();
+$display_record[2] = "yes";
+$display_record[3] = "no";
 
 $rows = array();
 foreach ($erecs as $erec) {
+    $q = query ("select ts, event"
+        ." from interactions"
+        ." where name_id = ?"
+        ."   and fest_year = ?"
+        ."   and test_flag = ?"
+        ." order by interaction_id",
+        array($erec->name_id, $submit_year, $submit_test_flag));
+    $prior = "";
+    while (($r = fetch($q)) != NULL) {
+        $prior .= sprintf ("<div>%s %s</div>\n",
+            db_time_to_eastern($r->ts), h($r->event));
+    }
+
+    $confirm = "";
+    $record = "";
+    if (($conf = @$confirmations[$erec->name_id]) != NULL) {
+        if ($conf->confirm == 2)
+            $confirm = "yes";
+        else if ($conf->confirm == 3)
+            $confirm = "declined";
+        else
+            $confirm = intval($conf->confirm);
+
+        if ($conf->record == 2)
+            $record = "yes";
+        else if ($conf->record == 3)
+            $record = "no";
+        else
+            $record = intval($conf->record);
+    }
+
+
     $cols = array();
     $t = sprintf ("notify.php?notify_id=%d", $erec->notify_id);
     $cols[] = mklink($erec->notify_id, $t);
     $cols[] = $erec->name_id;
-    $cols[] = h($erec->confirm);
-    $cols[] = h($erec->record);
     $cols[] = h($erec->email);
-    $cols[] = db_time_to_eastern($erec->sent_dttm);
-    $cols[] = db_time_to_eastern($erec->responded_dttm);
+    $cols[] = $confirm;
+    $cols[] = $record;
+    $cols[] = $prior;
     $rows[] = $cols;
 }
 
-$body .= mktable(array ("notify_id", "name", "confirm", "record_ok", "email",
-        "notified", "responded"), $rows);
+$body .= mktable(array ("notify_id", "name", "email", 
+        "confirm", "record", "prior emails"), 
+    $rows);
 
 $body .= "<form action='email.php' method='post'>\n";
 $body .= "<input type='hidden' name='send_email' value='1' />\n";

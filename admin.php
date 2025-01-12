@@ -30,7 +30,7 @@ if ($arg_doc == 1) {
     $examples = array();
 
     foreach ($apps as $app) {
-        if ($app->curvals['name'] == "Brown,Dean")
+        if ($app->curvals['name'] == "Noel,Lynn")
             $examples[] = $app;
     }
 

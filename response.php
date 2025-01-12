@@ -35,38 +35,49 @@ $neffa_id = intval(@$r->id);
 $old_confirm = 0;
 $old_record = 0;
 
-$q = query ("select notify_id, confirm, record"
-    ." from notify"
-    ." where fest_year = ?"
-    ."   and test_flag = ?"
-    ."   and name_id = ?",
-    array($view_year, $view_test_flag, $neffa_id));
+$q = query ("select confirm, record"
+    ." from confirmations"
+    ." where name_id = ?"
+    ."   and fest_year = ?"
+    ."   and test_flag = ?",
+    array($neffa_id, $submit_year, $submit_test_flag));
 if (($r = fetch ($q)) != NULL) {
-    $notify_id = intval($r->notify_id);
     $old_confirm = intval($r->confirm);
     $old_record = intval($r->record);
 } else {
-    $notify_id = get_seq();
-    query ("insert into notify (notify_id, fest_year, test_flag, name_id)"
-        ." values (?, ?, ?, ?)",
-        array ($notify_id, $view_year, $view_test_flag, $neffa_id));
+    query ("insert into confirmations ("
+        ." name_id, fest_year, test_flag, confirm, record"
+        .") values (?, ?, ?, ?, ?)",
+        array ($neffa_id, $submit_year, $submit_test_flag,
+            0, 0));
 }
 
 if (($new_confirm = $arg_confirm) != 0) {
-    query ("update notify set confirm = ?"
-        ." where notify_id = ?",
-        array ($new_confirm, $notify_id));
+    query ("update confirmations set confirm = ?, updated = current_timestamp"
+        ." where name_id = ? and fest_year = ? and test_flag = ?",
+        array($new_confirm, $neffa_id, $submit_year, $submit_test_flag));
 } else {
     $new_confirm = $old_confirm;
 }
 
 if (($new_record = $arg_record) != 0) {
-    query ("update notify set record = ?"
-        ." where notify_id = ?",
-        array ($new_record, $notify_id));
+    query ("update confirmations set record = ?, updated = current_timestamp"
+        ." where name_id = ? and fest_year = ? and test_flag = ?",
+        array($new_record, $neffa_id, $submit_year, $submit_test_flag));
 } else {
     $new_record = $old_record;
 }
+
+$event = sprintf ("performer_response confirm=%d record=%d",
+    $new_confirm, $new_record);
+$interaction_id = get_seq();
+query ("insert into interactions ("
+    ." interaction_id, fest_year, test_flag, ts, name_id, event"
+    ." ) values (?, ?, ?, current_timestamp, ?, ?)",
+    array ($interaction_id, 
+        $submit_year, $submit_test_flag,
+        $neffa_id, $event));
+do_commits();
 
 
 $body .= sprintf ("<div>pcode %s</div>\n", h($arg_pcode));
