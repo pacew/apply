@@ -345,6 +345,18 @@ if ($arg_show_rejected) {
     
     do_rejects();
     
+    $done = array();
+    $q = query ("select email, ts"
+        ." from rejected"
+        ." where fest_year = ? and test_flag = ?"
+        ." order by rejected_id",
+        array($submit_year, $submit_test_flag));
+    while (($r = fetch ($q)) != NULL) {
+        $email = trim(strtolower($r->email));
+        $ts = $r->ts;
+        $done[$email] = $ts;
+    }
+
     $body .= "<h1>Rejected performers</h1>\n";
     $body .= sprintf ("<div>%s</div>\n",
         mklink ("back to notify list", "notify.php"));
@@ -423,7 +435,7 @@ if ($arg_show_rejected) {
             $first_name = preg_replace ('/^[^,]*,/', "", 
                 $app->curvals['name']);
 
-            $email = $rej->email;
+            $email = trim(strtolower($rej->email));
 
             $item .= "<form action='rejection.php'>\n";
             $item .= sprintf ("<input type='hidden'"
@@ -435,6 +447,12 @@ if ($arg_show_rejected) {
             $item .= sprintf ("<input type='hidden'"
                 ." name='text' value='%s' />\n", rawurlencode($last_reason));
             $item .= "<input type='submit' value='View rejection email' />\n";
+
+            if (($ts = @$done[$email]) != NULL) {
+                $item .= sprintf ("sent %s", db_time_to_eastern($ts));
+            } else {
+                $item .= "<span class='attention'>pending</span>\n";
+            }
             $item .= "</form>\n";
         }
 
