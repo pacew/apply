@@ -14,8 +14,7 @@ $arg_P_notes = trim (@$_REQUEST['P_notes']);
 
 pstart ();
 
-$magic_link = sprintf("https://cgi.neffa.org/performer/confirm2.pl"
-    ."?P=%s", rawurlencode($arg_pcode));
+$magic_link = make_confirm2_link($arg_pcode);
 
 $fields = array("event_title", "event_desc");
      

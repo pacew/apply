@@ -54,7 +54,8 @@ create table notify (
   record int,
   email text,
   sent_dttm timestamp,
-  responded_dttm timestamp
+  responded_dttm timestamp,
+  scheduled int
 );
 
 
@@ -78,3 +79,17 @@ create table rejected (
   username text,
   reason text
 );
+
+create table confirmations (
+  name_id int,
+  confirmed int,
+  record_ok int,
+  updated timestamp
+);
+
+create table interactions (
+  interaction_id int,
+  ts timestamp,
+  name_id int,
+  event text
+)

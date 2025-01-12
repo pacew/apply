@@ -171,9 +171,8 @@ if ($username) {
 
         if (@$application->pcode) {
             $body .= " | ";
-            $t = sprintf ("https://cgi.neffa.org/performer/confirm2.pl?P=%s",
-                $application->pcode);
-            $body .= mklink ("[view performer confirmation page]", $t);
+            $body .= mklink ("[view performer confirmation page]", 
+                make_confirm2_link($application->pcode));
         }
     }    
 

@@ -56,9 +56,6 @@ if ($arg_doc == 1) {
     $magic_link = sprintf("https://%s/response.php?pcode=%s",
         $host, rawurlencode($pcode));
     
-    $confirm2_link = sprintf("https://cgi.neffa.org/performer/confirm2.pl"
-        ."?P=%s", rawurlencode($pcode));
-
     $body .= "<h2>example magic link to response page"
         ." (mailed to performer)</h2>\n";
     $body .= "<div>\n";
@@ -95,7 +92,7 @@ if ($arg_doc == 1) {
     $body .= "</table>\n";
 
     $body .= sprintf ("<p>will be redirected back to %s plus args</p>",
-        h($confirm2_link));
+        h(make_confirm2_link($pcode)));
 
     $body .= "<hr/>\n";
 

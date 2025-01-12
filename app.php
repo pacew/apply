@@ -18,6 +18,8 @@ $utc_tz = new DateTimeZone("UTC");
 $eastern_tz = new DateTimeZone("US/Eastern");
 function db_time_to_eastern($ts_db) {
     global $utc_tz, $eastern_tz;
+    if (trim($ts_db) == "")
+        return ("");
     if (is_int($ts_db))
         $ts_db = sprintf("@%d", $ts_db);
     $date = date_create($ts_db, $utc_tz);
@@ -1037,7 +1039,7 @@ function read_notify_info() {
     $notify_by_notify_id = array();
     $notify_by_email = array ();
     global $view_year;
-    $q = query ("select notify_id, name_id, email"
+    $q = query ("select notify_id, name_id, email, scheduled"
         ." from notify"
         ." where fest_year = ?"
         ." order by notify_id",
@@ -1047,6 +1049,7 @@ function read_notify_info() {
         $elt->notify_id = intval($r->notify_id);
         $elt->name_id = intval($r->name_id);
         $elt->email = trim($r->email);
+        $elt->scheduled = intval($r->scheduled);
 
         $notify[] = $elt;
         $notify_by_notify_id[$elt->notify_id] = $elt;
@@ -1408,6 +1411,31 @@ function passes_group_filter ($app) {
         return (0);
     }
     return (1);
+}
+
+function make_confirm2_link($pcode) {
+    return sprintf ("https://cgi.neffa.org/performer/confirm2.pl?P=%s",
+        rawurlencode($pcode));
+}
+
+
+function prepare_notify_email($to_email, $perf, $pcode) {
+    $vals = [];
+
+    $vals['first_name'] = preg_replace ('/^[^,]*,/', "", $perf->name);
+    $confirm2_link = make_confirm2_link($pcode);
+    $vals['pcode_link'] = mklink($confirm2_link, $confirm2_link);
+    global $submit_year;
+    $vals['fest_year'] = $submit_year;
+
+    $em = (object)NULL;
+    $em->to_email = $to_email;
+    $em->subject = sprintf ("You have been scheduled for NEFFA %d!",
+        $submit_year);
+    $em->html = populate_template("notify.html", $vals);
+    $em->plain = strip_tags($em->html);
+
+    return ($em);
 }
 
 

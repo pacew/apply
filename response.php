@@ -95,15 +95,16 @@ $rows[] = array("record", $old_record, $new_record);
 
 $body .= mktable(array ("field", "old", "new"), $rows);
 
-$t = sprintf ("https://cgi.neffa.org/performer/confirm2.pl"
-    ."?P=%s"
-    ."&confirm=%d"
-    ."&record=%d",
-    rawurlencode($arg_pcode),
+$t = sprintf ("%s&confirm=%d&record=%d",
+    make_confirm2_link($arg_pcode),
     $new_confirm,
     $new_record);
 
-$body .= sprintf ("<div>redirect will go to %s</div>",
-    mklink ($t, $t));
+if ($cfg['conf_key'] == "production") {
+    redirect ($t);
+} else {
+    $body .= sprintf ("<div>redirect will go to %s</div>",
+        mklink ($t, $t));
+}
 
 pfinish ();

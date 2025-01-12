@@ -24,7 +24,7 @@ if ($arg_upload_passwd) {
 pstart ();
 
 if ($arg_reload == 1) {
-    query ("delete from notify");
+    query ("update notify set scheduled = 0");
     redirect ("notify.php");
 }
 
@@ -117,8 +117,14 @@ function we_need_to_notify ($name_id) {
     global $notify, $notify_by_name_id, $view_year;
     global $notify_by_notify_id, $notify_by_email;
     
-    if (isset ($notify_by_name_id[$name_id]))
+    if (($elt = @$notify_by_name_id[$name_id]) != NULL) {
+        if ($elt->scheduled == 0) {
+            $elt->scheduled = 1;
+            query ("update notify set scheduled = 1 where notify_id = ?",
+                $elt->notify_id);
+        }
         return (0);
+    }
     
     global $errs, $performers;
     if (($perf = @$performers[$name_id]) == NULL)
@@ -132,9 +138,11 @@ function we_need_to_notify ($name_id) {
     $elt->name_id = $name_id;
     $elt->email = $email;
     $elt->fest_year = $view_year;
-    query("insert into notify(notify_id, fest_year, name_id, email)"
-        ." values(?, ?, ?, ?)",
-        array($elt->notify_id, $view_year, $elt->name_id, $elt->email));
+    $elt->scheduled = 1;
+    query("insert into notify(notify_id, fest_year, name_id, email, scheduled)"
+        ." values(?, ?, ?, ?, ?)",
+        array($elt->notify_id, $view_year, $elt->name_id, $elt->email,
+            $elt->scheduled));
     $notify[] = $elt;
     $notify_by_notify_id[$elt->notify_id] = $elt;
     $notify_by_name_id[$elt->name_id] = $elt;
@@ -206,6 +214,14 @@ if ($arg_notify_id != 0) {
     }
     $body .= sprintf ("<div>%s</div>\n", mklink("[back]", "notify.php"));
 
+    if ($elt->scheduled == 0) {
+        $body .= "<div class='attention'>"
+            ." this performer is in the notify table"
+            ." but not webgrid ... maybe a weird"
+            ." error due to a late webgrid update"
+            ."</div>\n";
+    }
+
     if (($perf = @$performers[$elt->name_id]) == NULL) {
         $body .= "<div>can't find performer db entry for this person</div>\n";
         pfinish();
@@ -216,8 +232,7 @@ if ($arg_notify_id != 0) {
         pfinish();
     }
 
-    $confirm2_link = sprintf("https://cgi.neffa.org/performer/confirm2.pl?P=%s",
-        rawurlencode($pcode));
+    $confirm2_link = make_confirm2_link($pcode);
     $body .= sprintf ("<p>%s</p>\n", mklink($confirm2_link, $confirm2_link));
 
     $rows = array();
@@ -260,21 +275,39 @@ if ($arg_notify_id != 0) {
     $body .= mktable (array ("evid", "title", "performer edit"), $rows);
 
 
+    $q = query ("select interaction_id, ts, event"
+        ." from interactions"
+        ." where name_id = ?"
+        ." order by interaction_id",
+        $elt->name_id);
+    $rows = array();
+    while (($r = fetch ($q)) != NULL) {
+        $cols = array();
+        $cols[] = db_time_to_eastern($r->ts);
+        $cols[] = h($r->event);
+        $rows[] = $cols;
+    }
+    $body .= "<h3>email notifications</h3>\n";
+    if (count ($rows) > 0) {
+        $body .= mktable (array ("timestamp", "event"), $rows);
+    } else {
+        $body .= "<div>(none)</div>\n";
+    }
+
+
     $body .= "</div>\n"; /* admin_box */
 
-    $vals = [];
-
-    $vals['first_name'] = preg_replace ('/^[^,]*,/', "", $perf->name);
-    $vals['pcode_link'] = mklink($confirm2_link, $confirm2_link);
-    $vals['fest_year'] = $submit_year;
+    $em = prepare_notify_email($elt->email, $perf, $pcode);
 
     $body .= "<div class='notify_email'>\n";
-    $body .= sprintf ("<p>To: %s<br/>\n", h($elt->email));
-    $subject = sprintf ("You have been scheduled for NEFFA %d!",
-        $submit_year);
-    $body .= sprintf ("Subject: %s</p>\n", h($subject));
+    $body .= sprintf ("<p>To: %s<br/>\n", h($em->to_email));
+    $body .= sprintf ("Subject: %s</p>\n", h($em->subject));
 
-    $body .= populate_template("notify.html", $vals);
+    $body .= $em->html;
+    $body .= "<hr/>\n";
+    $body .= "<pre>\n";
+    $body .= h($em->plain);
+    $body .= "</pre>\n";
     $body .= "</div>\n";
     
     pfinish ();
@@ -450,6 +483,22 @@ $body .= "</form>\n";
 $body .= mklink ("reload webgrid", "notify.php?reload=1");
 $body .= "</div>\n";
 
+$unsched = "";
+foreach ($notify as $elt) {
+    if ($elt->scheduled == 0) {
+        $t = sprintf ("notify.php?notify_id=%d", $elt->notify_id);
+        $unsched .= sprintf ("<div>%s %s</div>\n", 
+            mklink ($elt->notify_id, $t),
+            h($elt->email));
+    }
+}
+if ($unsched != "") {
+    $errs[] = "<h1>people in notify table but not in webgrid</h1>\n"
+        ."<p>may happen due to late webgrid change</p>\n"
+        . $unsched;
+}
+
+
 if (count($errs) > 0) {
     $body .= "<h1 style='color:red'>see end of page for errors</h1>\n";
 }
@@ -463,26 +512,34 @@ $rows = array();
 foreach ($notify as $elt) {
     $perf = @$performers[$elt->name_id];
     $cols = array();
+
+    $item = sprintf ("<input type='checkbox'"
+        ." name='notify_ids[]' value='%d' />\n",
+        $elt->notify_id);
     $t = sprintf("notify.php?notify_id=%d", $elt->notify_id);
-    $cols[] = mklink($elt->notify_id, $t);
+    $item .= mklink($elt->notify_id, $t);
+    $cols[] = $item;
     $cols[] = h($elt->name_id);
     $cols[] = h(@$perf->name);
     $cols[] = h($elt->email);
 
     $pcode = neffa_id_to_pcode($elt->name_id);
-    $t = sprintf("https://cgi.neffa.org/performer/confirm2.pl?P=%s",
-        rawurlencode($pcode));
-    $cols[] = mklink("magic", $t);
-
+    $cols[] = mklink("magic", make_confirm2_link($pcode));
 
     $rows[] = $cols;
     
 }
             
-$body .= sprintf("<div>%d rows</div>\n", count($notify));
+$body .= "<form action='email.php' method='post' />";
+$body .= "<input type='submit'"
+    ." value='prepare emails to marked performers' />\n";
+
+$body .= sprintf("<div>%d performers</div>\n", count($notify));
 $body .= mktable(array(
     "notify_id", "name_id", "name", "email", "magic"),
     $rows);
+
+$body .= "</form>\n";
 
 if (count($errs) > 0) {
     $body .= "<h1 style='color:red'>errors</h1>\n";
