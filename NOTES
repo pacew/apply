@@ -1,3 +1,17 @@
+I've finished the thing to send rejections.  It's installed but actual sending is disabled, so you can try the flow without acutally sending messages out.
+
+Jonathan, I wish I could monitor the email flow after I launch it to the Amazon AWS mail server.  I don't have large amounts of experience in taking care of AWS systems, but I have a little, and being able to log into the amazon console might help debug things if anything goes wrong.  Can I get credentials for that part?
+
+I'm about to head off to make music tonight.  I'm available Monday night if you want a tour of how we're going to do this.
+
+Pace
+
+
+
+
+
+
+
 categories
 Band_Solo
 Band

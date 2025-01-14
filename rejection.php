@@ -64,6 +64,9 @@ if ($arg_send_email == 1) {
         ."&first_name=%s",
         rawurlencode($email),
         rawurlencode($arg_first_name));
+
+    redirect ($t);
+
     $body .= mklink ($t, $t);
     pfinish();
 }

@@ -106,8 +106,8 @@ $display_confirm[2] = "yes";
 $display_confirm[3] = "declined";
 
 $display_record = array();
-$display_record[2] = "yes";
-$display_record[3] = "no";
+$display_record[2] = "value=2";
+$display_record[3] = "value=3";
 
 $rows = array();
 foreach ($erecs as $erec) {

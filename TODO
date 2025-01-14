@@ -1,3 +1,25 @@
+On wednesday:
+
+clear out interactions, confirmations, rejected tables
+look at requests table
+actually enable general emails in notify and reject
+
+
+
+fix evids
+update json set evid = null where app_id in (6193, 6555, 10093, 10102, 10103, 10352);
+
+https://k.pacew.org:26534/index.php?app_id=6193
+https://k.pacew.org:26534/index.php?app_id=6555
+https://k.pacew.org:26534/index.php?app_id=10093
+https://k.pacew.org:26534/index.php?app_id=10102
+https://k.pacew.org:26534/index.php?app_id=10103
+https://k.pacew.org:26534/index.php?app_id=10352
+
+
+
+
+
 Dean Brown
 Intro to Balkan Dancing Sunday April 27th, Marlborough, 12:00noon to 12:50pm.
 
