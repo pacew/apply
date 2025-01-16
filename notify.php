@@ -558,7 +558,8 @@ foreach ($notify as $elt) {
     $cols[] = $item;
     $cols[] = h($elt->name_id);
     $cols[] = h(@$perf->name);
-    $cols[] = h($elt->email);
+    $t = sprintf ("mailto:%s", $elt->email);
+    $cols[] = mklink($elt->email, $t);
 
     $pcode = neffa_id_to_pcode($elt->name_id);
     $cols[] = mklink("magic", make_confirm2_link($pcode));
