@@ -82,6 +82,9 @@ if ($already_done == 0) {
         ." name='text' value='%s' />\n", rawurlencode($arg_text));
     $body .= "<input type='submit' value='send this email' />\n";
     $body .= "</form>\n";
+
+    $body .= sprintf ("<div>%s</div>\n",
+        mklink ("back to rejection list", "notify.php?show_rejected=1"));
 }
 
 $body .= "<div class='notify_email'>\n";
