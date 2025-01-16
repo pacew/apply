@@ -545,6 +545,8 @@ $body .= "</div>\n";
 
 $rows = array();
 foreach ($notify as $elt) {
+    if ($elt->scheduled == 0)
+        continue;
     $perf = @$performers[$elt->name_id];
     $cols = array();
 
