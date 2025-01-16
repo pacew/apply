@@ -426,13 +426,13 @@ if ($arg_show_rejected) {
 
             $txt = sprintf ("%s ", $app->evid);
             if (@$app->curvals['group_name'])
-                $txt .= sprintf (" G:%s ", h($app->curvals['group_name']));
+                $txt .= sprintf (" G:%s ", $app->curvals['group_name']);
 
             if (@$app->curvals['event_title'])
-                $txt .= sprintf (" T:%s", h($app->curvals['event_title']));
+                $txt .= sprintf (" T:%s", $app->curvals['event_title']);
 
             if (@$app->curvals['name'])
-                $txt .= sprintf (" N: %s", h($app->curvals['name']));
+                $txt .= sprintf (" N: %s", $app->curvals['name']);
 
             $item .= mklink ($txt, $t);
 
