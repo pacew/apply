@@ -49,6 +49,21 @@ if ($arg_upload == 1) {
 
 read_notify_info();
 
+$q = query ("select interaction_id, ts, name_id"
+    ." from interactions"
+    ." where fest_year = ?"
+    ."   and test_flag = ?"
+    ." order by interaction_id",
+    array($submit_year, $submit_test_flag));
+$interactions = array();
+while (($r = fetch ($q)) != NULL) {
+    $inter = (object)NULL;
+    $inter->interaction_id = intval($r->interaction_id);
+    $inter->ts = trim($r->ts);
+    $inter->name_id = intval($r->name_id);
+    $interactions[$inter->name_id] = $inter;
+}
+
 function make_evid_link($evid) {
     global $evid_map;
     if (($app = evid_to_app($evid)) == NULL)
@@ -565,6 +580,12 @@ foreach ($notify as $elt) {
     }
     $cols[] = h($c);
 
+    $sent = "";
+    if (($inter = @$interactions[$elt->name_id]) != NULL) {
+        $sent = db_time_to_eastern($inter->ts);
+    }
+    $cols[] = h($sent);
+
     $rows[] = $cols;
     
 }
@@ -575,7 +596,7 @@ $body .= "<input type='submit'"
 
 $body .= sprintf("<div>%d performers</div>\n", count($notify));
 $body .= mktable(array(
-    "notify_id", "name_id", "name", "email", "magic", "confirmed"),
+    "notify_id", "name_id", "name", "email", "magic", "confirmed", "sent"),
     $rows);
 
 $body .= "</form>\n";
