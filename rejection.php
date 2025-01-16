@@ -50,7 +50,7 @@ if ($arg_send_email == 1) {
     $args->body_html = $body_html;
     $args->body_text = strip_tags($body_html);
 
-    // send_email($args);
+    send_email($args);
 
     $rejected_id = get_seq();
     query ("insert into rejected (rejected_id, email, fest_year, test_flag,"

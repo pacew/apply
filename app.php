@@ -794,6 +794,7 @@ function send_email ($args) {
     $mail->SMTPAuth = true;
     $mail->SMTPSecure = 'tls';
     $mail->Port = 587;
+    // $mail->SMTPDebug = SMTP::DEBUG_SERVER;
 
     $mail->setFrom('program@neffa.org', 'NEFFA Applications');
     $mail->addAddress($args->to_email);

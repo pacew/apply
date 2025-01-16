@@ -68,7 +68,7 @@ if ($arg_send_email) {
             $really_send_email = 1;
 
         if ($really_send_email) {
-            if (! isset ($development_emails[$args->to_email])) {
+            if (0 && ! isset ($development_emails[$args->to_email])) {
                 $body .= sprintf ("<div>not allowed to send to %s</div>\n",
                     h($args->to_email));
                 pfinish();
