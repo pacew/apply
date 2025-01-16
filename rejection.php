@@ -34,6 +34,10 @@ if (($r = fetch ($q)) != NULL) {
     $body .= sprintf ("<tr><th>message</th><td>%s</td></tr>\n",
         h($r->reason));
     $body .= "</table>\n";
+
+    $body .= sprintf ("<div>%s</div>\n",
+        mklink ("back to rejection list", "notify.php?show_rejected=1"));
+
 }
 
 $subject = "Your NEFFA application(s)";
