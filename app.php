@@ -104,6 +104,9 @@ if ($deadline_status == 0) {
     $submit_test_flag = 0;
 }
 
+// re-enable 2025-01-19
+$deadline_status = 1;
+
 
 $title_html = sprintf ("NEFFA Performer Application %d", $submit_year);
 $username = "";
