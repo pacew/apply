@@ -9,7 +9,7 @@ $arg_return_json = intval(@$_REQUEST['return_json']);
 $arg_show_rejected = intval(@$_REQUEST['show_rejected']);
 
 $arg_upload_passwd = trim(@$_REQUEST['upload_passwd']);
-
+$arg_by_prefix = intval (@$_REQUEST['by_prefix']);
 
 if ($arg_upload_passwd) {
     $expect = getvar("webgrid_upload_passwd");
@@ -22,6 +22,11 @@ if ($arg_upload_passwd) {
 }
 
 pstart ();
+
+if (isset ($_REQUEST['set_show_unconfirmed'])) {
+    putsess("show_unconfirmed", intval($_REQUEST['set_show_unconfirmed']));
+    redirect ("notify.php");
+}
 
 if ($arg_reload == 1) {
     query ("update notify set scheduled = 0");
@@ -128,7 +133,7 @@ function get_email($perf) {
     return ($perf->best_email);
 }
 
-function we_need_to_notify ($name_id) {
+function we_need_to_notify ($name_id, $evid) {
     global $notify, $notify_by_name_id, $view_year;
     global $notify_by_notify_id, $notify_by_email;
     
@@ -138,6 +143,9 @@ function we_need_to_notify ($name_id) {
             query ("update notify set scheduled = 1 where notify_id = ?",
                 $elt->notify_id);
         }
+        if (! isset ($elt->evids))
+            $elt->evids = array();
+        $elt->evids[$evid] = 1;
         return (0);
     }
     
@@ -158,6 +166,11 @@ function we_need_to_notify ($name_id) {
         ." values(?, ?, ?, ?, ?)",
         array($elt->notify_id, $view_year, $elt->name_id, $elt->email,
             $elt->scheduled));
+
+    if (! isset ($elt->evids))
+        $elt->evids = array();
+    $elt->evids[$evid] = 1;
+    
     $notify[] = $elt;
     $notify_by_notify_id[$elt->notify_id] = $elt;
     $notify_by_name_id[$elt->name_id] = $elt;
@@ -189,7 +202,7 @@ function walk_grid() {
                 if ($leader_id == 0) {
                     $msg .= sprintf("<div>can't find leader_id"
                         ." for group %s</div>\n", h($group_name));
-                } else if (we_need_to_notify($leader_id) < 0) {
+                } else if (we_need_to_notify($leader_id, $evid) < 0) {
                     $msg .= sprintf ("<div>can't find email for leader %d of"
                         ." %s</div>\n", $leader_id, h($group_name));
 
@@ -198,7 +211,7 @@ function walk_grid() {
                         ."</div>\n";
                 }
             } else {
-                if (we_need_to_notify($app->neffa_id) < 0) {
+                if (we_need_to_notify($app->neffa_id, $evid) < 0) {
                     $msg .= sprintf ("<div>can't find email for individual"
                         ." %d</div>\n", $app->name_id);
                 }
@@ -538,12 +551,38 @@ if (count($errs) > 0) {
     $body .= "<h1 style='color:red'>see end of page for errors</h1>\n";
 }
 
+$show_unconfirmed = intval(getsess("show_unconfirmed"));
+
+$body .= "<div style='padding:1em'>\n";
 $body .= "<div>\n";
 $t = "notify.php?show_rejected=1";
-$body .= mklink ("show rejected", $t);
+$body .= mklink ("go to rejected", $t);
+$body .= "</div>\n";
+$body .= "<div>\n";
+$body .= mklink ("ungrouped", "notify.php");
+$body .= " | ";
+$body .= mklink ("group by prefix", "notify.php?by_prefix=1");
 $body .= "</div>\n";
 
-$rows = array();
+$body .= "<div>\n";
+if ($show_unconfirmed) {
+    $body .= "showing only unconfirmed\n";
+    $t = "notify.php?set_show_unconfirmed=0";
+} else {
+    $body .= "showing all regardless of confirmed\n";
+    $t = "notify.php?set_show_unconfirmed=1";
+}
+$body .= mklink ("[toggle]", $t);
+
+$body .= "</div>\n";
+
+
+$body .= "</div>\n";
+
+
+$groups = array ();
+
+$all_rows = array();
 foreach ($notify as $elt) {
     if ($elt->scheduled == 0)
         continue;
@@ -566,6 +605,9 @@ foreach ($notify as $elt) {
 
     $c = "";
     if (($conf = @$confirmations[$elt->name_id]) != NULL) {
+        if ($show_unconfirmed && $conf->confirm != 0)
+            continue;
+
         switch ($conf->confirm) {
         case 0:
             $c = "";
@@ -589,8 +631,17 @@ foreach ($notify as $elt) {
     }
     $cols[] = h($sent);
 
-    $rows[] = $cols;
-    
+    $all_rows[] = $cols;
+
+    if (isset ($elt->evids)) {
+        foreach ($elt->evids as $evid => $dummy) {
+            $prefix = $evid[0];
+            if (! isset ($groups[$prefix])) {
+                $groups[$prefix] = array();
+            }
+            $groups[$prefix][$elt->notify_id] = $cols;
+        }
+    }
 }
             
 $body .= "<form action='email.php' method='post' />";
@@ -598,9 +649,42 @@ $body .= "<input type='submit'"
     ." value='prepare emails to marked performers' />\n";
 
 $body .= sprintf("<div>%d performers</div>\n", count($notify));
-$body .= mktable(array(
-    "notify_id", "name_id", "name", "email", "magic", "confirmed", "sent"),
-    $rows);
+
+$header = array("notify_id", "name_id", "name", "email", 
+    "magic", "confirmed", "sent");
+
+if ($arg_by_prefix == 0) {
+    $body .= mktable($header, $all_rows);
+} else {
+    $desired_order = array ("T", "P", "R", "X", "M", "F", "J");
+
+    foreach ($desired_order as $prefix) {
+        if (isset ($groups[$prefix])) {
+            $body .= "<hr/>\n";
+            $rows = array();
+            foreach ($groups[$prefix] as $cols) {
+                $rows[] = $cols;
+            }
+            $body .= sprintf ("<h2>prefix %s</h2>\n", $prefix);
+            $body .= mktable($header, $rows);
+            $groups[$prefix] = array ();
+        }
+    }
+
+    $rows = array ();
+    foreach ($groups as $key => $items) {
+        foreach ($items as $cols) {
+            if (count ($cols) > 0)
+                $rows[] = $cols;
+        }
+    }
+
+    if (count($rows) > 0) {
+        $body .= "<hr/>\n";
+        $body .= "<h2>stray prefix</h2>\n";
+        $body .= mktable($header, $rows);
+    }
+}
 
 $body .= "</form>\n";
 
