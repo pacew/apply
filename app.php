@@ -1449,6 +1449,13 @@ function prepare_notify_email($to_email, $perf, $pcode) {
     global $submit_year;
     $vals['fest_year'] = $submit_year;
 
+    $nag = trim (getvar("nag"));
+    if ($nag) {
+        $vals['nag'] = sprintf ("<p>%s</p><hr/>\n", $nag);
+    } else {
+        $vals['nag'] = "";
+    }
+
     $em = (object)NULL;
     $em->to_email = $to_email;
     $em->subject = sprintf ("You have been scheduled for NEFFA %d!",

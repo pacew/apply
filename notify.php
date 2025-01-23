@@ -563,7 +563,7 @@ $body .= mklink ("ungrouped", "notify.php");
 $body .= " | ";
 $body .= mklink ("group by prefix", "notify.php?by_prefix=1");
 $body .= "</div>\n";
-
+$body .= sprintf ("<div>%s</div>\n", mklink ("set nag text", "nag.php"));
 $body .= "<div>\n";
 if ($show_unconfirmed) {
     $body .= "showing only unconfirmed\n";
@@ -645,6 +645,7 @@ foreach ($notify as $elt) {
 }
             
 $body .= "<form action='email.php' method='post' />";
+
 $body .= "<input type='submit'"
     ." value='prepare emails to marked performers' />\n";
 
