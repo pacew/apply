@@ -98,6 +98,7 @@ function get_email($perf) {
     if ($perf_email)
         $emails[strtolower($perf_email)] = 1;
     $first_app_email = "";
+    $first_app_phone = "";
     foreach ($perf->apps as $app) {
         $app_email = trim($app->curvals['email']);
         if ($app_email) {
@@ -105,12 +106,17 @@ function get_email($perf) {
                 $first_app_email = $app_email;
             $emails[strtolower($app_email)] = 1;
         }
+        $app_phone = trim(@$app->curvals['phone']);
+        if ($app_phone && $first_app_phone == "")
+            $first_app_phone = $app_phone;
     }
 
     if ($first_app_email)
         $perf->best_email = $first_app_email;
     else 
         $perf->best_email = $perf_email;
+
+    $perf->possible_phone = $first_app_phone;
 
     if (count($emails) > 1) {
         $msg = "<div>\n";
@@ -620,6 +626,10 @@ foreach ($notify as $elt) {
     $t = sprintf ("mailto:%s", $elt->email);
     $cols[] = mklink($elt->email, $t);
 
+    get_email($perf);
+    $cols[] = h(@$perf->possible_phone);
+
+
     $pcode = neffa_id_to_pcode($elt->name_id);
     $cols[] = mklink("magic", make_confirm2_link($pcode));
 
@@ -679,8 +689,12 @@ $body .= "<input type='submit'"
 
 $body .= sprintf("<div>%d performers</div>\n", count($notify));
 
-$header = array("notify_id", "name_id", "name", "email", 
+$header = array("notify_id", "name_id", "name", "email", "possible phone",
     "magic", "confirmed", "sent");
+
+$body .= "<div>the phone numbers are taken from an application associated"
+    ." with the performer, but might be for a different person if"
+    ." the applicant has been changed or if a group is involved</div>\n";
 
 if ($arg_by_prefix == 0) {
     $body .= mktable($header, $all_rows);
