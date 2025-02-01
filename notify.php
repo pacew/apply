@@ -23,10 +23,14 @@ if ($arg_upload_passwd) {
 
 pstart ();
 
-if (isset ($_REQUEST['set_show_unconfirmed'])) {
-    putsess("show_unconfirmed", intval($_REQUEST['set_show_unconfirmed']));
-    redirect ("notify.php");
+if (isset ($_REQUEST['set_confirmed_filter'])) {
+    putsess("confirmed_filter", intval($_REQUEST['set_confirmed_filter']));
+    redirect("notify.php");
 }
+
+$confirmed_filter = intval(getsess("confirmed_filter"));
+
+
 
 if ($arg_reload == 1) {
     query ("update notify set scheduled = 0");
@@ -551,8 +555,6 @@ if (count($errs) > 0) {
     $body .= "<h1 style='color:red'>see end of page for errors</h1>\n";
 }
 
-$show_unconfirmed = intval(getsess("show_unconfirmed"));
-
 $body .= "<div style='padding:1em'>\n";
 $body .= "<div>\n";
 $t = "notify.php?show_rejected=1";
@@ -564,15 +566,33 @@ $body .= " | ";
 $body .= mklink ("group by prefix", "notify.php?by_prefix=1");
 $body .= "</div>\n";
 $body .= sprintf ("<div>%s</div>\n", mklink ("set nag text", "nag.php"));
+
 $body .= "<div>\n";
-if ($show_unconfirmed) {
-    $body .= "showing only unconfirmed\n";
-    $t = "notify.php?set_show_unconfirmed=0";
-} else {
-    $body .= "showing all regardless of confirmed\n";
-    $t = "notify.php?set_show_unconfirmed=1";
-}
-$body .= mklink ("[toggle]", $t);
+$body .= "confirmed filter: ";
+
+$t = "notify.php?set_confirmed_filter=0";
+if ($confirmed_filter == 0)
+    $t = "";
+$body .= mklink ("all", $t);
+$body .= " | ";
+$t = "notify.php?set_confirmed_filter=-1";
+if ($confirmed_filter == -1)
+    $t = "";
+$body .= mklink ("unconfirmed", $t);
+$body .= " | ";
+$t = "notify.php?set_confirmed_filter=2";
+if ($confirmed_filter == 2)
+    $t = "";
+$body .= mklink ("confirmed", $t);
+$body .= " | ";
+$t = "notify.php?set_confirmed_filter=3";
+if ($confirmed_filter == 3)
+    $t = "";
+$body .= mklink ("declined", $t);
+
+$body .= "</div>\n";
+
+$body .= "<div>\n";
 
 $body .= "</div>\n";
 
@@ -603,25 +623,33 @@ foreach ($notify as $elt) {
     $pcode = neffa_id_to_pcode($elt->name_id);
     $cols[] = mklink("magic", make_confirm2_link($pcode));
 
-    $c = "";
+    $ccode = 0;
     if (($conf = @$confirmations[$elt->name_id]) != NULL) {
-        if ($show_unconfirmed && $conf->confirm != 0)
-            continue;
+        $ccode = intval($conf->confirm);
+    }
 
-        switch ($conf->confirm) {
-        case 0:
-            $c = "";
-            break;
-        case 2:
-            $c = "confirmed";
-            break;
-        case 3:
-            $c = "declined";
-            break;
-        default:
-            $c = sprintf ("code %d", $conf->confirm);
-            break;
-        }
+    $c = "";
+    if ($confirmed_filter == -1) {
+        if ($ccode != 0)
+            continue;
+    } else if ($confirmed_filter > 0) {
+        if ($ccode != $confirmed_filter)
+            continue;
+    }
+
+    switch ($ccode) {
+    case 0:
+        $c = "";
+        break;
+    case 2:
+        $c = "confirmed";
+        break;
+    case 3:
+        $c = "declined";
+        break;
+    default:
+        $c = sprintf ("code %d", $conf->confirm);
+        break;
     }
     $cols[] = h($c);
 
