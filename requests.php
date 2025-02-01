@@ -62,19 +62,27 @@ while (($r = fetch ($q)) != NULL) {
     $req->val = trim($r->val);
     $req->dismissed = intval($r->dismissed);
 
+    /* may be ok to ignore request if bad app_id */
     $req->app = @$apps_by_app_id[$req->app_id];
 
     $requests[] = $req;
 }
 
-$rows = array();
+$groups = array();
+
 foreach ($requests as $req) {
     if ($requests_filter == "open" && $req->dismissed)
         continue;
 
     $cols = [];
     $t = sprintf ("index.php?app_id=%d", $req->app_id);
-    $cols[] = mklink ($req->app_id, $t);
+
+    if ($req->app) {
+        $txt = $req->app->evid;
+    } else {
+        $txt = sprintf ("%d", $req->app_id);
+    }
+    $cols[] = mklink ($txt, $t);
     $cols[] = db_time_to_eastern($req->ts);
     $cols[] = $req->dismissed;
 
@@ -83,14 +91,48 @@ foreach ($requests as $req) {
         if (($title = $req->app->curvals['event_title']) == "")
             $title = $req->app->curvals['group_name'];
         $cols[] = h($title);
-    }
 
+        $full_notes = trim(@$req->app->curvals['C_notes']);
+        $notes = preg_replace("/\n.*/", "", $full_notes);
+        if (strcmp ($full_notes, $notes) != 0) {
+            $notes .= "...";
+        }
+        $cols[] = h($notes);
+    } else {
+        $cols[] = "";
+        $cols[] = "";
+        $cols[] = "";
+    }
+    
     $cols[] = h(substr($req->val, 0, 50)) . "...";
 
-    $rows[] = $cols;
+    if (($prefix = @$req->app->evid[0]) == "")
+        $prefix = "X";
+    
+    if (! isset ($groups[$prefix])) {
+        $groups[$prefix] = array ();
+    }
+    $groups[$prefix][] = $cols;
 }
 
-$body .= mktable(array("app", "timestamp", "dismissed", 
-        "name", "event", "contents"), $rows);
+$desired_order = array ("T", "P", "R", "X", "M", "F", "J");
+
+foreach ($desired_order as $prefix) {
+    if (isset ($groups[$prefix])) {
+        $body .= mktable(array("evid", "timestamp", "dismissed", 
+                "name", "event", "C_notes", "contents"), 
+            $groups[$prefix]);
+
+        $groups[$prefix] = array ();
+    }
+}
+
+foreach ($groups as $group) {
+    $body .= mktable(array("evid", "timestamp", "dismissed", 
+            "name", "event", "C_notes", "contents"), 
+        $group);
+}
+
+
 
 pfinish();
