@@ -68,7 +68,7 @@ while (($r = fetch ($q)) != NULL) {
     $requests[] = $req;
 }
 
-$groups = array();
+$elts = array();
 
 foreach ($requests as $req) {
     if ($requests_filter == "open" && $req->dismissed)
@@ -109,30 +109,44 @@ foreach ($requests as $req) {
     if (($prefix = @$req->app->evid[0]) == "")
         $prefix = "X";
     
-    if (! isset ($groups[$prefix])) {
-        $groups[$prefix] = array ();
+    $elts[] = array($req, $cols);
+}
+
+function cmp_requests ($elt_a, $elt_b) {
+    $a = $elt_a[0];
+    $b = $elt_b[0];
+
+    if (($ret = strcmp (@$a->app->evid, @$b->app->evid)) != 0)
+        return ($ret);
+    
+    if (($ret = strcmp ($a->ts, $b->ts)) != 0)
+        return ($ret);
+
+    return (0);
+}
+
+usort ($elts, 'cmp_requests');
+
+$rows = array();
+$last_group = "";
+foreach ($elts as $elt) {
+    $group = @$elt[0]->app->evid[0];
+    if ($last_group && $last_group != $group) {
+        $s = "float:left; width:100%; background:#aaa; height:5px";
+        $sep = "<span style='$s'>&nbsp;</span>";
+        $cols = array();
+        for ($i = 0; $i < 7; $i++)
+            $cols[] = $sep;
+        $rows[] = $cols;
     }
-    $groups[$prefix][] = $cols;
-}
-
-$desired_order = array ("T", "P", "R", "X", "M", "F", "J");
-
-foreach ($desired_order as $prefix) {
-    if (isset ($groups[$prefix])) {
-        $body .= mktable(array("evid", "timestamp", "dismissed", 
-                "name", "event", "C_notes", "contents"), 
-            $groups[$prefix]);
-
-        $groups[$prefix] = array ();
-    }
-}
-
-foreach ($groups as $group) {
-    $body .= mktable(array("evid", "timestamp", "dismissed", 
-            "name", "event", "C_notes", "contents"), 
-        $group);
+    $last_group = $group;
+    
+    $rows[] = $elt[1];
 }
 
 
+$body .= mktable(array("evid", "timestamp", "dismissed", 
+        "name", "event", "C_notes", "contents"), 
+    $rows);
 
 pfinish();
