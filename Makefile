@@ -1,6 +1,5 @@
 all:
 
 get-data:
-	scp apply.neffa.org:aux/backups/latest.gz /tmp/
-	gunzip < /tmp/latest.gz | mysql apply-pace
-	scp apply.neffa.org:aux/webgrid.tsv /var/apply-pace/
+	scp -C 'apply.neffa.org:aux/{backups/latest.gz,webgrid.tsv,neffa_idx.json}' /var/apply-pace/.
+	gunzip < /var/apply-pace/latest.gz | mysql apply-pace

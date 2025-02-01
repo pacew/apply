@@ -1,3 +1,28 @@
+add button to reassign evid of an M999 app
+
+
+
+I made the following updates today:
+
+On the notify page:
+
+There's a pair of options at the top "ungrouped" and "group by prefix".  Note that a performer who has events on the grid in different categories will be listed in each category.
+
+There's a toggle that can filter to just unconfirmed performers.
+
+There a link to set the nag text for future emails.  The nag text is saved in the database, so it will stick around after logout/login.
+
+On the requests summary page:
+
+It now shows the performer name and event title.  It also omits empty requests (like P_notes = "").
+
+I don't have any other changes planned right now.  Let me know if you need something else.
+
+The only open question I know about is the partial cancellation.  I'll think about that now and let you know.  Remind me if there's anything else outstanding.
+
+
+
+
 nag paragraph
 filter for unconfirmed
 all requests page
