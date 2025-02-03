@@ -156,14 +156,32 @@ foreach ($apps as $app) {
         $cols = array ();
         $t = sprintf ("index.php?app_id=%d", $app->app_id);
         $cols[] = mklink ($app->evid, $t);
+
+        $txt = "";
+        $sep = "";
+        if (@$app->curvals['group_name']) {
+            $txt .= sprintf ("%sG: %s", $sep, h($app->curvals['group_name']));
+            $sep = "<br/>";
+        }
+        if (@$app->curvals['event_title']) {
+            $txt .= sprintf ("%sT: %s", $sep, h($app->curvals['event_title']));
+            $sep = "<br/>";
+        }
+        if (@$app->curvals['name']) {
+            $txt .= sprintf ("%sN: %s", $sep, h($app->curvals['name']));
+            $sep = "<br/>";
+        }
+        $cols[] = $txt;
+
         $cols[] = h($app->curvals['P_notes']);
 
         $rows[] = $cols;
     }
 }
        
-$body .= "<h1>all performer notes</h1>\n";
-$body .= mktable(array("evid", "P_notes"), $rows);
+$body .= "<h1>all performer notes"
+    ." (will add dismissed flags next year...)</h1>\n";
+$body .= mktable(array("evid", "group/title/name", "P_notes"), $rows);
 
 
 pfinish();
