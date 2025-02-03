@@ -149,4 +149,21 @@ $body .= mktable(array("evid", "timestamp", "dismissed",
         "name", "event", "C_notes", "contents"), 
     $rows);
 
+
+$rows = array ();
+foreach ($apps as $app) {
+    if (trim (@$app->curvals['P_notes'])) {
+        $cols = array ();
+        $t = sprintf ("index.php?app_id=%d", $app->app_id);
+        $cols[] = mklink ($app->evid, $t);
+        $cols[] = h($app->curvals['P_notes']);
+
+        $rows[] = $cols;
+    }
+}
+       
+$body .= "<h1>all performer notes</h1>\n";
+$body .= mktable(array("evid", "P_notes"), $rows);
+
+
 pfinish();

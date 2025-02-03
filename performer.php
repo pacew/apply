@@ -55,7 +55,7 @@ if ($arg_save) {
     $oldval = @$app->curvals['P_notes'];
     $newval = @$_REQUEST['P_notes'];
     if ($oldval != $newval) {
-        $req['P_notes'] = ""; 
+        $req['P_notes'] = "perfomer note updated"; 
 
         /* based on save.php */
         
