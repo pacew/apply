@@ -663,6 +663,11 @@ foreach ($notify as $elt) {
     }
     $cols[] = h($c);
 
+    $rec = "";
+    if ($conf->record > 0)
+        $rec = sprintf ("%d", $conf->record);
+    $cols[] = h($rec);
+
     $sent = "";
     if (($inter = @$interactions[$elt->name_id]) != NULL) {
         $sent = db_time_to_eastern($inter->ts);
@@ -690,7 +695,7 @@ $body .= "<input type='submit'"
 $body .= sprintf("<div>%d performers</div>\n", count($notify));
 
 $header = array("notify_id", "name_id", "name", "email", "possible phone",
-    "magic", "confirmed", "sent");
+    "magic", "confirmed", "record", "sent");
 
 $body .= "<div>the phone numbers are taken from an application associated"
     ." with the performer, but might be for a different person if"
