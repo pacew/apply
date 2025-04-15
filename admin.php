@@ -205,6 +205,8 @@ $body .= mklink ("rejections", "notify.php?show_rejected=1");
 $body .= " | ";
 $body .= mklink ("requests", "requests.php");
 $body .= " | ";
+$body .= mklink ("recording-info", "record.php");
+$body .= " | ";
 $body .= mklink ("technical_doc", "admin.php?doc=1");
 $body .= "</div>\n";
 
