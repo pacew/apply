@@ -152,8 +152,13 @@ function pstart () {
 	}
 
     global $filters, $cur_filter;
-    $filters = array ("all", "unconfirmed", 
-        "show-suppressed", "pending-requests");
+    $filters = array (
+        "all", 
+        "unconfirmed", 
+        "show-suppressed", 
+        "pending-requests",
+        "family-oriented"
+    );
     $cur_filter = getsess ("filter");
     if (array_search ($cur_filter, $filters) === FALSE)
         $cur_filter = "all";

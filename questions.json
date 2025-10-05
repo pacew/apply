@@ -236,7 +236,7 @@
   { "id": "room_size",
     "show_if": [ "app_category", "Other" ],
     "textarea": 1,
-    "q": "What size room work for this event?",
+    "q": "What size room works for this event?",
     "desc_pre": "We have rooms with capacities ranging from 80 to 1000.<br/>  Some can accommodate dancing, and one is a lecture hall with tiered seating.<br/>  Please describe what kind of rooms would work well for your event." 
   },
 

@@ -195,8 +195,10 @@ $msg .= sprintf ("<a href='mailto:%s'>%s</a>", $info_email, $info_email);
 $msg .= "</p>\n";
 
 $msg .= "<p>If you did not recently submit a NEFFA application,"
-      ." someone else must have entered your email address"
-      ." into our form.  You can ignore this message.</p>";
+    ." maybe someone put your email address in the wrong slot of their application."
+    ." You can write us at ";
+$msg .= sprintf ("<a href='mailto:%s'>%s</a>", $info_email, $info_email);
+$msg .= " and we'll clear it up.</p>";
 
 $html = $msg;
 $plain = strip_tags ($html, "<p>");

@@ -374,6 +374,10 @@ foreach ($apps as $app) {
 
     $show = 1;
     
+    if ($cur_filter == "family-oriented" && $app->curvals['level'] != "F") {
+        $show = 0;
+    }
+
     if ($cur_filter == "unconfirmed" && $app->confirmed != "") {
         $show = 0;
     }

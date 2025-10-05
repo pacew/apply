@@ -520,9 +520,9 @@ if ($arg_app_id == 0) {
 }
 
 $body .= "<div id='submit_button_warning' style='display:none'>\n";
-$body .= "<p><strong>ERROR:</strong> You application can't be"
+$body .= "<p><strong>ERROR:</strong> Your application can't be"
     ." submitted yet because a required"
-    ." field is missing, or a field has in invalid value.  Please scroll"
+    ." field is missing, or a field has an invalid value.  Please scroll"
     ." up to review the questions and look for a red"
     ." <span class='required_text'>required</span>"
     ." label.  After you've tried a new value for that field, click"
