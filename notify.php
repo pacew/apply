@@ -664,7 +664,7 @@ foreach ($notify as $elt) {
     $cols[] = h($c);
 
     $rec = "";
-    if ($conf->record > 0)
+    if (@$conf->record > 0)
         $rec = sprintf ("%d", $conf->record);
     $cols[] = h($rec);
 
