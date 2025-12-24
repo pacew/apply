@@ -1472,6 +1472,87 @@ function prepare_notify_email($to_email, $perf, $pcode) {
 }
 
 
+function populate_group_to_members() {
+    global $group_to_members;
+
+    if ($group_to_members)
+        return;
+    
+    global $pdb_params;
+    $pdb = get_db ("neffa_pdb", $pdb_params);
+    $q = query_db ($pdb,
+        "select groupNumber, memberNumber"
+        ." from annotated_members");
+
+
+    while (($r = fetch($q)) != NULL) {
+        $group_number = intval($r->groupNumber);
+        $member_number = intval($r->memberNumber);
+        
+        if (! isset ($group_to_members[$group_number]))
+            $group_to_members[$group_number] = [];
+        
+        $group_to_members[$group_number][$member_number] = 1;
+    }
+}
+
+// might return empty string
+function get_email($perf) {
+    if (@$perf->best_email)
+        return ($perf->best_email);
+
+    $perf_email = trim(@$pref->apps[0]->curvals['email']);
+
+    $emails = [];
+    if ($perf_email)
+        $emails[strtolower($perf_email)] = 1;
+    $first_app_email = "";
+    $first_app_phone = "";
+    foreach ($perf->apps as $app) {
+        $app_email = trim($app->curvals['email']);
+        if ($app_email) {
+            if ($first_app_email == "")
+                $first_app_email = $app_email;
+            $emails[strtolower($app_email)] = 1;
+        }
+        $app_phone = trim(@$app->curvals['phone']);
+        if ($app_phone && $first_app_phone == "")
+            $first_app_phone = $app_phone;
+    }
+
+    if ($first_app_email)
+        $perf->best_email = $first_app_email;
+    else 
+        $perf->best_email = $perf_email;
+
+    $perf->possible_phone = $first_app_phone;
+
+    if (count($emails) > 1) {
+        $msg = "<div>\n";
+        $msg .= sprintf ("<div>performer %d has multiple emails</div>\n",
+            $perf->number);
+        if ($perf_email) {
+            $msg .= sprintf ("<div>from performer db: %s</div>\n",
+                h($perf_email));
+        } else {
+            $msg .= sprintf("<div>not set in performer db</div>\n");
+        }
+        foreach ($perf->apps as $app) {
+            $msg .= sprintf ("<div>%s in %s</div>\n",
+                h($app->curvals['email']),
+                h($app->curvals['event_title']));
+        }
+
+        $msg .= sprintf ("<div>used: '%s'</div>\n", h($perf->best_email));
+        $msg .= "</div>\n";
+        global $info;
+        $info[] = $msg;
+    }
+
+    return ($perf->best_email);
+}
+
+
 if (! get_option ("flat") && ! @$cli_mode) {
     require (router());
     /* NOTREACHED */

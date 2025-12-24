@@ -97,3 +97,8 @@ create table interactions (
   name_id int,
   event text
 );
+
+create table group_nag (
+       email text,
+       ts timestamp
+);
