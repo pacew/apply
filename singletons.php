@@ -82,7 +82,6 @@ if ($arg_leader_id) {
     $em->body_text = preg_replace ("/&nbsp;/", " ", strip_tags($em->body_html));
 
     if ($arg_send) {
-        $em->to_email = "pace.willisson@gmail.com";
         $em->no_history = 1;
         send_email ($em);
 
@@ -120,8 +119,6 @@ if ($arg_leader_id) {
         $arg_leader_id);
     $body .= "<input type='hidden', name='send' value='1' />\n";
     $body .= "<input type='submit' value='Send this email' />\n";
-    $body .= "[but we're in testing mode and this won't really send,"
-        ." it will just update the history]";
     $body .= "</form>\n";
     $body .= "</div>\n";
 
