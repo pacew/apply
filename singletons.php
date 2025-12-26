@@ -78,14 +78,18 @@ if ($arg_leader_id) {
     $em = (object)NULL;
     $em->to_email = $to_email;
     $em->subject = "IMPORTANT: Please update your NEFFA group membership ASAP!";
-    $em->html = $html;
-    $em->plain = strip_tags($em->html);
-    $em->plain = preg_replace ("/&nbsp;/", " ", $em->plain);
+    $em->body_html = $html;
+    $em->body_text = preg_replace ("/&nbsp;/", " ", strip_tags($em->body_html));
 
     if ($arg_send) {
+        $em->to_email = "pace.willisson@gmail.com";
+        $em->no_history = 1;
+        send_email ($em);
+
         query ("insert into group_nag(email, ts)"
             ." values (?, current_timestamp)",
             $to_email);
+
         $t = sprintf ("singletons.php?leader_id=%d", $arg_leader_id);
         redirect ($t);
     }
@@ -125,11 +129,7 @@ if ($arg_leader_id) {
     $body .= sprintf ("<p>To: %s<br/>\n", h($em->to_email));
     $body .= sprintf ("Subject: %s</p>\n", h($em->subject));
 
-    $body .= $em->html;
-    $body .= "<hr/>\n";
-    $body .= "<pre>\n";
-    $body .= h($em->plain);
-    $body .= "</pre>\n";
+    $body .= $em->body_html;
     $body .= "</div>\n";
 
     pfinish();

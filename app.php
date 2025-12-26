@@ -813,14 +813,15 @@ function send_email ($args) {
 
     $mail->AltBody = preg_replace("/\\n/", "\r\n", $args->body_text);
 
-    query ("insert into email_history (email, sent)"
-           ." values (?, current_timestamp)",
-           $args->to_email);
-    do_commits ();
+    if (intval(@$args->no_history) == 0) {
+        query ("insert into email_history (email, sent)"
+            ." values (?, current_timestamp)",
+            $args->to_email);
+        do_commits ();
+    }
 
     if(!$mail->send()) {
-        fatal ("Application submitted, but error sending confirmation email: "
-               . $mail->ErrorInfo);
+        fatal ("error sending email: " . $mail->ErrorInfo);
     }
 
     return (TRUE);
