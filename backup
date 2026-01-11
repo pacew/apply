@@ -1,0 +1,10 @@
+#! /bin/bash
+
+echo "dumping"
+mysqldump --login-path=apply \
+	  --single-transaction \
+	  --add-drop-table \
+	  --result-file current.sql \
+	  apply_neffa_org
+echo "done"
+

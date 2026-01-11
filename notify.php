@@ -170,7 +170,7 @@ function walk_grid() {
             } else {
                 if (we_need_to_notify($app->neffa_id, $evid) < 0) {
                     $msg .= sprintf ("<div>can't find email for individual"
-                        ." %d</div>\n", $app->name_id);
+                        ." %d</div>\n", $app->neffa_id);
                 }
             }
 

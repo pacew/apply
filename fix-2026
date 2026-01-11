@@ -1,0 +1,9 @@
+#! /bin/bash
+
+./applysql <<!
+delete from notify where notify_id = 11861;
+delete from notify where notify_id = 12289;
+delete from notify where notify_id = 12306;
+delete from notify where notify_id = 12392;
+delete from notify where notify_id = 12506;
+!
