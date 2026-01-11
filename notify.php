@@ -129,6 +129,8 @@ function we_need_to_notify ($name_id, $evid) {
     $notify[] = $elt;
     $notify_by_notify_id[$elt->notify_id] = $elt;
     $notify_by_name_id[$elt->name_id] = $elt;
+
+    
     $notify_by_email[strtolower($elt->email)] = $elt;
 
     return (0);
@@ -198,11 +200,19 @@ if ($arg_notify_id != 0) {
     $body .= sprintf ("<div>%s</div>\n", mklink("[back]", "notify.php"));
 
     if ($elt->scheduled == 0) {
-        $body .= "<div class='attention'>"
+        $cmd = sprintf ("./applysql"
+            ." -e \"delete from notify where notify_id=%d\"",
+            $arg_notify_id);
+        $body .= sprintf ("<div class='attention'>"
             ." this performer is in the notify table"
             ." but not webgrid ... maybe a weird"
             ." error due to a late webgrid update"
-            ."</div>\n";
+            ." <br/>"
+            ." pace should consider: "
+            ." <input type='text' size='80'"
+            ."  readonly='readonly' value='%s' />\n"
+            ."</div>\n",
+            h($cmd));
     }
 
     if (($perf = @$performers[$elt->name_id]) == NULL) {

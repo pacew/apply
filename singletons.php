@@ -31,6 +31,7 @@ foreach ($webgrid as $webgrid_elt) {
             $badgroup->leader_id = $leader_id;
             $badgroup->group_id = $group_id;
             $badgroup->group_name = $group_name;
+            $badgroup->evid = $evid;
 
             if (! isset($problems[$leader_id]))
                 $problems[$leader_id] = [];
@@ -155,29 +156,40 @@ foreach ($problems as $leader_id => $badgroups) {
 
 
     $count++;
-    $cols = [];
-    $cols[] = $count;
-    $t = sprintf ("singletons.php?leader_id=%d", $leader_id);
-    $cols[] = mklink($perf_name, $t);
 
-    if ($to_email == "") {
-        $text = "can't find email";
-    } else {
-        $text = h(@$group_nag[$to_email]);
-    }
-    $cols[] = $text;
-
-    $groups = "";
-    $sep = "";
     foreach ($badgroups as $badgroup) {
-        $groups .= $sep . h($badgroup->group_name);
-        $sep = " | ";
+        $app = @$apps_by_evid[$badgroup->evid];
+
+        $cols = [];
+        $cols[] = $count;
+        $t = sprintf ("singletons.php?leader_id=%d", $leader_id);
+        $cols[] = mklink($perf_name, $t);
+
+        if ($to_email == "") {
+            $text = "can't find email";
+        } else {
+            $text = h(@$group_nag[$to_email]);
+        }
+        $cols[] = $text;
+
+        if ($app) {
+            $t = sprintf ("index.php?app_id=%d", $app->app_id);
+            $cols[] = mklink ($app->curvals['event_title'], $t);
+
+            $cols[] = h($app->curvals['C_notes']);
+        } else {
+            $cols[] = "";
+            $cols[] = "";
+        }
+
+        $cols[] = $badgroup->group_name;
+
+        $rows[] = $cols;
     }
-    $cols[] = $groups;
-    $rows[] = $cols;
 }
 
-$body .= mktable(array("", "leader", "nagged", "groups"), $rows);
+$body .= mktable(array("", "leader", "nagged", "event", "notes", "group"), 
+    $rows);
 
 pfinish();
 
