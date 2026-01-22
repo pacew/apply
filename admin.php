@@ -210,6 +210,8 @@ $body .= " | ";
 $body .= mklink ("technical_doc", "admin.php?doc=1");
 $body .= " | ";
 $body .= mklink ("singletons", "singletons.php");
+$body .= " | ";
+$body .= mklink ("sound", "sound.php");
 $body .= "</div>\n";
 
 $body .= "<div>\n";
