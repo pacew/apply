@@ -1,3 +1,27 @@
+There is a search string in COMMITTEE_NOTES that was manually entered to say NEW IN PDB when the performer was added this year to the performer database. The sneaky part is it’s not the only text in that field, and we don’t need to display it as its own field, just find it and make a temp field that NEW=Y for that performer.
+ 
+What we are looking for now is a new_performers report that finds that string and report accepted performers and their events only. One row per event grouped by performer, with the fields:
+ 
+new=Y | Performer name | email | group name | event title | Eventid (the F_1100_Sterling field)
+ 
+I think we can keep it simple and download the CSV to extract the emails, which is what we need for sending a new performers report packet. This is very similar to the sound report except it is for a subset of those performers/events. 
+ 
+I’ll run a draft past Bob Solosko who is our New Performer Support Liaison, a new role we created this year. I will forward his draft one-pager to you as a new performer, to see if it says what you need to know! Bob would appreciate a review. 
+ 
+ 
+ 
+FYI, you may be interested in my recent blog post and the position statement on AI transparency linked in the footer. Something to read on the plane perhaps. 
+ 
+https://crosscurrentsmusic.blogspot.com/2026/03/reflections-on-week-of-experimentation.html
+
+____________________
+Lynn Noel
+Crosscurrents Music
+lynnoel@lynnoel.com
+crosscurrents.lynnoel.com
+
+
+
 add button to reassign evid of an M999 app
 
 

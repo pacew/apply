@@ -212,6 +212,8 @@ $body .= " | ";
 $body .= mklink ("singletons", "singletons.php");
 $body .= " | ";
 $body .= mklink ("sound", "sound.php");
+$body .= " | ";
+$body .= mklink ("new performers", "new.php");
 $body .= "</div>\n";
 
 $body .= "<div>\n";
