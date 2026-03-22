@@ -45,6 +45,7 @@ foreach ($webgrid as $webgrid_elt) {
 
         $out = (object)NULL;
         $out->eventid = $webgrid_elt->eventid;
+        $out->app = $app;
         $out->name = $app->curvals['name'];
         $out->email = $app->curvals['email'];
         $out->title = $webgrid_elt->title;
@@ -99,7 +100,8 @@ if ($arg_download || $arg_view_csv) {
 $rows = [];
 foreach ($out_rows as $out) {
         $cols = [];
-        $cols[] = h($out->eventid);
+        $t = sprintf ("index.php?app_id=%d", $out->app->app_id);
+        $cols[] = mklink ($out->eventid, $t);
         $cols[] = h($out->name);
         $cols[] = h($out->email);
         $cols[] = h($out->title);
