@@ -63,6 +63,7 @@ foreach ($evts as $evt) {
     $rows[] = $cols;
 }
 
-$body .= mktable (array(), $rows);
+$body .= "<p>record response 3 means 'No'</p>";
+$body .= mktable (array("eventid", "record response", "title", "evids"), $rows);
 
 pfinish();
