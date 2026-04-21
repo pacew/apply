@@ -214,6 +214,8 @@ $body .= " | ";
 $body .= mklink ("sound", "sound.php");
 $body .= " | ";
 $body .= mklink ("new performers", "new.php");
+$body .= " | ";
+$body .= mklink ("sound permissions", "sound_permissions.php");
 $body .= "</div>\n";
 
 $body .= "<div>\n";
