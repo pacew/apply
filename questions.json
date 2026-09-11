@@ -44,11 +44,11 @@
     "q": "What category best describes this particular application?",
     "choices": [ 
       { "val": "Band_Solo", 
-	"desc": "Dance band proposing a session requiring no additional caller or teacher",
+	"desc": "Band proposing a participatory dance session requiring no additional caller or teacher",
 	"deadline": 2 
       },
       { "val": "Band", 
-	"desc": "Dance band proposing to play for a session led by a caller or teacher (who is not a member of the band)",
+	"desc": "Band proposing to play for a participatory dance session led by a caller or teacher (who is not a member of the band)",
         "deadline": 2
       },
       { "val": "Caller", 
@@ -60,7 +60,7 @@
         "deadline": 3
       },
       { "val": "Performance", 
-	"desc": "Dance performance (indoors)",
+	"desc": "Dance performance",
         "deadline": 2 
       },
       { "val": "Other", 
@@ -74,7 +74,7 @@
   { "id": "fms_category",
     "show_if": [ "app_category", "Other" ],
     "q": "Which Folk Music and Song committee would be best to evaluate your application?",
-    "desc": "Applicants may wish to present more than one type of event, but for this application, you have to choose JUST one. If you would like to be considered for more than one type of event, PLEASE fill out another application!",
+    "desc": "<p>Note: if you select Participatory Jam or Song and you feature teaching, make sure to select <strong>TEACHING FEATURED</strong> in <strong>Event Type</strong>, below.</p><p>Applicants may wish to present more than one type of event, but for this application, you have to choose JUST one. If you would like to be considered for more than one type of event, PLEASE fill out another application!</p>",
     "choices": [
       { "val": "jam", "desc": "Participatory Jam (primarily instrumental)" },
       { "val": "song", "desc": "Participatory Song (primarily vocal, with or without accompaniment)" },
