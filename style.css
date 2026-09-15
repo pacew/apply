@@ -285,6 +285,15 @@ p {
     margin-top: 0.5em;
 }
 
+.word_count {
+    font-size: 90%;
+    font-weight: bold;
+}
+
+.word_count_full {
+    color: red;
+}
+
 .direct_download {
     background: #ccc;
     padding: 1em;

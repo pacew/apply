@@ -365,8 +365,16 @@ foreach ($questions as $question) {
         }
 
     } else if (@$question['textarea']) {
-        $body .= sprintf ("<textarea cols='70' rows='5' id='%s' name='%s'>",
-                          $input_id, $input_id);
+        $limit = intval (@$question['word_limit']);
+        if ($limit > 0) {
+            $body .= sprintf ("<div class='word_count' id='wc_%s'>"
+                              ."word count 0/%d</div>\n",
+                              h($question_id), $limit);
+        }
+        $body .= sprintf ("<textarea cols='70' rows='5' id='%s' name='%s'%s>",
+                          $input_id, $input_id,
+                          $limit > 0
+                          ? sprintf (" data-word-limit='%d'", $limit) : "");
         $body .= h(@$application->curvals[$question_id]);
         $body .= "</textarea>\n";
 

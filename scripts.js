@@ -319,6 +319,82 @@ function do_sched_item (ev) {
   $(".sched_not_day").prop ("checked", false);
 }
 
+/* counts whitespace separated words, and remembers where the last
+   allowed one ends, so we can chop without disturbing the line breaks
+   in the part we keep */
+function count_words (val, limit) {
+  let re = /\S+/g;
+  let m;
+  let count = 0;
+  let limit_end = val.length;
+
+  while ((m = re.exec (val)) != null) {
+    count++;
+    if (count == limit)
+      limit_end = m.index + m[0].length;
+  }
+
+  return ({ count: count, limit_end: limit_end });
+}
+
+function show_word_count (elt) {
+  let limit = parseInt ($(elt).data ("word-limit"));
+  let status = $("#wc_" + $(elt).attr("name").replace (/^i_/, ""));
+  let count = count_words ($(elt).val(), limit).count;
+
+  $(status).text ("word count " + count + "/" + limit);
+  if (count >= limit)
+    $(status).addClass ("word_count_full");
+  else
+    $(status).removeClass ("word_count_full");
+}
+
+function do_word_limit (ev) {
+  let elt = ev.target;
+  let limit = parseInt ($(elt).data ("word-limit"));
+  let val = $(elt).val();
+  let info = count_words (val, limit);
+
+  if (info.count > limit) {
+    let prev = $(elt).data ("word-limit-prev");
+    let added = val.length - (prev == undefined ? val.length : prev.length);
+    let inputType = ev.originalEvent ? ev.originalEvent.inputType : "";
+    /* if the browser tells us how the text arrived, believe it; only
+       guess from the length when it doesn't (older browsers) */
+    let pasted = inputType
+        ? /paste|drop/i.test (inputType)
+        : added > 1;
+
+    if (pasted || prev == undefined) {
+      /* pasted too much: chop it off at the limit */
+      elt.value = val.slice (0, info.limit_end);
+      elt.selectionStart = elt.selectionEnd = elt.value.length;
+    } else {
+      /* typed a character that would start word limit+1: refuse it
+         and put the cursor back where it was */
+      let caret = elt.selectionStart - added;
+      elt.value = prev;
+      if (caret >= 0 && caret <= prev.length)
+        elt.selectionStart = elt.selectionEnd = caret;
+    }
+  }
+
+  $(elt).data ("word-limit-prev", $(elt).val());
+  show_word_count (elt);
+}
+
+function setup_word_limits () {
+  $("textarea[data-word-limit]").each (function (idx, elt) {
+    /* don't chop an answer that was already stored over the limit,
+       just show it in red; editing it can only shrink it */
+    $(elt).data ("word-limit-prev", $(elt).val());
+    show_word_count (elt);
+  });
+
+  $("textarea[data-word-limit]").off ("input.neffa");
+  $("textarea[data-word-limit]").on ("input.neffa", do_word_limit);
+}
+
 function do_session_option (ev) {
   var elt = ev.target;
   var val = elt.checked ? 1 : 0;
@@ -341,7 +417,8 @@ $(function () {
     update_hides ();
 
   setup_lookups ();
-  
+  setup_word_limits ();
+
   $("#show_all").change (do_session_option);
   $("#all_optional").change (do_session_option);
 
