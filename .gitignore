@@ -3,3 +3,6 @@ TMP.*
 *~
 .*
 cfg.json
+!server/.htaccess
+__pycache__/
+*.pyc
