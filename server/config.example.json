@@ -2,5 +2,13 @@
   "year": 2027,
   "years": [2027, 2026],
   "apply_env": "production",
-  "schedule_env": "production"
+  "schedule_env": "production",
+  "actor_name": "Program Chair",
+  "role": "program_chair",
+  "allowed_origins": [
+    "http://localhost:18411",
+    "http://127.0.0.1:18411",
+    "http://localhost:18412",
+    "http://127.0.0.1:18412"
+  ]
 }

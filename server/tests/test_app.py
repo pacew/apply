@@ -54,36 +54,48 @@ class AppTests(unittest.TestCase):
 
     # ------------------------------------------------------------------ helpers
 
-    def call(self, method="GET", path="/", query="", form=None, cookie="", script="/program.py"):
-        body = urlencode(form).encode("utf-8") if form is not None else b""
-        environ = {
+    def call(
+        self,
+        method="GET",
+        path="/",
+        query="",
+        form=None,
+        cookie="",
+        script="/program.py",
+        json_body=None,
+        origin="",
+        token="",
+        authorization="",
+    ):
+        if json_body is not None:
+            body = json.dumps(json_body).encode("utf-8")
+            content_type = "application/json"
+        elif form is not None:
+            body = urlencode(form).encode("utf-8")
+            content_type = "application/x-www-form-urlencoded"
+        else:
+            body = b""
+            content_type = ""
+        values = {
             "REQUEST_METHOD": method,
             "PATH_INFO": path,
             "SCRIPT_NAME": script,
             "QUERY_STRING": query,
             "CONTENT_LENGTH": str(len(body)),
-            "CONTENT_TYPE": "application/x-www-form-urlencoded" if form is not None else "",
+            "CONTENT_TYPE": content_type,
             "HTTP_COOKIE": cookie,
+            "HTTP_ORIGIN": origin,
+            "HTTP_X_NEFFA_TOKEN": token,
+            "HTTP_AUTHORIZATION": authorization,
             "HTTPS": "on",
             "wsgi.url_scheme": "https",
             "SERVER_NAME": "apply.neffa.org",
             "SERVER_PORT": "443",
             "wsgi.input": io.BytesIO(body),
         }
+        environ = dict(values)
         setup_testing_defaults(environ)
-        environ.update(
-            {
-                "REQUEST_METHOD": method,
-                "PATH_INFO": path,
-                "SCRIPT_NAME": script,
-                "QUERY_STRING": query,
-                "CONTENT_LENGTH": str(len(body)),
-                "HTTP_COOKIE": cookie,
-                "HTTPS": "on",
-                "wsgi.url_scheme": "https",
-                "wsgi.input": io.BytesIO(body),
-            }
-        )
+        environ.update(values)
         captured = {}
 
         def start_response(status, headers):
@@ -249,6 +261,101 @@ class AppTests(unittest.TestCase):
         self.assertEqual(status, "302 Found")
         cookies = [value for key, value in headers if key.lower() == "set-cookie"]
         self.assertTrue(any("neffa_program_env=" in value for value in cookies))
+
+    # ------------------------------------------------------------------ json api
+
+    def api_login(self):
+        status, _, body = self.call(
+            "POST", "/api/v1/login", json_body={"password": self.PASSWORD}
+        )
+        self.assertEqual(status, "200 OK")
+        return json.loads(body.decode("utf-8"))
+
+    def test_api_login_returns_token_and_user(self):
+        data = self.api_login()
+        self.assertTrue(data["token"])
+        self.assertEqual(data["user"]["name"], "Program Chair")
+        self.assertEqual(data["user"]["role"], "program_chair")
+        self.assertEqual(data["year"], 2027)
+        self.assertGreater(data["expiresIn"], 0)
+
+    def test_api_login_wrong_password(self):
+        status, _, body = self.call(
+            "POST", "/api/v1/login", json_body={"password": "wrong"}
+        )
+        self.assertEqual(status, "401 Unauthorized")
+        self.assertEqual(json.loads(body.decode("utf-8"))["error"], "invalid_password")
+
+    def test_api_me_with_x_neffa_token(self):
+        token = self.api_login()["token"]
+        status, _, body = self.call("GET", "/api/v1/me", token=token)
+        self.assertEqual(status, "200 OK")
+        me = json.loads(body.decode("utf-8"))
+        self.assertEqual(me["name"], "Program Chair")
+        self.assertEqual(me["role"], "program_chair")
+        self.assertEqual(me["year"], 2027)
+        self.assertEqual(me["apply"], "production")
+        self.assertEqual(me["schedule"], "production")
+
+    def test_api_me_with_authorization_bearer(self):
+        token = self.api_login()["token"]
+        status, _, _ = self.call(
+            "GET", "/api/v1/me", authorization="Bearer " + token
+        )
+        self.assertEqual(status, "200 OK")
+
+    def test_api_me_without_token(self):
+        status, _, body = self.call("GET", "/api/v1/me")
+        self.assertEqual(status, "401 Unauthorized")
+        self.assertEqual(json.loads(body.decode("utf-8"))["error"], "not_signed_in")
+
+    def test_api_me_query_selects_workspace(self):
+        token = self.api_login()["token"]
+        status, _, body = self.call(
+            "GET",
+            "/api/v1/me",
+            query="year=2026&apply=test&schedule=test",
+            token=token,
+        )
+        self.assertEqual(status, "200 OK")
+        me = json.loads(body.decode("utf-8"))
+        self.assertEqual(me["year"], 2026)
+        self.assertEqual(me["apply"], "test")
+        self.assertEqual(me["schedule"], "test")
+
+    def test_cors_preflight_for_dev_origin(self):
+        status, headers, _ = self.call(
+            "OPTIONS", "/api/v1/me", origin="http://localhost:18411"
+        )
+        self.assertEqual(status, "204 No Content")
+        self.assertEqual(
+            self.header(headers, "Access-Control-Allow-Origin"),
+            "http://localhost:18411",
+        )
+        self.assertIn(
+            "X-Neffa-Token", self.header(headers, "Access-Control-Allow-Headers")
+        )
+
+    def test_cors_disallowed_origin_gets_no_allow_header(self):
+        status, headers, _ = self.call(
+            "OPTIONS", "/api/v1/me", origin="http://evil.example"
+        )
+        self.assertEqual(status, "204 No Content")
+        self.assertEqual(self.header(headers, "Access-Control-Allow-Origin"), "")
+
+    def test_cors_on_authenticated_me(self):
+        token = self.api_login()["token"]
+        status, headers, _ = self.call(
+            "GET",
+            "/api/v1/me",
+            token=token,
+            origin="http://localhost:18411",
+        )
+        self.assertEqual(status, "200 OK")
+        self.assertEqual(
+            self.header(headers, "Access-Control-Allow-Origin"),
+            "http://localhost:18411",
+        )
 
 
 if __name__ == "__main__":

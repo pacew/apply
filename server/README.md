@@ -19,12 +19,16 @@ https://apply.neffa.org/program.py/
 `server/`.  Apache must never serve `server/`; the `.htaccess` there returns
 403.  Do not remove it.
 
+The JSON contract for Lynn's AI is in [`API.md`](API.md).
+
 ## What it serves
 
 | URL | What |
 | --- | --- |
 | `/program.py/` | the built prototype page, with no embedded data |
 | `/program.py/login` | the committee password form |
+| `/program.py/api/v1/login` | password → token for the development frontend |
+| `/program.py/api/v1/me` | superuser name/role and selected workspace |
 | `/program.py/data/config.json` | halls, days and tracks for the page |
 | `/program.py/data/Applications-2027.csv` | live applications, contact details removed |
 | `/program.py/data/Performers.csv` | live performer list |
@@ -49,8 +53,9 @@ header of the newest data file.
   account whose password is in `~/aux/neffadb_passwd`.
 - **Settings:** `~/program/web/config.json`, copied from the prototype's
   `src/config.json`.
-- **Grids:** files in `~/program/schedule/`.  They are manual exports from the
-  Google Sheet for now.
+- **Grids:** the 2026 history is bundled at `server/data/Webgrid-2026.tsv`
+  (copied from `~/aux/webgrid.tsv` on apply.neffa.org).  The 2027 production
+  grid, if needed, is a manual export in `~/program/schedule/`.
 
 Nothing is cached for an hour.  Each data request does one cheap version query:
 
@@ -155,6 +160,52 @@ python3 -m http.server 8000
 # open http://localhost:8000/
 ```
 
+## Development on ai.local
+
+The development copy uses the local `apply-pace` database and the old PHP dev
+server on `localhost:18411`.  Keep the runtime state outside the repository:
+
+```bash
+mkdir -p ~/program-dev/{cache,schedule,web}
+cp dist/deploy/index.html ~/program-dev/web/index.html   # from the prototype repo
+cp src/config.json       ~/program-dev/web/config.json
+
+cd ~/apply
+PROGRAM_HOME=$HOME/program-dev PROGRAM_PORT=18412 python3 server/app.py
+```
+
+A development `~/program-dev/config.json` differs from production in these
+keys:
+
+```json
+{
+  "mysql_login_path": "",
+  "mysql_db": "apply-pace",
+  "mysql_home": "/home/pace",
+  "download_url": "http://localhost:18411/download.php",
+  "allowed_origins": [
+    "http://localhost:18411", "http://127.0.0.1:18411",
+    "http://localhost:18412", "http://127.0.0.1:18412"
+  ]
+}
+```
+
+The empty login path makes the `mysql` client use the local account's default
+socket.  The local PDB is not present; point `pdb_password_file` at a local copy
+or use an SSH tunnel to `neffaprog.neffa.dreamhosters.com` and set `pdb_host`
+and `pdb_port` accordingly.  Do not copy production data into the repository.
+
+The dev frontend signs in with:
+
+```bash
+curl -sS -X POST -H 'Content-Type: application/json' \
+  -d '{"password":"..."}' http://127.0.0.1:18412/api/v1/login
+```
+
+and sends the returned token as `X-Neffa-Token` (or `Authorization: Bearer`).
+CORS is allowed only for the configured origins.  `GET /api/v1/me` should return
+`{"name":"Program Chair","role":"program_chair",...}`.
+
 ## Tests
 
 No database, no network:
@@ -182,10 +233,12 @@ python3 -m unittest discover -s server/tests -v
 ## Current limitations
 
 - Read-only: the page still saves the grid in the browser's localStorage.
-  There is no server event store, shared version, override or workflow state
-  yet.
+  There is no server workspace, event store, shared version, override or
+  workflow state yet.
+- One superuser login (`/api/v1/login`) and `/api/v1/me` are in place;
+  per-user accounts and track permissions are later.
 - Test applications are not implemented.
-- The 2027 grid file is a manual export.
+- The 2027 grid file is a manual export; 2026 history is bundled.
 - The page does not poll `/version` yet; reload to see new applications.
 - There is no admin screen; settings and passwords are files.
 
@@ -194,8 +247,10 @@ python3 -m unittest discover -s server/tests -v
 The server is structured so the write path can be added without rewriting the
 data layer:
 
-1. An event table and per-event saves with a version check.
+1. A workspace save (`GET/PUT /api/v1/workspace`) with a version, a per-entity
+   journal, and comments.  This is what lets the committee stop using the
+   browser as the store.
 2. `GET /changes?since=N` polling, so chairs see each other's edits.
 3. Server-side versions and snapshots.
 4. A Python rules module, with the JavaScript rules as the test oracle.
-5. `webgrid.tsv` export from the database, with the existing golden-file test.
+5. `webgrid.tsv` export from the stored workspace, with the golden-file test.

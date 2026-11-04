@@ -152,15 +152,10 @@ def run_mysql(sql: str, cfg: dict) -> list[list[str]]:
     from integers and fixed table names; no request text reaches it.
     """
     mysql = "/usr/bin/mysql" if Path("/usr/bin/mysql").exists() else "mysql"
-    command = [
-        mysql,
-        "--login-path=%s" % cfg["mysql_login_path"],
-        "-N",
-        "-B",
-        cfg["mysql_db"],
-        "-e",
-        sql,
-    ]
+    command = [mysql]
+    if cfg.get("mysql_login_path"):
+        command.append("--login-path=%s" % cfg["mysql_login_path"])
+    command += ["-N", "-B", cfg["mysql_db"], "-e", sql]
     env = os.environ.copy()
     env["HOME"] = cfg["mysql_home"]
     try:
@@ -290,6 +285,7 @@ def _pdb_connection(cfg: dict):
     try:
         return MySQLdb.connect(
             host=cfg["pdb_host"],
+            port=int(cfg.get("pdb_port") or 3306),
             user=cfg["pdb_user"],
             passwd=password,
             db=cfg["pdb_db"],
@@ -522,15 +518,22 @@ def get_schedule(cfg: dict, name: str, schedule_env: str) -> DataFile | None:
     if name == "Webgrid-2027.tsv" and schedule_env == "test":
         actual = "Webgrid-2027-test.tsv"
     path = Path(cfg["schedule_dir"]) / actual
+    if not path.is_file() and actual == "Webgrid-2026.tsv":
+        # The 2026 grid is immutable history and is versioned with the server,
+        # so it is available even when the runtime schedule folder is empty.
+        path = Path(__file__).resolve().parent / "data" / "Webgrid-2026.tsv"
     try:
         body = path.read_bytes()
         mtime = path.stat().st_mtime
     except OSError:
         return None
+    # Last year's grid is history; its file date is not "Data as of" for the
+    # current applications.  0 means the response has no Last-Modified header.
+    last_modified = 0.0 if actual == "Webgrid-2026.tsv" else mtime
     return DataFile(
         body=body,
         content_type="text/tab-separated-values; charset=utf-8",
-        last_modified=mtime,
+        last_modified=last_modified,
         version="%s:%d" % (actual, int(mtime)),
         source="file",
     )

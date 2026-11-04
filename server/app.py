@@ -94,6 +94,36 @@ def _redirect(start_response, location, cookies=None):
     )
 
 
+def _json_response(start_response, status, payload, headers=None):
+    return _response(
+        start_response,
+        status,
+        json.dumps(payload, indent=2),
+        "application/json; charset=utf-8",
+        [("Cache-Control", "no-store")] + list(headers or []),
+    )
+
+
+def _cors_headers(environ, cfg):
+    """Allow the development frontend origin, and only that origin.
+
+    Production calls are same-origin and send no Origin header, so they get no
+    CORS headers.  The development frontend at localhost:18411 sends Origin and
+    an X-Neffa-Token or Authorization header.
+    """
+    origin = environ.get("HTTP_ORIGIN", "")
+    if not origin:
+        return []
+    allowed = (cfg or {}).get("allowed_origins") or []
+    if origin not in allowed:
+        return [("Vary", "Origin")]
+    return [
+        ("Access-Control-Allow-Origin", origin),
+        ("Vary", "Origin"),
+        ("Access-Control-Allow-Credentials", "true"),
+    ]
+
+
 # --------------------------------------------------------------- request helpers
 
 def _query(environ) -> dict:
@@ -108,6 +138,29 @@ def _read_form(environ) -> dict:
     if length <= 0 or length > MAX_FORM_BYTES:
         return {}
     raw = environ["wsgi.input"].read(length)
+    try:
+        values = parse_qs(raw.decode("utf-8", "replace"), keep_blank_values=True)
+    except (UnicodeDecodeError, ValueError):
+        return {}
+    return {key: item[0] for key, item in values.items() if item}
+
+
+def _json_body(environ) -> dict:
+    """Read a JSON object body, or form fields as a fallback."""
+    try:
+        length = int(environ.get("CONTENT_LENGTH") or 0)
+    except (TypeError, ValueError):
+        length = 0
+    if length <= 0 or length > MAX_FORM_BYTES:
+        return {}
+    raw = environ["wsgi.input"].read(length)
+    content_type = environ.get("CONTENT_TYPE", "").lower()
+    if "application/json" in content_type:
+        try:
+            data = json.loads(raw.decode("utf-8", "replace"))
+        except (UnicodeDecodeError, ValueError):
+            return {}
+        return data if isinstance(data, dict) else {}
     try:
         values = parse_qs(raw.decode("utf-8", "replace"), keep_blank_values=True)
     except (UnicodeDecodeError, ValueError):
@@ -151,10 +204,30 @@ def _load_config_or_error(start_response):
 
 # -------------------------------------------------------------------------- auth
 
-def _is_authenticated(environ, cfg) -> bool:
+def _request_token(environ, cfg) -> str:
+    """The session token from the cookie, or from a header for the dev frontend.
+
+    Apache may strip Authorization from CGI, so X-Neffa-Token is the reliable
+    header.  Both are accepted; the cookie wins when both are present.
+    """
     cookies = auth.parse_cookies(environ.get("HTTP_COOKIE"))
     token = cookies.get(cfg["cookie_name"], "")
-    return auth.verify_session_token(cfg["cookie_secret"], token) is not None
+    if token:
+        return token
+    header = environ.get("HTTP_X_NEFFA_TOKEN", "") or environ.get("HTTP_AUTHORIZATION", "")
+    header = (header or "").strip()
+    if header.lower().startswith("bearer "):
+        header = header[7:].strip()
+    return header
+
+
+def _current_user(environ, cfg) -> dict | None:
+    token = _request_token(environ, cfg)
+    return auth.verify_session_token(cfg["cookie_secret"], token)
+
+
+def _is_authenticated(environ, cfg) -> bool:
+    return _current_user(environ, cfg) is not None
 
 
 def _env_state(environ, cfg) -> dict:
@@ -270,7 +343,12 @@ def _handle_login(environ, start_response, cfg, method: str, query: dict):
             [("Set-Cookie", _env_cookie(environ, cfg, state))],
         )
 
-    token = auth.new_session_token(cfg["cookie_secret"], cfg["session_hours"])
+    token = auth.new_session_token(
+        cfg["cookie_secret"],
+        cfg["session_hours"],
+        name=cfg["actor_name"],
+        role=cfg["role"],
+    )
     session_cookie = auth.make_cookie(
         cfg["cookie_name"],
         token,
@@ -295,6 +373,84 @@ def _handle_logout(environ, start_response, cfg):
         secure=auth.is_https(environ),
     )
     return _redirect(start_response, _base_path(environ) + "login", [cookie])
+
+
+# ---------------------------------------------------------------------- json api
+
+def _handle_api_login(environ, start_response, cfg, method: str):
+    """Sign in from the development frontend and return a bearer token.
+
+    The same signed token also goes into the cookie, so the production page
+    keeps working exactly as before.  The JSON token is for the cross-origin
+    development frontend, where a SameSite cookie is awkward.
+    """
+    if method != "POST":
+        return _json_response(
+            start_response, "405 Method Not Allowed", {"error": "method_not_allowed"}
+        )
+    body = _json_body(environ)
+    password = str(body.get("password", ""))
+    if not auth.verify_password(password, cfg["password_hash"]):
+        live_data.log("api login failed")
+        return _json_response(
+            start_response, "401 Unauthorized", {"error": "invalid_password"}
+        )
+
+    state = _env_state(environ, cfg)
+    state, _ = _apply_env_values(state, body, cfg)
+    token = auth.new_session_token(
+        cfg["cookie_secret"],
+        cfg["session_hours"],
+        name=cfg["actor_name"],
+        role=cfg["role"],
+    )
+    cookies = [
+        auth.make_cookie(
+            cfg["cookie_name"],
+            token,
+            path=_cookie_path(environ),
+            max_age=int(cfg["session_hours"] * 3600),
+            secure=auth.is_https(environ),
+        ),
+        _env_cookie(environ, cfg, state),
+    ]
+    live_data.log("api login ok")
+    return _json_response(
+        start_response,
+        "200 OK",
+        {
+            "token": token,
+            "user": {"name": cfg["actor_name"], "role": cfg["role"]},
+            "expiresIn": int(cfg["session_hours"] * 3600),
+            "year": state["year"],
+            "apply": state["apply"],
+            "schedule": state["schedule"],
+        },
+        [("Set-Cookie", cookie) for cookie in cookies],
+    )
+
+
+def _handle_api_me(environ, start_response, cfg):
+    """Who am I, and which workspace is this browser using?"""
+    user = _current_user(environ, cfg)
+    if not user:
+        return _json_response(
+            start_response, "401 Unauthorized", {"error": "not_signed_in"}
+        )
+    state = _env_state(environ, cfg)
+    state, _ = _apply_env_values(state, _query(environ), cfg)
+    return _json_response(
+        start_response,
+        "200 OK",
+        {
+            "name": user.get("u") or cfg["actor_name"],
+            "role": user.get("r") or cfg["role"],
+            "year": state["year"],
+            "apply": state["apply"],
+            "schedule": state["schedule"],
+            "expiresAt": user.get("exp"),
+        },
+    )
 
 
 # ------------------------------------------------------------------------- pages
@@ -458,6 +614,12 @@ def _dispatch(environ, start_response):
     if path == "/login":
         return _handle_login(environ, start_response, cfg, method, _query(environ))
 
+    if path == "/api/v1/login":
+        return _handle_api_login(environ, start_response, cfg, method)
+
+    if path == "/api/v1/me":
+        return _handle_api_me(environ, start_response, cfg)
+
     if not authenticated:
         if path.startswith("/data/") or path == "/version":
             return _text(start_response, "401 Unauthorized", "Sign in first.")
@@ -501,12 +663,42 @@ def application(environ, start_response):
     started = time.time()
     method = environ.get("REQUEST_METHOD", "GET").upper()
     path = environ.get("PATH_INFO", "") or "/"
+
     try:
-        return _dispatch(environ, start_response)
+        cors_cfg = settings.load_config()
+    except settings.ConfigError:
+        cors_cfg = None
+    cors = _cors_headers(environ, cors_cfg) if cors_cfg else []
+
+    def with_cors(status, headers):
+        start_response(status, list(headers) + cors)
+
+    try:
+        # CORS preflight for the development frontend.  It needs no login and
+        # no config beyond the origin allowlist.
+        if method == "OPTIONS":
+            return _response(
+                with_cors,
+                "204 No Content",
+                b"",
+                "text/plain; charset=utf-8",
+                [
+                    (
+                        "Access-Control-Allow-Methods",
+                        "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+                    ),
+                    (
+                        "Access-Control-Allow-Headers",
+                        "Content-Type, Authorization, X-Neffa-Token",
+                    ),
+                    ("Access-Control-Max-Age", "600"),
+                ],
+            )
+        return _dispatch(environ, with_cors)
     except settings.ConfigError as exc:
         live_data.log("config error: %s" % exc)
         return _text(
-            start_response,
+            with_cors,
             "500 Internal Server Error",
             "The program system is not configured yet. " + str(exc),
         )
@@ -516,7 +708,7 @@ def application(environ, start_response):
             + traceback.format_exc().replace("\n", " | ")[:900]
         )
         return _text(
-            start_response,
+            with_cors,
             "500 Internal Server Error",
             "The program system had an unexpected problem.",
         )

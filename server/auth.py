@@ -81,12 +81,25 @@ def verify_password(password: str, stored: str) -> bool:
         return False
 
 
-def new_session_token(secret: str, hours: int, now: float | None = None) -> str:
-    """A signed cookie value that expires after ``hours``."""
+def new_session_token(
+    secret: str,
+    hours: int,
+    now: float | None = None,
+    name: str = "",
+    role: str = "",
+) -> str:
+    """A signed cookie value that expires after ``hours``.
+
+    The name and role are carried in the signed payload so /api/v1/me and the
+    program-chairs UI know who is acting.  There is one superuser for now.
+    """
     issued = int(now if now is not None else time.time())
     expires = issued + int(hours * 3600)
     payload = _b64_encode(
-        json.dumps({"v": SESSION_VERSION, "exp": expires}, separators=(",", ":")).encode()
+        json.dumps(
+            {"v": SESSION_VERSION, "exp": expires, "u": name or "", "r": role or ""},
+            separators=(",", ":"),
+        ).encode()
     )
     signature = _b64_encode(
         hmac.new(secret.encode("utf-8"), payload.encode("ascii"), hashlib.sha256).digest()

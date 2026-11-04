@@ -36,6 +36,18 @@ class SessionTests(unittest.TestCase):
         self.assertIsNotNone(payload)
         self.assertEqual(payload["exp"], 1000 + 3600)
 
+    def test_round_trip_carries_name_and_role(self):
+        token = auth.new_session_token(
+            self.SECRET,
+            1,
+            now=1000,
+            name="Program Chair",
+            role="program_chair",
+        )
+        payload = auth.verify_session_token(self.SECRET, token, now=1001)
+        self.assertEqual(payload["u"], "Program Chair")
+        self.assertEqual(payload["r"], "program_chair")
+
     def test_expired(self):
         token = auth.new_session_token(self.SECRET, 1, now=1000)
         self.assertIsNone(auth.verify_session_token(self.SECRET, token, now=5000))

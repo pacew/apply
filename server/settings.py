@@ -30,11 +30,20 @@ DEFAULTS = {
     "pdb_host": "neffaprog.neffa.dreamhosters.com",
     "pdb_user": "pace_willisson",
     "pdb_db": "neffa_pdb",
+    "pdb_port": 3306,
     "pdb_password_file": "~/aux/neffadb_passwd",
     "download_url": "https://apply.neffa.org/download.php",
     "session_hours": 12,
     "cookie_name": "neffa_program",
     "env_cookie_name": "neffa_program_env",
+    "actor_name": "Program Chair",
+    "role": "program_chair",
+    "allowed_origins": [
+        "http://localhost:18411",
+        "http://127.0.0.1:18411",
+        "http://localhost:18412",
+        "http://127.0.0.1:18412",
+    ],
     "page_path": "web/index.html",
     "web_config": "web/config.json",
     "schedule_dir": "schedule",
@@ -113,6 +122,19 @@ def load_config(path: str | os.PathLike | None = None) -> dict:
     if cfg.get("mysql_home") is None:
         cfg["mysql_home"] = str(account_home())
 
+    # One superuser for now.  The name and role ride in the signed session
+    # cookie and are what /api/v1/me returns.  Per-user accounts come later.
+    cfg["actor_name"] = str(cfg.get("actor_name") or "Program Chair")
+    cfg["role"] = str(cfg.get("role") or "program_chair")
+
+    # Browser origins allowed to call the API with a bearer token from the
+    # development frontend.  Production uses the same-origin cookie and needs
+    # no entry here.
+    origins = cfg.get("allowed_origins")
+    if not isinstance(origins, list):
+        origins = DEFAULTS["allowed_origins"]
+    cfg["allowed_origins"] = [str(o).strip() for o in origins if str(o).strip()]
+
     for key in ("password_hash", "cookie_secret"):
         if not cfg.get(key):
             raise ConfigError(
@@ -123,8 +145,13 @@ def load_config(path: str | os.PathLike | None = None) -> dict:
         cfg["year"] = int(cfg["year"])
         cfg["years"] = [int(y) for y in cfg["years"]]
         cfg["session_hours"] = int(cfg["session_hours"])
+        cfg["pdb_port"] = int(cfg.get("pdb_port") or 3306)
     except (TypeError, ValueError) as exc:
-        raise ConfigError("config.json has a non-numeric year or hours") from exc
+        raise ConfigError("config.json has a non-numeric year, hours or port") from exc
+
+    # An empty login path means "use the local mysql client defaults", which is
+    # how the development copy on ai.local reaches its apply-pace database.
+    cfg["mysql_login_path"] = str(cfg.get("mysql_login_path") or "")
 
     if cfg["year"] not in cfg["years"]:
         cfg["years"].append(cfg["year"])

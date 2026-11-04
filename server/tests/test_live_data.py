@@ -96,8 +96,17 @@ class ScheduleTests(unittest.TestCase):
     def test_missing_schedule_is_none(self):
         with tempfile.TemporaryDirectory() as folder:
             self.assertIsNone(
-                live_data.get_schedule({"schedule_dir": folder}, "Webgrid-2026.tsv", "production")
+                live_data.get_schedule({"schedule_dir": folder}, "Webgrid-2027.tsv", "production")
             )
+
+    def test_bundled_2026_grid_is_found_and_has_no_data_date(self):
+        with tempfile.TemporaryDirectory() as folder:
+            found = live_data.get_schedule(
+                {"schedule_dir": folder}, "Webgrid-2026.tsv", "production"
+            )
+        self.assertIsNotNone(found)
+        self.assertEqual(found.last_modified, 0)
+        self.assertIn(b"\t", found.body)
 
 
 if __name__ == "__main__":
