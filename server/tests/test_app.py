@@ -24,6 +24,7 @@ import live_data
 
 class AppTests(unittest.TestCase):
     PASSWORD = "correct horse battery"
+    PASSWORD_2 = "second horse battery"
 
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
@@ -38,6 +39,7 @@ class AppTests(unittest.TestCase):
             json.dump(
                 {
                     "password_hash": auth.hash_password(self.PASSWORD),
+                    "password_hash_2": auth.hash_password(self.PASSWORD_2),
                     "cookie_secret": "s" * 64,
                     "year": 2027,
                     "years": [2027, 2026],
@@ -254,13 +256,18 @@ class AppTests(unittest.TestCase):
         self.assertEqual(self.header(headers, "Location"), "/program.py/")
         self.assertIn("neffa_program_env=", self.header(headers, "Set-Cookie"))
 
-    def test_login_honours_env_form_fields(self):
+    def test_login_does_not_set_workspace(self):
         status, headers, _ = self.login(
             form_extra={"year": "2026", "apply": "test", "schedule": "test"}
         )
         self.assertEqual(status, "302 Found")
         cookies = [value for key, value in headers if key.lower() == "set-cookie"]
-        self.assertTrue(any("neffa_program_env=" in value for value in cookies))
+        self.assertFalse(any("neffa_program_env=" in value for value in cookies))
+
+    def test_login_accepts_the_second_password(self):
+        status, headers, cookie = self.login(password=self.PASSWORD_2)
+        self.assertEqual(status, "302 Found")
+        self.assertTrue(cookie)
 
     # ------------------------------------------------------------------ json api
 
@@ -276,7 +283,6 @@ class AppTests(unittest.TestCase):
         self.assertTrue(data["token"])
         self.assertEqual(data["user"]["name"], "Program Chair")
         self.assertEqual(data["user"]["role"], "program_chair")
-        self.assertEqual(data["year"], 2027)
         self.assertGreater(data["expiresIn"], 0)
 
     def test_api_login_wrong_password(self):
@@ -356,6 +362,87 @@ class AppTests(unittest.TestCase):
             self.header(headers, "Access-Control-Allow-Origin"),
             "http://localhost:18411",
         )
+
+    def test_api_login_accepts_the_second_password(self):
+        status, _, body = self.call(
+            "POST", "/api/v1/login", json_body={"password": self.PASSWORD_2}
+        )
+        self.assertEqual(status, "200 OK")
+        self.assertTrue(json.loads(body.decode("utf-8"))["token"])
+
+    def test_api_login_does_not_set_workspace(self):
+        status, headers, _ = self.call(
+            "POST", "/api/v1/login", json_body={"password": self.PASSWORD}
+        )
+        self.assertEqual(status, "200 OK")
+        cookies = [value for key, value in headers if key.lower() == "set-cookie"]
+        self.assertFalse(any("neffa_program_env=" in value for value in cookies))
+
+    # ------------------------------------------------------------------ settings
+
+    def test_settings_requires_login(self):
+        status, headers, _ = self.call("GET", "/settings")
+        self.assertEqual(status, "302 Found")
+        self.assertIn("/program.py/login", self.header(headers, "Location"))
+        self.assertIn("next=/program.py/settings", self.header(headers, "Location"))
+
+    def test_settings_page(self):
+        status, _, body = self.call("GET", "/settings", cookie=self.cookie)
+        self.assertEqual(status, "200 OK")
+        text = body.decode("utf-8")
+        self.assertIn("Program settings", text)
+        self.assertIn('name="year"', text)
+        self.assertIn('name="apply"', text)
+        self.assertIn('name="schedule"', text)
+
+    def test_settings_saves_workspace(self):
+        status, headers, _ = self.call(
+            "POST",
+            "/settings",
+            form={"year": "2026", "apply": "test", "schedule": "test"},
+            cookie=self.cookie,
+        )
+        self.assertEqual(status, "302 Found")
+        self.assertEqual(
+            self.header(headers, "Location"), "/program.py/settings?saved=1"
+        )
+        env_cookie = self.cookie_value(headers, "neffa_program_env")
+        self.assertTrue(env_cookie)
+        status, _, body = self.call(
+            "GET",
+            "/api/v1/settings",
+            cookie=self.cookie + "; " + env_cookie,
+        )
+        self.assertEqual(status, "200 OK")
+        data = json.loads(body.decode("utf-8"))
+        self.assertEqual(data["year"], 2026)
+        self.assertEqual(data["apply"], "test")
+        self.assertEqual(data["schedule"], "test")
+
+    def test_api_settings_get(self):
+        status, _, body = self.call("GET", "/api/v1/settings", cookie=self.cookie)
+        self.assertEqual(status, "200 OK")
+        data = json.loads(body.decode("utf-8"))
+        self.assertEqual(data["year"], 2027)
+        self.assertIn(2026, data["years"])
+
+    def test_api_settings_put(self):
+        status, headers, body = self.call(
+            "PUT",
+            "/api/v1/settings",
+            json_body={"year": 2026, "apply": "test", "schedule": "test"},
+            cookie=self.cookie,
+        )
+        self.assertEqual(status, "200 OK")
+        data = json.loads(body.decode("utf-8"))
+        self.assertEqual(data["year"], 2026)
+        self.assertEqual(data["apply"], "test")
+        self.assertTrue(self.cookie_value(headers, "neffa_program_env"))
+
+    def test_api_settings_requires_login(self):
+        status, _, body = self.call("GET", "/api/v1/settings")
+        self.assertEqual(status, "401 Unauthorized")
+        self.assertEqual(json.loads(body.decode("utf-8"))["error"], "not_signed_in")
 
     # ----------------------------------------------------------------- api page
 

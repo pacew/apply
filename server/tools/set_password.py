@@ -1,15 +1,17 @@
 #!/usr/bin/python3
-"""Set the shared committee password for the NEFFA program system.
+"""Set one of the two committee passwords for the NEFFA program system.
 
 Run this on the server, as the account that owns the files:
 
-    python3 ~/apply.neffa.org/server/tools/set_password.py
+    python3 ~/apply.neffa.org/server/tools/set_password.py --slot 1
+    python3 ~/apply.neffa.org/server/tools/set_password.py --slot 2
 
-It writes the scrypt hash and a new cookie-signing secret to
-~/program/config.json (mode 0600), keeping any other settings already there.
-Changing the password also signs out everyone who is already logged in.
+It writes that slot's scrypt hash to ~/program/config.json, keeping the other
+settings and the other slot.  The cookie-signing secret is preserved, so
+existing sessions survive; add --rotate-sessions to sign everyone out.
+Production uses the default mode 600; the Apache dev runtime needs --mode 644.
 
-Nothing is printed except the path and a short confirmation.
+Nothing secret is printed.
 """
 
 from __future__ import annotations
@@ -62,6 +64,17 @@ def main() -> int:
         default="600",
         help="octal mode for config.json (default 600; use 644 for the Apache dev runtime)",
     )
+    parser.add_argument(
+        "--slot",
+        choices=("1", "2"),
+        default="1",
+        help="which of the two independent passwords to set (default 1)",
+    )
+    parser.add_argument(
+        "--rotate-sessions",
+        action="store_true",
+        help="also generate a new cookie secret and sign everyone out",
+    )
     args = parser.parse_args()
     try:
         mode = int(args.mode, 8)
@@ -84,9 +97,17 @@ def main() -> int:
         if not isinstance(existing, dict):
             raise SystemExit("%s must contain a JSON object." % path)
 
-    existing["password_hash"] = password_hash
-    # A new secret invalidates every old session cookie.
-    existing["cookie_secret"] = secrets.token_hex(32)
+    key = "password_hash" if args.slot == "1" else "password_hash_2"
+    if args.slot == "2" and not existing.get("password_hash"):
+        raise SystemExit("Set password slot 1 first; the config has no slot 1.")
+    existing[key] = password_hash
+
+    # Two independent slots let one person change a password without locking
+    # the other out.  Keep the cookie secret so live sessions survive a change;
+    # --rotate-sessions is the explicit sign-everyone-out option.
+    rotated = args.rotate_sessions or not existing.get("cookie_secret")
+    if rotated:
+        existing["cookie_secret"] = secrets.token_hex(32)
 
     temporary = path.with_name(".%s.tmp" % path.name)
     temporary.write_text(json.dumps(existing, indent=2) + "\n", encoding="utf-8")
@@ -94,8 +115,12 @@ def main() -> int:
     os.replace(temporary, path)
     os.chmod(path, mode)
 
-    print("Password set in %s (mode %03o)" % (path, mode))
-    print("Keep this file private. Changing the password signs everyone out.")
+    print("Password slot %s set in %s (mode %03o)" % (args.slot, path, mode))
+    if rotated:
+        print("Sessions were signed out (new cookie secret).")
+    else:
+        print("Existing sessions were kept.")
+    print("Keep this file private.")
     return 0
 
 

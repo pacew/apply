@@ -61,6 +61,7 @@
   <h1>NEFFA API test</h1>
   <span class="who">Signed in as <strong id="who">...</strong></span>
   &nbsp;·&nbsp; <a href="__BASE__/">Back to the scheduler</a>
+  &nbsp;·&nbsp; <a href="__BASE__/settings">Settings</a>
   <div class="tokenrow">
     <label for="token">Token (optional; the page's cookie is used when empty)</label>
     <input id="token" type="text" autocomplete="off" spellcheck="false" placeholder="paste a token from POST /api/v1/login">
@@ -71,7 +72,8 @@
   <p class="intro">
     Each card is an editable request.  Send it and the response appears at the bottom.
     The page is behind the committee login; the token box is for testing the bearer-token
-    path used by the development frontend.
+    path used by the development frontend.  The festival year and test/production choice
+    are changed under Settings, not at login.
   </p>
   <div class="grid" id="cards"></div>
 
@@ -122,8 +124,8 @@
       kind: "login",
       method: "POST",
       path: "/api/v1/login",
-      help: "Sign in and get a token. On success the token box above is filled in. Edit the password and workspace values.",
-      body: '{\n  "password": "",\n  "year": 2027,\n  "apply": "production",\n  "schedule": "production"\n}'
+      help: "Sign in and get a token. On success the token box above is filled in. Workspace choice is under Settings.",
+      body: '{\n  "password": ""\n}'
     },
     {
       method: "GET",
@@ -136,6 +138,18 @@
       path: "/api/v1/me?year=2026&apply=test&schedule=test",
       help: "The same call with a test workspace selected by query parameters.",
       body: ""
+    },
+    {
+      method: "GET",
+      path: "/api/v1/settings",
+      help: "Current festival year and test/production choices.",
+      body: ""
+    },
+    {
+      method: "PUT",
+      path: "/api/v1/settings",
+      help: "Change the year/apply/schedule choice for this session. The Settings page uses the same values.",
+      body: '{\n  "year": 2026,\n  "apply": "test",\n  "schedule": "test"\n}'
     },
     {
       method: "GET",

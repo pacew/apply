@@ -26,6 +26,14 @@ class PasswordTests(unittest.TestCase):
         self.assertFalse(auth.verify_password("x", "not-a-hash"))
         self.assertFalse(auth.verify_password("x", "scrypt$bad"))
 
+    def test_two_password_slots(self):
+        first = auth.hash_password("first password")
+        second = auth.hash_password("second password")
+        self.assertTrue(auth.verify_any_password("first password", [first, second]))
+        self.assertTrue(auth.verify_any_password("second password", [first, second]))
+        self.assertFalse(auth.verify_any_password("third password", [first, second]))
+        self.assertFalse(auth.verify_any_password("", [first, second]))
+
 
 class SessionTests(unittest.TestCase):
     SECRET = "test-secret"
@@ -76,9 +84,6 @@ class LoginPageTests(unittest.TestCase):
         page = auth.login_page(
             script="/program.py",
             next_path="/program.py/",
-            year=2027,
-            apply_env="production",
-            schedule_env="production",
             error='<script>alert("x")</script>',
         )
         self.assertNotIn("<script>alert", page)
@@ -87,14 +92,19 @@ class LoginPageTests(unittest.TestCase):
     def test_form_action_and_values(self):
         page = auth.login_page(
             script="/program.py",
-            next_path="/program.py/",
-            year=2027,
-            apply_env="production",
-            schedule_env="production",
+            next_path="/program.py/apitest",
         )
         self.assertIn('action="/program.py/login"', page)
         self.assertIn('name="password"', page)
-        self.assertIn('value="2027"', page)
+        self.assertIn('value="/program.py/apitest"', page)
+
+    def test_login_does_not_offer_workspace_fields(self):
+        page = auth.login_page(
+            script="/program.py", next_path="/program.py/"
+        )
+        self.assertNotIn('name="year"', page)
+        self.assertNotIn('name="apply"', page)
+        self.assertNotIn('name="schedule"', page)
 
 
 if __name__ == "__main__":

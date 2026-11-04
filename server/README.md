@@ -29,6 +29,8 @@ The JSON contract for Lynn's AI is in [`API.md`](API.md).
 | `/program.py/login` | the committee password form |
 | `/program.py/api/v1/login` | password → token for the development frontend |
 | `/program.py/api/v1/me` | superuser name/role and selected workspace |
+| `/program.py/settings` | festival year and test/production choice |
+| `/program.py/api/v1/settings` | JSON version of the same |
 | `/program.py/apitest` | developer API console (login required) |
 | `/program.py/data/config.json` | halls, days and tracks for the page |
 | `/program.py/data/Applications-2027.csv` | live applications, contact details removed |
@@ -77,7 +79,7 @@ Everything mutable is outside the web root:
 
 ```
 ~/program/
-  config.json      password hash and cookie secret, mode 0600
+  config.json      two password hashes and a cookie secret, mode 0600
   cache/           generated data, mode 0700, safe to delete
   schedule/        Webgrid-2026.tsv, Webgrid-2027.tsv, Webgrid-2027-test.tsv
   web/
@@ -105,22 +107,32 @@ python3 ~/apply.neffa.org/server/tools/set_password.py
 
 Then open `https://apply.neffa.org/program.py/`.
 
-The password command asks twice, writes the scrypt hash and a new cookie
-secret, and prints only the path.  Changing the password signs out everyone
-who is already logged in.  To change it later:
+There are **two independent password slots**, so one person can change theirs
+without locking the other out.  Set slot 1 first, then slot 2 if needed:
 
 ```bash
-python3 ~/apply.neffa.org/server/tools/set_password.py
+python3 ~/apply.neffa.org/server/tools/set_password.py --slot 1
+python3 ~/apply.neffa.org/server/tools/set_password.py --slot 2
 ```
+
+Each run asks twice and writes one scrypt hash.  The cookie secret is kept, so
+existing sessions survive a password change; add `--rotate-sessions` to sign
+everyone out.  Production config stays mode 600; the Apache dev runtime needs
+`--mode 644`.
 
 ## Choosing the year and environment
 
-The defaults are in `config.json` (`year`, `apply_env`, `schedule_env`).  A
-query string sets them for the browser session:
+Use the settings page:
 
 ```
-/program.py/?year=2026&apply=production&schedule=production
+/program.py/settings
 ```
+
+It sets the festival year, the applications environment (`production` or
+`test`) and the scheduling environment.  Login only authenticates; it never
+sets the workspace.  The choice is kept in the `neffa_program_env` cookie for
+the browser, and `GET/PUT /api/v1/settings` exposes the same values to the
+development frontend.
 
 - `apply=production` reads `test_flag=0`; `apply=test` reads `test_flag=1`.
   **Test applications are not implemented yet**, because the old exporter has
@@ -129,8 +141,8 @@ query string sets them for the browser session:
   `schedule=test` reads `Webgrid-2027-test.tsv`.  `Webgrid-2026.tsv` is the
   same in both.
 
-The page itself does not show a selector yet; this is deliberate while the
-system is read-only.  The values are kept in the `neffa_program_env` cookie.
+The prototype frontend has no user icon yet.  The request to Lynn's AI is to add
+one whose click goes to `/program.py/settings`.
 
 ## Local copy for Lynn
 
@@ -171,24 +183,21 @@ http://ai:18411/program.py/
 http://ai:18411/program.py/apitest
 ```
 
-The Apache vhost (`/etc/apache2/sites-available/apply-pace.conf`) needs four
-things, all outside this repository:
+`psite install` rewrites `TMP.conf` and the vhost, so the dev CGI settings live
+in a **separate Apache conf** that it does not touch.  The file is versioned
+here as `server/dev-apache.conf`:
 
-```apache
-# in <Directory /home/pace/apply>
-AddHandler cgi-script .py
-AcceptPathInfo On
-
-# in <VirtualHost *:18411>
-SetEnv PROGRAM_HOME /home/pace/program-web
-
-# anywhere, to match production
-<Directory /home/pace/apply/server>
-  Require all denied
-</Directory>
+```bash
+sudo cp server/dev-apache.conf /etc/apache2/conf-available/neffa-program-dev.conf
+sudo a2enconf neffa-program-dev
+sudo a2enmod cgi
+sudo apache2ctl configtest && sudo systemctl reload apache2
 ```
 
-and `a2enmod cgi` must have been run.  `program.py` runs as `www-data`.
+It sets `AddHandler cgi-script .py`, `AcceptPathInfo On`,
+`SetEnv PROGRAM_HOME /home/pace/program-web`, and denies HTTP access to
+`server/`.  Re-run the `cp`/`a2enconf` only if the file changes.  `program.py`
+runs as `www-data`.
 
 The runtime is separate from `~/program-dev`:
 
@@ -216,12 +225,17 @@ live elsewhere.  Set it in `~/program-web/config.json`:
 }
 ```
 
-Set the password with the mode the Apache runtime needs:
+Set the two passwords with the mode the Apache runtime needs:
 
 ```bash
 cd ~/apply
-python3 server/tools/set_password.py --config ~/program-web/config.json --mode 644
+python3 server/tools/set_password.py --config ~/program-web/config.json --slot 1 --mode 644
+python3 server/tools/set_password.py --config ~/program-web/config.json --slot 2 --mode 644
 ```
+
+The cookie secret is preserved, so setting one slot does not sign out sessions
+using the other.  Add `--rotate-sessions` only when you want to sign everyone
+out.
 
 The empty login path makes the `mysql` client use the local account's default
 socket.  The local PDB is not present; `pdb_password_file` fails, so
@@ -240,7 +254,8 @@ curl -sS -X POST -H 'Content-Type: application/json' \
 
 and sends the returned token as `X-Neffa-Token` (or `Authorization: Bearer`).
 CORS is allowed only for the configured origins.  `GET /api/v1/me` should return
-`{"name":"Program Chair","role":"program_chair",...}`.
+`{"name":"Program Chair","role":"program_chair",...}`.  Login does not choose a
+workspace; call `PUT /api/v1/settings` or use `http://ai:18411/program.py/settings`.
 
 ## Tests
 
@@ -274,12 +289,13 @@ python3 -m unittest discover -s server/tests -v
 - Read-only: the page still saves the grid in the browser's localStorage.
   There is no server workspace, event store, shared version, override or
   workflow state yet.
-- One superuser login (`/api/v1/login`) and `/api/v1/me` are in place;
-  per-user accounts and track permissions are later.
+- Two password slots and one superuser role are in place; per-user accounts,
+  the user icon and track permissions are later.
 - Test applications are not implemented.
 - The 2027 grid file is a manual export; 2026 history is bundled.
 - The page does not poll `/version` yet; reload to see new applications.
-- There is no admin screen; settings and passwords are files.
+- There is a settings page for the workspace choice, but no account admin
+  screen; passwords are set with the command-line tool.
 
 ## Next steps
 

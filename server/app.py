@@ -5,6 +5,11 @@ Routes (the trampoline is at /program.py, so SCRIPT_NAME is /program.py):
     /                       the prototype page
     /login                  password form; POST checks it
     /logout                 clear the session cookie
+    /settings               year and test/production choice
+    /apitest                developer API console
+    /api/v1/login           password -> token
+    /api/v1/me              name, role, workspace
+    /api/v1/settings        workspace choice as JSON
     /data/                  a listing of the available data files
     /data/config.json       settings for the prototype
     /data/Applications-N.csv  live applications for year N
@@ -15,9 +20,10 @@ Routes (the trampoline is at /program.py, so SCRIPT_NAME is /program.py):
     /version                small JSON the page can poll
     /health                 "ok", no login, no data
 
-Authentication is one shared committee password.  The session cookie is signed;
-see auth.py.  Data files are cached in PROGRAM_HOME/cache and rebuilt only when
-the source version changes (see live_data.py).
+Authentication is two independent committee passwords (two scrypt hashes); the
+session cookie is signed, see auth.py.  Data files are cached in
+PROGRAM_HOME/cache and rebuilt only when the source version changes (see
+live_data.py).
 """
 
 from __future__ import annotations
@@ -30,6 +36,7 @@ import time
 import traceback
 from email.utils import formatdate
 from pathlib import Path
+from string import Template
 from urllib.parse import parse_qs, quote, unquote
 from wsgiref.handlers import CGIHandler
 
@@ -310,9 +317,12 @@ def _safe_next(value, environ) -> str:
     return path
 
 
+def _password_hashes(cfg) -> list:
+    return [cfg.get("password_hash"), cfg.get("password_hash_2")]
+
+
 def _handle_login(environ, start_response, cfg, method: str, query: dict):
-    state = _env_state(environ, cfg)
-    state, _ = _apply_env_values(state, query, cfg)
+    """Authenticate only.  Workspace choice is separate, under /settings."""
     next_path = _safe_next(_first(query, "next"), environ)
 
     if method == "GET":
@@ -321,40 +331,23 @@ def _handle_login(environ, start_response, cfg, method: str, query: dict):
         page = auth.login_page(
             script=_script(environ),
             next_path=next_path,
-            year=state["year"],
-            apply_env=state["apply"],
-            schedule_env=state["schedule"],
         )
-        return _html(
-            start_response,
-            "200 OK",
-            page,
-            [("Set-Cookie", _env_cookie(environ, cfg, state))],
-        )
+        return _html(start_response, "200 OK", page)
 
     if method != "POST":
         return _text(start_response, "405 Method Not Allowed", "Use GET or POST.")
 
     form = _read_form(environ)
     next_path = _safe_next(form.get("next"), environ)
-    state, _ = _apply_env_values(state, form, cfg)
     password = form.get("password", "")
-    if not auth.verify_password(password, cfg["password_hash"]):
+    if not auth.verify_any_password(password, _password_hashes(cfg)):
         live_data.log("login failed")
         page = auth.login_page(
             script=_script(environ),
             next_path=next_path,
-            year=state["year"],
-            apply_env=state["apply"],
-            schedule_env=state["schedule"],
             error="That password did not match.",
         )
-        return _html(
-            start_response,
-            "401 Unauthorized",
-            page,
-            [("Set-Cookie", _env_cookie(environ, cfg, state))],
-        )
+        return _html(start_response, "401 Unauthorized", page)
 
     token = auth.new_session_token(
         cfg["cookie_secret"],
@@ -370,11 +363,7 @@ def _handle_login(environ, start_response, cfg, method: str, query: dict):
         secure=auth.is_https(environ),
     )
     live_data.log("login ok")
-    return _redirect(
-        start_response,
-        next_path,
-        [session_cookie, _env_cookie(environ, cfg, state)],
-    )
+    return _redirect(start_response, next_path, [session_cookie])
 
 
 def _handle_logout(environ, start_response, cfg):
@@ -403,30 +392,25 @@ def _handle_api_login(environ, start_response, cfg, method: str):
         )
     body = _json_body(environ)
     password = str(body.get("password", ""))
-    if not auth.verify_password(password, cfg["password_hash"]):
+    if not auth.verify_any_password(password, _password_hashes(cfg)):
         live_data.log("api login failed")
         return _json_response(
             start_response, "401 Unauthorized", {"error": "invalid_password"}
         )
 
-    state = _env_state(environ, cfg)
-    state, _ = _apply_env_values(state, body, cfg)
     token = auth.new_session_token(
         cfg["cookie_secret"],
         cfg["session_hours"],
         name=cfg["actor_name"],
         role=cfg["role"],
     )
-    cookies = [
-        auth.make_cookie(
-            cfg["cookie_name"],
-            token,
-            path=_cookie_path(environ),
-            max_age=int(cfg["session_hours"] * 3600),
-            secure=auth.is_https(environ),
-        ),
-        _env_cookie(environ, cfg, state),
-    ]
+    cookie = auth.make_cookie(
+        cfg["cookie_name"],
+        token,
+        path=_cookie_path(environ),
+        max_age=int(cfg["session_hours"] * 3600),
+        secure=auth.is_https(environ),
+    )
     live_data.log("api login ok")
     return _json_response(
         start_response,
@@ -435,11 +419,8 @@ def _handle_api_login(environ, start_response, cfg, method: str):
             "token": token,
             "user": {"name": cfg["actor_name"], "role": cfg["role"]},
             "expiresIn": int(cfg["session_hours"] * 3600),
-            "year": state["year"],
-            "apply": state["apply"],
-            "schedule": state["schedule"],
         },
-        [("Set-Cookie", cookie) for cookie in cookies],
+        [("Set-Cookie", cookie)],
     )
 
 
@@ -463,6 +444,94 @@ def _handle_api_me(environ, start_response, cfg):
             "schedule": state["schedule"],
             "expiresAt": user.get("exp"),
         },
+    )
+
+
+# ---------------------------------------------------------------------- settings
+
+def _option_list(values, current, labels=None) -> str:
+    labels = labels or {}
+    out = []
+    for value in values:
+        selected = " selected" if str(value) == str(current) else ""
+        label = labels.get(value, value)
+        out.append(
+            '<option value="%s"%s>%s</option>'
+            % (html.escape(str(value)), selected, html.escape(str(label)))
+        )
+    return "".join(out)
+
+
+def _serve_settings(environ, start_response, cfg, state, saved: bool):
+    page = Path(__file__).resolve().parent / "settings.html"
+    try:
+        template = Template(page.read_text(encoding="utf-8"))
+    except OSError:
+        return _text(start_response, "500 Internal Server Error", "The settings page is not installed.")
+    user = _current_user(environ, cfg) or {}
+    env_labels = {"production": "Production", "test": "Test"}
+    html_text = template.substitute(
+        base=html.escape(_script(environ)),
+        user=html.escape(user.get("u") or cfg["actor_name"]),
+        saved='<p class="ok" role="status">Saved.</p>' if saved else "",
+        year_options=_option_list(sorted(cfg["years"], reverse=True), state["year"]),
+        apply_options=_option_list(settings.APPLY_ENVS, state["apply"], env_labels),
+        schedule_options=_option_list(settings.SCHEDULE_ENVS, state["schedule"], env_labels),
+    )
+    return _html(start_response, "200 OK", html_text)
+
+
+def _handle_settings(environ, start_response, cfg, method: str, query: dict):
+    """The workspace selector.  This is the only place login-independent settings change."""
+    state = _env_state(environ, cfg)
+    if method == "POST":
+        form = _read_form(environ)
+        state, _ = _apply_env_values(state, form, cfg)
+        return _redirect(
+            start_response,
+            _base_path(environ) + "settings?saved=1",
+            [_env_cookie(environ, cfg, state)],
+        )
+    if method != "GET":
+        return _text(start_response, "405 Method Not Allowed", "Use GET or POST.")
+    saved = _first(query, "saved") == "1"
+    return _serve_settings(environ, start_response, cfg, state, saved)
+
+
+def _handle_api_settings(environ, start_response, cfg, method: str):
+    user = _current_user(environ, cfg)
+    if not user:
+        return _json_response(
+            start_response, "401 Unauthorized", {"error": "not_signed_in"}
+        )
+    state = _env_state(environ, cfg)
+    if method in ("PUT", "POST"):
+        state, _ = _apply_env_values(state, _json_body(environ), cfg)
+        return _json_response(
+            start_response,
+            "200 OK",
+            {
+                "year": state["year"],
+                "apply": state["apply"],
+                "schedule": state["schedule"],
+            },
+            [("Set-Cookie", _env_cookie(environ, cfg, state))],
+        )
+    if method == "GET":
+        return _json_response(
+            start_response,
+            "200 OK",
+            {
+                "year": state["year"],
+                "apply": state["apply"],
+                "schedule": state["schedule"],
+                "years": sorted(cfg["years"], reverse=True),
+                "applyEnvs": list(settings.APPLY_ENVS),
+                "scheduleEnvs": list(settings.SCHEDULE_ENVS),
+            },
+        )
+    return _json_response(
+        start_response, "405 Method Not Allowed", {"error": "method_not_allowed"}
     )
 
 
@@ -654,10 +723,13 @@ def _dispatch(environ, start_response):
     if path == "/api/v1/me":
         return _handle_api_me(environ, start_response, cfg)
 
+    if path == "/api/v1/settings":
+        return _handle_api_settings(environ, start_response, cfg, method)
+
     if not authenticated:
         if path.startswith("/data/") or path == "/version":
             return _text(start_response, "401 Unauthorized", "Sign in first.")
-        if path in ("/", "/index.html", "/apitest", "/apitest/"):
+        if path in ("/", "/index.html", "/apitest", "/apitest/", "/settings", "/settings/"):
             # next must include SCRIPT_NAME (/program.py) or the login's
             # safe-next check will reject it.
             script = _script(environ)
@@ -673,6 +745,11 @@ def _dispatch(environ, start_response):
 
     if path == "/logout":
         return _handle_logout(environ, start_response, cfg)
+
+    if path in ("/settings", "/settings/"):
+        return _handle_settings(
+            environ, start_response, cfg, method, _query(environ)
+        )
 
     if path in ("/apitest", "/apitest/"):
         if not cfg.get("apitest", True):

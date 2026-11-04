@@ -13,18 +13,24 @@ optional.  CORS allows the origins in `allowed_origins` in the runtime
 
 ## Authentication
 
-One shared committee password, one superuser role for now.
+Two independent committee passwords and one superuser role for now.  Either
+password signs in.  They exist so one person can change theirs without locking
+the other out; `set_password.py --slot 1` and `--slot 2` set them, and the
+cookie secret is preserved unless `--rotate-sessions` is given.
 
 ```
 POST /api/v1/login
 Content-Type: application/json
 
-{"password": "...", "year": 2027, "apply": "production", "schedule": "production"}
+{"password": "..."}
 
 200 {"token": "...", "user": {"name": "Program Chair", "role": "program_chair"},
-     "expiresIn": 43200, "year": 2027, "apply": "production", "schedule": "production"}
+     "expiresIn": 43200}
 401 {"error": "invalid_password"}
 ```
+
+Login does **not** set the festival year or test/production choice.  That is
+under `/settings`.
 
 The token is the same signed session token used by the browser cookie.  Send it
 on later calls as either header:
@@ -46,9 +52,23 @@ GET /api/v1/me
 401 {"error": "not_signed_in"}
 ```
 
-`year`, `apply` and `schedule` may be given as query parameters on `/me`; this
-is how a bearer-token client selects a workspace without relying on the
-`neffa_program_env` cookie.
+`year`, `apply` and `schedule` may still be given as query parameters on `/me`
+for a one-off read.  The normal way to change them for a session is `PUT
+/api/v1/settings` or the Settings page.
+
+## Workspace settings
+
+```
+GET  /program.py/settings           HTML form, login required
+POST /program.py/settings           year, apply, schedule
+GET  /api/v1/settings               current values + choices
+PUT  /api/v1/settings               JSON {year, apply, schedule}
+```
+
+`apply` is `production` or `test` (the latter is not implemented yet);
+`schedule` is `production` or `test`.  The choice is stored in the
+`neffa_program_env` cookie for the browser, and returned by the JSON API for
+the development frontend.  Login never touches it.
 
 ## Implemented
 
@@ -56,6 +76,9 @@ is how a bearer-token client selects a workspace without relying on the
 | --- | --- | --- |
 | POST | `/api/v1/login` | password → token + user |
 | GET | `/api/v1/me` | name, role, selected year/environments |
+| GET | `/api/v1/settings` | current workspace choices |
+| PUT | `/api/v1/settings` | change year/apply/schedule |
+| GET | `/program.py/settings` | HTML settings form |
 | GET | `/health` | `ok`, no login |
 | GET | `/data/Applications-YYYY.csv` | live applications (read-only) |
 | GET | `/data/Performers.csv` | live performers |

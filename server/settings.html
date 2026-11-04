@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Program settings</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+         background: #f4f1ea; color: #1d1d1b; }
+  main { max-width: 34rem; margin: 8vh auto; padding: 1.6rem 1.8rem; background: #fff;
+         border: 1px solid #d8d2c4; border-radius: 8px; box-shadow: 0 2px 12px #0001; }
+  h1 { font-size: 1.3rem; margin: 0 0 .3rem; }
+  p { margin: .5rem 0 1rem; }
+  label { display: block; font-weight: 600; margin: 1rem 0 .3rem; }
+  select { width: 100%; padding: .55rem; font-size: 1rem; border: 1px solid #b9b2a2;
+           border-radius: 6px; background: #fff; }
+  button { margin-top: 1.1rem; padding: .6rem 1.1rem; font-size: 1rem; font-weight: 600;
+           color: #fff; background: #33546b; border: 0; border-radius: 6px; cursor: pointer; }
+  button:hover { background: #264355; }
+  .hint { color: #5a564d; font-size: .88rem; }
+  .ok { color: #1f5b36; background: #e8f4ec; border: 1px solid #b9dcc5;
+        padding: .5rem .7rem; border-radius: 6px; }
+  nav { margin-top: 1.4rem; padding-top: .9rem; border-top: 1px solid #e2dccd;
+        color: #6b665c; font-size: .9rem; }
+  nav a { color: #33546b; }
+</style>
+</head>
+<body><main>
+  <h1>Program settings</h1>
+  <p>Signed in as <strong>$user</strong>.</p>
+  $saved
+  <form method="post" action="$base/settings">
+    <label for="year">Festival year</label>
+    <select id="year" name="year">$year_options</select>
+
+    <label for="apply">Applications data</label>
+    <select id="apply" name="apply">$apply_options</select>
+
+    <label for="schedule">Scheduling data</label>
+    <select id="schedule" name="schedule">$schedule_options</select>
+
+    <p class="hint">Test applications are not implemented yet. Test scheduling uses
+      <code>Webgrid-2027-test.tsv</code> when that file exists.</p>
+    <button type="submit">Save</button>
+  </form>
+
+  <nav>
+    <a href="$base/">Back to the scheduler</a> ·
+    <a href="$base/apitest">API test</a> ·
+    <a href="$base/logout">Sign out</a>
+  </nav>
+</main></body></html>

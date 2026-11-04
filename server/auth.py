@@ -1,8 +1,9 @@
 """Password hashing, signed session cookies, and the login page.
 
-There is one shared committee password for now.  It is stored only as a scrypt
-hash in config.json; the session cookie is signed with a separate random
-secret.  No third-party library is needed.
+There are two independent committee passwords for now, each stored only as a
+scrypt hash in config.json.  Either one signs in; they exist so one person can
+change theirs without locking the other out.  The session cookie is signed with
+a separate random secret.  No third-party library is needed.
 
 The browser gets a cookie whose value is ``payload.signature``.  The payload is
 a small JSON object with an expiry time; the signature is HMAC-SHA256 over the
@@ -79,6 +80,19 @@ def verify_password(password: str, stored: str) -> bool:
         return hmac.compare_digest(derived, _b64_decode(hash_text))
     except (ValueError, TypeError):
         return False
+
+
+def verify_any_password(password: str, stored_hashes) -> bool:
+    """Check a password against every configured slot.
+
+    There are two independent password slots so one person can change theirs
+    without locking the other out.  Both are checked without short-circuiting.
+    """
+    matched = False
+    for stored in stored_hashes:
+        if stored and verify_password(password, stored):
+            matched = True
+    return matched
 
 
 def new_session_token(
@@ -207,13 +221,10 @@ footer { margin-top: 1.25rem; color: #6b665c; font-size: .85rem; }
 <body><main>
 <h1>NEFFA Program System</h1>
 <p>This area holds the program committee's working data. Enter the committee password.</p>
-<p class="hint">Viewing $year applications, $apply_env schedule data.</p>
+<p class="hint">Your festival year and test/production choices are under Settings after sign-in.</p>
 $error_html
 <form method="post" action="$script/login">
   <input type="hidden" name="next" value="$next_path">
-  <input type="hidden" name="year" value="$year">
-  <input type="hidden" name="apply" value="$apply_env">
-  <input type="hidden" name="schedule" value="$schedule_env">
   <label for="password">Password</label>
   <input id="password" name="password" type="password" autocomplete="current-password" required autofocus>
   <button type="submit">Sign in</button>
@@ -226,18 +237,12 @@ def login_page(
     *,
     script: str,
     next_path: str,
-    year: int,
-    apply_env: str,
-    schedule_env: str,
     error: str = "",
 ) -> str:
     """The password form.  Values are escaped; there is no user-supplied HTML."""
     e = html.escape
     error_html = '<p class="error" role="alert">%s</p>' % e(error) if error else ""
     return LOGIN_TEMPLATE.substitute(
-        year=e(str(year)),
-        apply_env=e(apply_env),
-        schedule_env=e(schedule_env),
         error_html=error_html,
         script=e(script),
         next_path=e(next_path),
