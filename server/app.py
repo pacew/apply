@@ -299,16 +299,28 @@ def _env_cookie(environ, cfg, state) -> str:
     )
 
 
+def _safe_next(value, environ) -> str:
+    """Only allow a next path inside this app, to avoid an open redirect."""
+    base = _base_path(environ)
+    path = str(value or "").strip()
+    if not path or not path.startswith(base):
+        return base
+    if path.startswith("//") or "\\" in path or ".." in path:
+        return base
+    return path
+
+
 def _handle_login(environ, start_response, cfg, method: str, query: dict):
     state = _env_state(environ, cfg)
     state, _ = _apply_env_values(state, query, cfg)
+    next_path = _safe_next(_first(query, "next"), environ)
 
     if method == "GET":
         if _is_authenticated(environ, cfg):
-            return _redirect(start_response, _base_path(environ))
+            return _redirect(start_response, next_path)
         page = auth.login_page(
             script=_script(environ),
-            next_path=_base_path(environ),
+            next_path=next_path,
             year=state["year"],
             apply_env=state["apply"],
             schedule_env=state["schedule"],
@@ -324,13 +336,14 @@ def _handle_login(environ, start_response, cfg, method: str, query: dict):
         return _text(start_response, "405 Method Not Allowed", "Use GET or POST.")
 
     form = _read_form(environ)
+    next_path = _safe_next(form.get("next"), environ)
     state, _ = _apply_env_values(state, form, cfg)
     password = form.get("password", "")
     if not auth.verify_password(password, cfg["password_hash"]):
         live_data.log("login failed")
         page = auth.login_page(
             script=_script(environ),
-            next_path=_base_path(environ),
+            next_path=next_path,
             year=state["year"],
             apply_env=state["apply"],
             schedule_env=state["schedule"],
@@ -359,7 +372,7 @@ def _handle_login(environ, start_response, cfg, method: str, query: dict):
     live_data.log("login ok")
     return _redirect(
         start_response,
-        _base_path(environ),
+        next_path,
         [session_cookie, _env_cookie(environ, cfg, state)],
     )
 
@@ -476,6 +489,27 @@ def _serve_page(start_response, cfg):
             ("Cache-Control", "no-store"),
             ("Last-Modified", formatdate(modified, usegmt=True)),
         ],
+    )
+
+
+def _serve_apitest(environ, start_response):
+    """The developer's API console.  One HTML file, no build step."""
+    page = Path(__file__).resolve().parent / "apitest.html"
+    try:
+        body = page.read_text(encoding="utf-8")
+    except OSError:
+        return _text(
+            start_response,
+            "500 Internal Server Error",
+            "The API test page is not installed.",
+        )
+    body = body.replace("__BASE__", html.escape(_script(environ)))
+    return _response(
+        start_response,
+        "200 OK",
+        body,
+        "text/html; charset=utf-8",
+        [("Cache-Control", "no-store")],
     )
 
 
@@ -623,10 +657,10 @@ def _dispatch(environ, start_response):
     if not authenticated:
         if path.startswith("/data/") or path == "/version":
             return _text(start_response, "401 Unauthorized", "Sign in first.")
-        if path in ("/", "/index.html"):
+        if path in ("/", "/index.html", "/apitest", "/apitest/"):
             return _redirect(
                 start_response,
-                _base_path(environ) + "login?next=" + quote(_base_path(environ)),
+                _base_path(environ) + "login?next=" + quote(path),
             )
         return _text(start_response, "401 Unauthorized", "Sign in first.")
 
@@ -635,6 +669,11 @@ def _dispatch(environ, start_response):
 
     if path == "/logout":
         return _handle_logout(environ, start_response, cfg)
+
+    if path in ("/apitest", "/apitest/"):
+        if not cfg.get("apitest", True):
+            return _text(start_response, "404 Not Found", "Not found.")
+        return _serve_apitest(environ, start_response)
 
     state = _env_state(environ, cfg)
 

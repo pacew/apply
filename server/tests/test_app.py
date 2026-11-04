@@ -357,6 +357,55 @@ class AppTests(unittest.TestCase):
             "http://localhost:18411",
         )
 
+    # ----------------------------------------------------------------- api page
+
+    def test_apitest_needs_login(self):
+        status, headers, _ = self.call("GET", "/apitest")
+        self.assertEqual(status, "302 Found")
+        self.assertIn("/program.py/login", self.header(headers, "Location"))
+
+    def test_apitest_page_is_served_with_base(self):
+        status, _, body = self.call("GET", "/apitest", cookie=self.cookie)
+        self.assertEqual(status, "200 OK")
+        text = body.decode("utf-8")
+        self.assertIn("NEFFA API test", text)
+        self.assertIn('const BASE = "/program.py"', text)
+        self.assertIn("/api/v1/login", text)
+        self.assertIn("/data/Webgrid-2026.tsv", text)
+
+    def test_apitest_can_be_disabled(self):
+        path = os.path.join(self.home, "config.json")
+        with open(path) as stream:
+            cfg = json.load(stream)
+        cfg["apitest"] = False
+        with open(path, "w") as stream:
+            json.dump(cfg, stream)
+        status, _, _ = self.call("GET", "/apitest", cookie=self.cookie)
+        self.assertEqual(status, "404 Not Found")
+
+    def test_login_next_returns_to_apitest(self):
+        status, _, body = self.call(
+            "GET", "/login", query="next=/program.py/apitest"
+        )
+        self.assertEqual(status, "200 OK")
+        self.assertIn(b'value="/program.py/apitest"', body)
+        status, headers, _ = self.call(
+            "POST",
+            "/login",
+            form={"password": self.PASSWORD, "next": "/program.py/apitest"},
+        )
+        self.assertEqual(status, "302 Found")
+        self.assertEqual(self.header(headers, "Location"), "/program.py/apitest")
+
+    def test_login_next_rejects_external_url(self):
+        status, headers, _ = self.call(
+            "POST",
+            "/login",
+            form={"password": self.PASSWORD, "next": "https://evil.example/"},
+        )
+        self.assertEqual(status, "302 Found")
+        self.assertEqual(self.header(headers, "Location"), "/program.py/")
+
 
 if __name__ == "__main__":
     unittest.main()

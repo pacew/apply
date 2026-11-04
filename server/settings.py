@@ -34,6 +34,7 @@ DEFAULTS = {
     "pdb_password_file": "~/aux/neffadb_passwd",
     "download_url": "https://apply.neffa.org/download.php",
     "session_hours": 12,
+    "apitest": True,
     "cookie_name": "neffa_program",
     "env_cookie_name": "neffa_program_env",
     "actor_name": "Program Chair",
@@ -134,6 +135,9 @@ def load_config(path: str | os.PathLike | None = None) -> dict:
     if not isinstance(origins, list):
         origins = DEFAULTS["allowed_origins"]
     cfg["allowed_origins"] = [str(o).strip() for o in origins if str(o).strip()]
+    # The API test page is for the developer.  It still requires the superuser
+    # login; a separate developer role comes later.
+    cfg["apitest"] = bool(cfg.get("apitest", True))
 
     for key in ("password_hash", "cookie_secret"):
         if not cfg.get(key):

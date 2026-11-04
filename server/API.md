@@ -63,6 +63,21 @@ is how a bearer-token client selects a workspace without relying on the
 | GET | `/data/Webgrid-2026.tsv` | immutable 2026 history |
 | GET | `/version` | source versions and dates |
 
+## Developer API console
+
+```
+GET /program.py/apitest
+```
+
+An authenticated HTML page with one editable form per endpoint, a token box, and
+a response panel.  It is for the single superuser now; a separate developer
+role can gate it later.  Set `"apitest": false` in `config.json` to hide it.
+It is deliberately a small hand-written page rather than Swagger/OpenAPI, which
+would add a runtime dependency and a build step.
+
+The login page honours `?next=` for a path inside the app, so
+`/program.py/apitest` returns there after sign-in.  External URLs are ignored.
+
 ## Planned next: workspace save
 
 One superuser first; the frontend sends the whole mutable state and the server

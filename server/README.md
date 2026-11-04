@@ -29,6 +29,7 @@ The JSON contract for Lynn's AI is in [`API.md`](API.md).
 | `/program.py/login` | the committee password form |
 | `/program.py/api/v1/login` | password → token for the development frontend |
 | `/program.py/api/v1/me` | superuser name/role and selected workspace |
+| `/program.py/apitest` | developer API console (login required) |
 | `/program.py/data/config.json` | halls, days and tracks for the page |
 | `/program.py/data/Applications-2027.csv` | live applications, contact details removed |
 | `/program.py/data/Performers.csv` | live performer list |
@@ -222,6 +223,9 @@ python3 -m unittest discover -s server/tests -v
   Nothing secret is in git.
 - The session cookie is HttpOnly, Secure, SameSite=Lax, scoped to
   `/program.py`.
+- `/program.py/apitest` is a developer console behind the same login.  Set
+  `"apitest": false` in `config.json` to hide it; a separate developer role can
+  gate it later.
 - Applicant email, phone, access codes and links are blanked; contact details
   inside free text are replaced with `[contact removed]`.  Rejection text is
   reduced to the word `rejected`; the loader only needs to know the flag.

@@ -5,6 +5,7 @@
   "schedule_env": "production",
   "actor_name": "Program Chair",
   "role": "program_chair",
+  "apitest": true,
   "allowed_origins": [
     "http://localhost:18411",
     "http://127.0.0.1:18411",
