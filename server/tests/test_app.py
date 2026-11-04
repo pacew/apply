@@ -362,7 +362,9 @@ class AppTests(unittest.TestCase):
     def test_apitest_needs_login(self):
         status, headers, _ = self.call("GET", "/apitest")
         self.assertEqual(status, "302 Found")
-        self.assertIn("/program.py/login", self.header(headers, "Location"))
+        location = self.header(headers, "Location")
+        self.assertIn("/program.py/login", location)
+        self.assertIn("next=/program.py/apitest", location)
 
     def test_apitest_page_is_served_with_base(self):
         status, _, body = self.call("GET", "/apitest", cookie=self.cookie)

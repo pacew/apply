@@ -42,6 +42,8 @@ DEFAULTS = {
     "allowed_origins": [
         "http://localhost:18411",
         "http://127.0.0.1:18411",
+        "http://ai:18411",
+        "http://k.pacew.org:18411",
         "http://localhost:18412",
         "http://127.0.0.1:18412",
     ],

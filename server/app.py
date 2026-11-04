@@ -658,9 +658,13 @@ def _dispatch(environ, start_response):
         if path.startswith("/data/") or path == "/version":
             return _text(start_response, "401 Unauthorized", "Sign in first.")
         if path in ("/", "/index.html", "/apitest", "/apitest/"):
+            # next must include SCRIPT_NAME (/program.py) or the login's
+            # safe-next check will reject it.
+            script = _script(environ)
+            next_path = (script + path) if script else path
             return _redirect(
                 start_response,
-                _base_path(environ) + "login?next=" + quote(path),
+                _base_path(environ) + "login?next=" + quote(next_path),
             )
         return _text(start_response, "401 Unauthorized", "Sign in first.")
 

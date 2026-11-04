@@ -6,9 +6,10 @@ Base URL:
 https://apply.neffa.org/program.py/api/v1
 ```
 
-The development server on `ai.local` runs the same app on
-`http://127.0.0.1:18412/api/v1`.  The dev frontend may call either; CORS allows
-the origins in `allowed_origins` in `~/program/config.json`.
+The development server on `ai.local` runs the same app under Apache at
+`http://ai:18411/program.py/api/v1`.  A direct `server/app.py` on 18412 is
+optional.  CORS allows the origins in `allowed_origins` in the runtime
+`config.json`.
 
 ## Authentication
 

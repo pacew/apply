@@ -163,20 +163,45 @@ python3 -m http.server 8000
 
 ## Development on ai.local
 
-The development copy uses the local `apply-pace` database and the old PHP dev
-server on `localhost:18411`.  Keep the runtime state outside the repository:
+The development copy uses Apache on **port 18411**, the same host and port as
+the PHP dev app, with the program server under `/program.py/`:
 
-```bash
-mkdir -p ~/program-dev/{cache,schedule,web}
-cp dist/deploy/index.html ~/program-dev/web/index.html   # from the prototype repo
-cp src/config.json       ~/program-dev/web/config.json
-
-cd ~/apply
-PROGRAM_HOME=$HOME/program-dev PROGRAM_PORT=18412 python3 server/app.py
+```
+http://ai:18411/program.py/
+http://ai:18411/program.py/apitest
 ```
 
-A development `~/program-dev/config.json` differs from production in these
-keys:
+The Apache vhost (`/etc/apache2/sites-available/apply-pace.conf`) needs four
+things, all outside this repository:
+
+```apache
+# in <Directory /home/pace/apply>
+AddHandler cgi-script .py
+AcceptPathInfo On
+
+# in <VirtualHost *:18411>
+SetEnv PROGRAM_HOME /home/pace/program-web
+
+# anywhere, to match production
+<Directory /home/pace/apply/server>
+  Require all denied
+</Directory>
+```
+
+and `a2enmod cgi` must have been run.  `program.py` runs as `www-data`.
+
+The runtime is separate from `~/program-dev`:
+
+```
+~/program-web/
+  config.json          mode 644 so www-data can read it
+  web/index.html       the no-data prototype build
+  web/config.json
+  schedule/            2027 exports, if any
+```
+
+Apache's systemd sandbox makes `/home` read-only for CGI, so the cache must
+live elsewhere.  Set it in `~/program-web/config.json`:
 
 ```json
 {
@@ -184,23 +209,33 @@ keys:
   "mysql_db": "apply-pace",
   "mysql_home": "/home/pace",
   "download_url": "http://localhost:18411/download.php",
+  "cache_dir": "/tmp/neffa-program-cache",
   "allowed_origins": [
-    "http://localhost:18411", "http://127.0.0.1:18411",
-    "http://localhost:18412", "http://127.0.0.1:18412"
+    "http://ai:18411", "http://k.pacew.org:18411"
   ]
 }
 ```
 
+Set the password with the mode the Apache runtime needs:
+
+```bash
+cd ~/apply
+python3 server/tools/set_password.py --config ~/program-web/config.json --mode 644
+```
+
 The empty login path makes the `mysql` client use the local account's default
-socket.  The local PDB is not present; point `pdb_password_file` at a local copy
-or use an SSH tunnel to `neffaprog.neffa.dreamhosters.com` and set `pdb_host`
-and `pdb_port` accordingly.  Do not copy production data into the repository.
+socket.  The local PDB is not present; `pdb_password_file` fails, so
+`/version`, `Performers.csv` and `Members.csv` return 503 locally.  Point it at
+a local copy or use an SSH tunnel to `neffaprog.neffa.dreamhosters.com`.
+
+A direct `server/app.py` on 18412 is still possible for API-only work, but the
+primary dev URL is 18411.
 
 The dev frontend signs in with:
 
 ```bash
 curl -sS -X POST -H 'Content-Type: application/json' \
-  -d '{"password":"..."}' http://127.0.0.1:18412/api/v1/login
+  -d '{"password":"..."}' http://ai:18411/program.py/api/v1/login
 ```
 
 and sends the returned token as `X-Neffa-Token` (or `Authorization: Bearer`).

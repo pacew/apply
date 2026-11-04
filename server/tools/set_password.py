@@ -57,7 +57,18 @@ def main() -> int:
         action="store_true",
         help="read one password line from stdin (for tests; no confirmation)",
     )
+    parser.add_argument(
+        "--mode",
+        default="600",
+        help="octal mode for config.json (default 600; use 644 for the Apache dev runtime)",
+    )
     args = parser.parse_args()
+    try:
+        mode = int(args.mode, 8)
+    except ValueError:
+        parser.error("--mode must be an octal number such as 600 or 644")
+    if mode < 0 or mode > 0o777:
+        parser.error("--mode must be between 0 and 777")
 
     password = read_password(args.password_stdin)
     password_hash = auth.hash_password(password)
@@ -79,11 +90,11 @@ def main() -> int:
 
     temporary = path.with_name(".%s.tmp" % path.name)
     temporary.write_text(json.dumps(existing, indent=2) + "\n", encoding="utf-8")
-    os.chmod(temporary, 0o600)
+    os.chmod(temporary, mode)
     os.replace(temporary, path)
-    os.chmod(path, 0o600)
+    os.chmod(path, mode)
 
-    print("Password set in %s" % path)
+    print("Password set in %s (mode %03o)" % (path, mode))
     print("Keep this file private. Changing the password signs everyone out.")
     return 0
 
